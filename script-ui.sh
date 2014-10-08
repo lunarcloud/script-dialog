@@ -46,7 +46,7 @@ else
 	hasDialog=false
 fi
 
-if [ "$desktop" == "kde" ]; then
+if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxqt" ]  || [ "$desktop" == "maui" ] ; then
 	if  [ $hasKDialog == true ] && [ $GUI == true ] ; then
 		INTERFACE="kdialog"
 		GUI=true
@@ -60,7 +60,7 @@ if [ "$desktop" == "kde" ]; then
 		INTERFACE="dialog"
 		GUI=false
 	fi
-elif [ -n $INTERFACE ]; then
+elif [ "$desktop" == "unity" ] || [ "$desktop" == "gnome" ]  || [ "$desktop" == "xfce" ]  || [ -n $INTERFACE ]; then
     if [ $hasZenity == true ] && [ $GUI == true ] ; then
         INTERFACE="zenity"
         GUI=true
@@ -81,7 +81,17 @@ else
     fi
 fi
 
-TITLE="Script"
+APP_NAME="Script"
+ACTIVITY=""
+GUI_TITLE="$APP_NAME"
+
+function updateGUITitle() {
+    if [ -n $ACTIVITY ]; then
+        GUI_TITLE="$ACTIVITY - $APP_NAME"
+    else
+        GUI_TITLE="$APP_NAME"
+    fi
+}
 
 function relaunchIfNotVisible() {
 	parentScript=$(basename `readlink -f ${BASH_SOURCE[0]}`)
@@ -93,31 +103,33 @@ function relaunchIfNotVisible() {
 }
 
 function messagebox() {
+    updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
-		whiptail --backtitle "$TITLE" --msgbox "$1" 20 80
+		whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" 20 80
 	elif [ "$INTERFACE" == "dialog" ]; then
-		dialog --backtitle "$TITLE" --msgbox "$1" 20 80
+		dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" 20 80
 	elif [ "$INTERFACE" == "zenity" ]; then
-		zenity --title "$TITLE" --info --text "$1"
+		zenity --title "$GUI_TITLE" --info --text "$1"
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		kdialog --title "$TITLE" --msgbox "$1"
+		kdialog --title "$GUI_TITLE" --msgbox "$1"
 	else
 		echo "$1"
 	fi
 }
 
 function yesno() {
+    updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
-		whiptail --backtitle "$TITLE" --yesno "$1" 20 80
+		whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" 20 80
 		answer=$?
 	elif [ "$INTERFACE" == "dialog" ]; then
-		dialog --backtitle "$TITLE" --yesno "$1" 20 80
+		dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" 20 80
 		answer=$?
 	elif [ "$INTERFACE" == "zenity" ]; then
-		zenity --title "$TITLE" --question --text "$1"
+		zenity --title "$GUI_TITLE" --question --text "$1"
 		answer=$?
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		kdialog --title "$TITLE" --yesno "$1"
+		kdialog --title "$GUI_TITLE" --yesno "$1"
 		answer=$?
 	else
 		echo "$1 (y/n)"
@@ -133,6 +145,7 @@ function yesno() {
 }
 
 function displayFile() {
+    updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		echo "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
@@ -147,6 +160,7 @@ function displayFile() {
 }
 
 function inputBox() {
+    updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
@@ -163,6 +177,7 @@ function inputBox() {
 }
 
 function passwordBox() {
+    updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
@@ -179,6 +194,7 @@ function passwordBox() {
 }
 
 function checklist() {
+    updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
@@ -195,6 +211,7 @@ function checklist() {
 }
 
 function radioList() {
+    updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
@@ -211,6 +228,7 @@ function radioList() {
 }
 
 function progressBar() {
+    updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
