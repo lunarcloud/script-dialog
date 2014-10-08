@@ -316,7 +316,10 @@ function datepicker() {
     elif [ "$INTERFACE" == "kdialog" ]; then
         messagebox "not implemented" #TODO
     else
-        read -p "$1: " Y M D h m s <<< ${date//[-:]/ }
+	read -p "Date (YYYY/MM/DD): " INPUT_DATE
+	Y=`echo $INPUT_DATE | cut -d'/' -f1`
+	M=`echo $INPUT_DATE | cut -d'/' -f2`
+	D=`echo $INPUT_DATE | cut -d'/' -f3`
     fi
 }
 
