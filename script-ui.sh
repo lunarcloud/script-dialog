@@ -50,15 +50,17 @@ else
 	fi
 fi
 
+TITLE="Script"
+
 function messagebox() {
 	if [ "$INTERFACE" == "whiptail" ]; then
-		whiptail --msgbox "$1" 20 80
+		whiptail --backtitle "$TITLE" --msgbox "$1" 20 80
 	elif [ "$INTERFACE" == "dialog" ]; then
-		dialog --msgbox "$1" 20 80
+		dialog --backtitle "$TITLE" --msgbox "$1" 20 80
 	elif [ "$INTERFACE" == "zenity" ]; then
-		zenity --info --text "$1"
+		zenity --title "$TITLE" --info --text "$1"
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		kdialog --msgbox "$1"
+		kdialog --title "$TITLE" --msgbox "$1"
 	else
 		echo "$1"
 	fi
@@ -66,16 +68,16 @@ function messagebox() {
 
 function yesno() {
 	if [ "$INTERFACE" == "whiptail" ]; then
-		whiptail --yesno "$1" 20 80
+		whiptail --backtitle "$TITLE" --yesno "$1" 20 80
 		answer=$?
 	elif [ "$INTERFACE" == "dialog" ]; then
-		dialog --yesno "$1" 20 80
+		dialog --backtitle "$TITLE" --yesno "$1" 20 80
 		answer=$?
 	elif [ "$INTERFACE" == "zenity" ]; then
-		zenity --question --text "$1"
+		zenity --title "$TITLE" --question --text "$1"
 		answer=$?
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		kdialog --yesno "$1"
+		kdialog --title "$TITLE" --yesno "$1"
 		answer=$?
 	else
 		echo "$1 (y/n)"
