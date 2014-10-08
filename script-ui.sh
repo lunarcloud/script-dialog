@@ -93,7 +93,7 @@ elif [ `which sudo` > /dev/null ]; then
 fi
 
 APP_NAME="Script"
-ACTIVITY=""
+ACTIVITYEAR=""
 GUI_TITLE="$APP_NAME"
 
 function superuser() {
@@ -191,9 +191,9 @@ function userandpassword() {
         inputbox "$1"
 		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" 10 40
 	elif [ "$INTERFACE" == "zenity" ]; then
-        ENTRY=`zenity --title="$GUI_TITLE" --password --username`
+        ENTRYEAR=`zenity --title="$GUI_TITLE" --password --username`
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
-        PASSWORD=`echo $ENTRY | cut -d'|' -f2`
+        PASSWORDAY=`echo $ENTRY | cut -d'|' -f2`
 	elif [ "$INTERFACE" == "kdialog" ]; then
         inputbox "$1"
 		password=`kdialog --title="$GUI_TITLE" --password "$2"`
@@ -264,8 +264,8 @@ function radiolist() {
                 shift
             done
             read CHOICE
-        done
-	fi
+        fi
+    fi
 }
 
 function progressbar() {
@@ -307,54 +307,63 @@ function filepicker() {
 
 function datepicker() {
     updateGUITitle
+    DAY="0"
+    MONTH="0"
+    YEAR="0"
+
     if [ "$INTERFACE" == "whiptail" ]; then
-        messagebox "not implemented" #TODO
+        INPUT_DATE=$(inputbox "Input Date (DD/MM/YYYY)" " ")
+        DAY=`echo $INPUT_DATE | cut -d'/' -f1`
+        MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
+        YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "dialog" ]; then
         INPUT_DATE=$(dialog --stdout --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --calendar "Choose Date" 0 40)
-	D=`echo $INPUT_DATE | cut -d'/' -f1`
-	M=`echo $INPUT_DATE | cut -d'/' -f2`
-	Y=`echo $INPUT_DATE | cut -d'/' -f3`
+        DAY=`echo $INPUT_DATE | cut -d'/' -f1`
+        MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
+        YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "zenity" ]; then
         INPUT_DATE=$(zenity --calendar "Select Date")
-	D=`echo $INPUT_DATE | cut -d'/' -f1`
-	M=`echo $INPUT_DATE | cut -d'/' -f2`
-	Y=`echo $INPUT_DATE | cut -d'/' -f3`
+        MONTH=`echo $INPUT_DATE | cut -d'/' -f1`
+        DAY=`echo $INPUT_DATE | cut -d'/' -f2`
+        YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "kdialog" ]; then
         INPUT_DATE=$(kdialog --calendar "Select Date")
-        TEXT_M=`echo $INPUT | cut -d' ' -f2`
-	if [ "$TEXT_M" == "Jan" ]; then
-	    M=1
-	elif [ "$TEXT_M" == "Feb" ]; then
-	    M=2
-	elif [ "$TEXT_M" == "Mar" ]; then
-	    M=3
-	elif [ "$TEXT_M" == "Apr" ]; then
-	    M=4
-	elif [ "$TEXT_M" == "May" ]; then
-	    M=5
-	elif [ "$TEXT_M" == "Jun" ]; then
-	    M=6
-	elif [ "$TEXT_M" == "Jul" ]; then
-	    M=7
-	elif [ "$TEXT_M" == "Aug" ]; then
-	    M=8
-	elif [ "$TEXT_M" == "Sep" ]; then
-	    M=9
-	elif [ "$TEXT_M" == "Oct" ]; then
-	    M=10
-	elif [ "$TEXT_M" == "Nov" ]; then
-	    M=11
-	elif [ "$TEXT_M" == "Dec" ]; then
-	    M=12
-	fi
-	
-	D=`echo $INPUT | cut -d' ' -f3`
-	Y=`echo $INPUT | cut -d' ' -f4`
+        TEXT_MONTH=`echo $INPUT | cut -d' ' -f2`
+        if [ "$TEXT_MONTH" == "Jan" ]; then
+            MONTH=1
+        elif [ "$TEXT_MONTH" == "Feb" ]; then
+            MONTH=2
+        elif [ "$TEXT_MONTH" == "Mar" ]; then
+            MONTH=3
+        elif [ "$TEXT_MONTH" == "Apr" ]; then
+            MONTH=4
+        elif [ "$TEXT_MONTH" == "May" ]; then
+            MONTH=5
+        elif [ "$TEXT_MONTH" == "Jun" ]; then
+            MONTH=6
+        elif [ "$TEXT_MONTH" == "Jul" ]; then
+            MONTH=7
+        elif [ "$TEXT_MONTH" == "Aug" ]; then
+            MONTH=8
+        elif [ "$TEXT_MONTH" == "Sep" ]; then
+            MONTH=9
+        elif [ "$TEXT_MONTH" == "Oct" ]; then
+            MONTH=10
+        elif [ "$TEXT_MONTH" == "Nov" ]; then
+            MONTH=11
+        else #elif [ "$TEXT_MONTH" == "Dec" ]; then
+            MONTH=12
+        fi
+
+        DAY=`echo $INPUT | cut -d' ' -f3`
+        YEAR=`echo $INPUT | cut -d' ' -f4`
     else
-	read -p "Date (DD/MM/YYY): " INPUT_DATE
-	D=`echo $INPUT_DATE | cut -d'/' -f1`
-	M=`echo $INPUT_DATE | cut -d'/' -f2`
-	Y=`echo $INPUT_DATE | cut -d'/' -f3`
+        read -p "Date (DD/MM/YYYY): " INPUT_DATE
+        DAY=`echo $INPUT_DATE | cut -d'/' -f1`
+        MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
+        YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
     fi
+
+    echo "$DAY/$MONTH/$YEAR"
 }
 
