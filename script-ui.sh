@@ -59,19 +59,33 @@ function messagebox() {
 		zenity --info --text "$1"
 	elif [ "$INTERFACE" == "kdialog" ]; then
 		kdialog --msgbox "$1"
+	else
+		echo "$1"
 	fi
 }
 
 function yesno() {
 	if [ "$INTERFACE" == "whiptail" ]; then
 		whiptail --yesno "$1" 20 80
+		answer=$?
 	elif [ "$INTERFACE" == "dialog" ]; then
 		dialog --yesno "$1" 20 80
+		answer=$?
 	elif [ "$INTERFACE" == "zenity" ]; then
 		zenity --question --text "$1"
+		answer=$?
 	elif [ "$INTERFACE" == "kdialog" ]; then
 		kdialog --yesno "$1"
+		answer=$?
+	else
+		echo "$1 (y/n)"
+		read answer
+		if [ "$answer" == "y" ]; then
+			answer=0
+		else
+			answer=1
+		fi
 	fi
 
-	return $?
+	return $answer
 }
