@@ -82,11 +82,11 @@ else
 fi
 
 # which sudo to use
-if [ `which kdesudo` > /dev/null ] && [ $INTERFACE == "kdialog" ]; then
+if [ "`which kdesudo`" > /dev/null ] && [ "$INTERFACE" == "kdialog" ]; then
     SUDO="kdesudo"
-elif [ `which gdsudo` > /dev/null ] && [ $INTERFACE == "zenity" ]; then
+elif [ `which gksudo` > /dev/null ] && [ "$INTERFACE" == "zenity" ]; then
     SUDO="gksudo"
-elif [ `which gdsu` > /dev/null ] && [ $INTERFACE == "zenity" ]; then
+elif [ `which gksu` > /dev/null ] && [ "$INTERFACE" == "zenity" ]; then
     SUDO="gksu"
 elif [ `which sudo` > /dev/null ]; then
     SUDO="sudo"
@@ -97,7 +97,12 @@ ACTIVITY=""
 GUI_TITLE="$APP_NAME"
 
 function superuser() {
-	$SUDO $1
+    ARGS=""
+    while (( $# )); do
+        ARGS="$ARGS $1"
+        shift
+    done
+	$SUDO $ARGS
 }
 
 function updateGUITitle() {
