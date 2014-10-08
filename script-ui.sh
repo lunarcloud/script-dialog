@@ -131,3 +131,95 @@ function yesno() {
 
 	return $answer
 }
+
+function displayFile() {
+	if [ "$INTERFACE" == "whiptail" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "dialog" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "zenity" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "kdialog" ]; then
+		#TODO
+	else
+		#TODO
+	fi
+}
+
+function inputBox() {
+	if [ "$INTERFACE" == "whiptail" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "dialog" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "zenity" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "kdialog" ]; then
+		#TODO
+	else
+		#TODO
+	fi
+
+	return "TODO"
+}
+
+function passwordBox() {
+	if [ "$INTERFACE" == "whiptail" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "dialog" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "zenity" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "kdialog" ]; then
+		#TODO
+	else
+		#TODO
+	fi
+
+	return "TODO"
+}
+
+function checklist() {
+	if [ "$INTERFACE" == "whiptail" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "dialog" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "zenity" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "kdialog" ]; then
+		#TODO
+	else
+		#TODO
+	fi
+
+	return "TODO"
+}
+
+function radioList() {
+	if [ "$INTERFACE" == "whiptail" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "dialog" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "zenity" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "kdialog" ]; then
+		#TODO
+	else
+		#TODO
+	fi
+
+	return "TODO"
+}
+
+function progressBar() {
+	if [ "$INTERFACE" == "whiptail" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "dialog" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "zenity" ]; then
+		#TODO
+	elif [ "$INTERFACE" == "kdialog" ]; then
+		#TODO
+	else
+		#TODO
+	fi
+}
