@@ -159,24 +159,34 @@ function displayFile() {
 	fi
 }
 
-function inputBox() {
-    updateGUITitle
-	if [ "$INTERFACE" == "whiptail" ]; then
-		messagebox "not implemented" #TODO
-	elif [ "$INTERFACE" == "dialog" ]; then
-		messagebox "not implemented" #TODO
-	elif [ "$INTERFACE" == "zenity" ]; then
-		messagebox "not implemented" #TODO
-	elif [ "$INTERFACE" == "kdialog" ]; then
-		messagebox "not implemented" #TODO
-	else
-		messagebox "not implemented" #TODO
-	fi
-
-	return "TODO"
+function echoerr() {
+    echo "$@" 1>&2;
 }
 
-function passwordBox() {
+function inputbox() {
+    updateGUITitle
+	if [ "$INTERFACE" == "whiptail" ]; then
+        TMP=$(mktemp)
+        whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "$1" 10 40 2>$TMP
+        INPUT=$(cat "$TMP")
+        rm "$TMP"
+	elif [ "$INTERFACE" == "dialog" ]; then
+        TMP=$(mktemp)
+        dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "$1" 10 40 2>$TMP
+        INPUT=$(cat "$TMP")
+        rm "$TMP"
+	elif [ "$INTERFACE" == "zenity" ]; then
+		INPUT="`zenity --entry --title="$GUI_TITLE" --text="$1" --entry-text "$2"`"
+	elif [ "$INTERFACE" == "kdialog" ]; then
+		INPUT="`kdialog --title "$GUI_TITLE" --inputbox "$1" "$2"`"
+	else
+		read -p "$1: " INPUT
+	fi
+
+	echoerr "$INPUT"
+}
+
+function passwordbox() {
     updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		messagebox "not implemented" #TODO
@@ -210,7 +220,7 @@ function checklist() {
 	return "TODO"
 }
 
-function radioList() {
+function radiolist() {
     updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		messagebox "not implemented" #TODO
@@ -227,7 +237,7 @@ function radioList() {
 	return "TODO"
 }
 
-function progressBar() {
+function progressbar() {
     updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
 		messagebox "not implemented" #TODO

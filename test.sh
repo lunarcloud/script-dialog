@@ -17,3 +17,11 @@ if [ $ANSWER -eq 0 ]; then
 else
     messagebox "Sorry to hear that."
 fi
+
+ACTIVITY="Name"
+TMP=$(mktemp)
+inputbox "What's your name?" " " 2>"$TMP"
+ANSWER=$(cat "$TMP")
+rm "$TMP"
+
+messagebox "Nice to meet you, $ANSWER"
