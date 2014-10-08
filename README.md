@@ -12,3 +12,13 @@ Simply add the following at the top of your script files and have script-ui.sh i
 
     source $(dirname $(readlink -f $0))/script-ui.sh #multi-ui scripting
     TITLE="Your Title goes here"
+
+TODO
+------
+
+  * File Display
+  * Input Box
+  * Password Box
+  * Checklist
+  * Radio List
+  * Progress Bar
