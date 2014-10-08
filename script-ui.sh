@@ -49,25 +49,40 @@ fi
 if [ "$desktop" == "kde" ]; then
 	if  [ $hasKDialog == true ] && [ $GUI == true ] ; then
 		INTERFACE="kdialog"
+		GUI=true
 	elif  [ $hasWhiptail == true ] ; then
 		INTERFACE="whiptail"
+		GUI=false
 	elif  [ $hasDialog == true ] ; then
 		INTERFACE="dialog"
+		GUI=false
 	fi
 elif [ "$INTERFACE" == "" ]; then
 	if  [ $hasWhiptail == true ] ; then
 		INTERFACE="whiptail"
+		GUI=false
 	elif  [ $hasDialog == true ] ; then
 		INTERFACE="dialog"
+		GUI=false
 	fi
 else
 	if [ $hasZenity == true ] && [ $GUI == true ] ; then
 		INTERFACE="zenity"
+		GUI=true
 	elif  [ $hasWhiptail == true ] ; then
 		INTERFACE="whiptail"
+		GUI=false
 	elif  [ $hasDialog == true ] ; then
 		INTERFACE="dialog"
+		GUI=false
 	fi
+fi
+
+parentScript=$(basename `readlink -f ${BASH_SOURCE[0]}`)
+
+if [ $GUI == false ] && [ $terminal == false ]; then
+	x-terminal-emulator --hold -e "./$parentScript"
+	exit $?;
 fi
 
 TITLE="Script"
@@ -111,3 +126,5 @@ function yesno() {
 
 	return $answer
 }
+
+messagebox "$parentScript"
