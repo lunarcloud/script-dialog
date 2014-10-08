@@ -10,7 +10,12 @@ To Use
 -------
 Simply add the following at the top of your script files and have script-ui.sh in the same directory
 
-    source $(dirname $(readlink -f $0))/script-ui.sh #multi-ui scripting
+    source $(dirname $(readlink -f $0))/script-ui.sh
+    APP_NAME="Your Title goes here"
+    
+Or if you've run install.sh
+
+    source /usr/local/bin/script-ui
     APP_NAME="Your Title goes here"
 
 Then use dialogs
