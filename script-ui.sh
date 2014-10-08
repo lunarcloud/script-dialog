@@ -120,9 +120,9 @@ function relaunchIfNotVisible() {
 function messagebox() {
     updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
-		whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" 20 80
+		whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" 20 80
 	elif [ "$INTERFACE" == "dialog" ]; then
-		dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" 20 80
+		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" 20 80
 	elif [ "$INTERFACE" == "zenity" ]; then
 		zenity --title "$GUI_TITLE" --info --text "$1"
 	elif [ "$INTERFACE" == "kdialog" ]; then
@@ -135,10 +135,10 @@ function messagebox() {
 function yesno() {
     updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
-		whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" 20 80
+		whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" 20 80
 		answer=$?
 	elif [ "$INTERFACE" == "dialog" ]; then
-		dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" 20 80
+		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" 20 80
 		answer=$?
 	elif [ "$INTERFACE" == "zenity" ]; then
 		zenity --title "$GUI_TITLE" --question --text "$1"
@@ -162,9 +162,9 @@ function yesno() {
 function inputbox() {
     updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
-        INPUT=$(whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" 10 40  3>&1 1>&2 2>&3)
+        INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" 10 40  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-        INPUT=$(dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" 10 40  3>&1 1>&2 2>&3)
+        INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" 10 40  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "zenity" ]; then
 		INPUT="`zenity --entry --title="$GUI_TITLE" --text="$1" --entry-text "$2"`"
 	elif [ "$INTERFACE" == "kdialog" ]; then
