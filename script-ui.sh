@@ -129,5 +129,3 @@ function yesno() {
 
 	return $answer
 }
-
-messagebox "$parentScript"
