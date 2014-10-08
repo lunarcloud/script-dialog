@@ -191,12 +191,12 @@ function userandpassword() {
         inputbox "$1"
 		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" 10 40
 	elif [ "$INTERFACE" == "zenity" ]; then
-        ENTRY=`zenity --password --username`
+        ENTRY=`zenity --title="$GUI_TITLE" --password --username`
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
         PASSWORD=`echo $ENTRY | cut -d'|' -f2`
 	elif [ "$INTERFACE" == "kdialog" ]; then
         inputbox "$1"
-		password=`kdialog --password "$2"`
+		password=`kdialog --title="$GUI_TITLE" --password "$2"`
 	else
 		read -p "username: " USERNAME
         read  -sp "password: " PASSWORD
@@ -206,13 +206,13 @@ function userandpassword() {
 function displayFile() {
     updateGUITitle
     if [ "$INTERFACE" == "whiptail" ]; then
-        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --scrolltext --textbox "$1" 12 80
+        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --scrolltext --textbox "$1" 12 80
     elif [ "$INTERFACE" == "dialog" ]; then
-        dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --scrolltext --textbox "$1" 12 80
+        dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --scrolltext --textbox "$1" 12 80
     elif [ "$INTERFACE" == "zenity" ]; then
-        zenity --text-info --filename="$1"
+        zenity --title="$GUI_TITLE" --text-info --filename="$1"
     elif [ "$INTERFACE" == "kdialog" ]; then
-        kdialog --textbox "$1" 512 256
+        kdialog --title="$GUI_TITLE" --textbox "$1" 512 256
     else
         more $FILE
     fi
@@ -295,7 +295,7 @@ function filepicker() {
         messagebox "not implemented" #TODO
     elif [ "$INTERFACE" == "dialog" ]; then
         #needs work to support driving down into files
-        FILE=$(dialog --stdout --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --fselect $HOME/ 14 48)
+        FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect $HOME/ 14 48)
     elif [ "$INTERFACE" == "zenity" ]; then
         messagebox "not implemented" #TODO
     elif [ "$INTERFACE" == "kdialog" ]; then
