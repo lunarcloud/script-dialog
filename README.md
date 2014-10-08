@@ -11,4 +11,4 @@ To Use
 Simply add the following at the top of your script files and have script-ui.sh in the same directory
 
     source $(dirname $(readlink -f $0))/script-ui.sh #multi-ui scripting
-    TITLE="Test Script"
+    TITLE="Your Title goes here"
