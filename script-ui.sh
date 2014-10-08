@@ -134,29 +134,29 @@ function yesno() {
 
 function displayFile() {
 	if [ "$INTERFACE" == "whiptail" ]; then
-		#TODO
+		echo "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
-		#TODO
+		echo "not implemented" #TODO
 	elif [ "$INTERFACE" == "zenity" ]; then
-		#TODO
+		echo "not implemented" #TODO
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		#TODO
+		echo "not implemented" #TODO
 	else
-		#TODO
+		echo "not implemented" #TODO
 	fi
 }
 
 function inputBox() {
 	if [ "$INTERFACE" == "whiptail" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "zenity" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	else
-		#TODO
+		messagebox "not implemented" #TODO
 	fi
 
 	return "TODO"
@@ -164,15 +164,15 @@ function inputBox() {
 
 function passwordBox() {
 	if [ "$INTERFACE" == "whiptail" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "zenity" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	else
-		#TODO
+		messagebox "not implemented" #TODO
 	fi
 
 	return "TODO"
@@ -180,15 +180,15 @@ function passwordBox() {
 
 function checklist() {
 	if [ "$INTERFACE" == "whiptail" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "zenity" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	else
-		#TODO
+		messagebox "not implemented" #TODO
 	fi
 
 	return "TODO"
@@ -196,15 +196,15 @@ function checklist() {
 
 function radioList() {
 	if [ "$INTERFACE" == "whiptail" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "zenity" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	else
-		#TODO
+		messagebox "not implemented" #TODO
 	fi
 
 	return "TODO"
@@ -212,14 +212,14 @@ function radioList() {
 
 function progressBar() {
 	if [ "$INTERFACE" == "whiptail" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "dialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "zenity" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		#TODO
+		messagebox "not implemented" #TODO
 	else
-		#TODO
+		messagebox "not implemented" #TODO
 	fi
 }
