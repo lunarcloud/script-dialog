@@ -60,25 +60,25 @@ if [ "$desktop" == "kde" ]; then
 		INTERFACE="dialog"
 		GUI=false
 	fi
-elif [ "$INTERFACE" == "" ]; then
-	if  [ $hasWhiptail == true ] ; then
-		INTERFACE="whiptail"
-		GUI=false
-	elif  [ $hasDialog == true ] ; then
-		INTERFACE="dialog"
-		GUI=false
-	fi
+elif [ -n $INTERFACE ]; then
+    if [ $hasZenity == true ] && [ $GUI == true ] ; then
+        INTERFACE="zenity"
+        GUI=true
+    elif  [ $hasWhiptail == true ] ; then
+        INTERFACE="whiptail"
+        GUI=false
+    elif  [ $hasDialog == true ] ; then
+        INTERFACE="dialog"
+        GUI=false
+    fi
 else
-	if [ $hasZenity == true ] && [ $GUI == true ] ; then
-		INTERFACE="zenity"
-		GUI=true
-	elif  [ $hasWhiptail == true ] ; then
-		INTERFACE="whiptail"
-		GUI=false
-	elif  [ $hasDialog == true ] ; then
-		INTERFACE="dialog"
-		GUI=false
-	fi
+    if  [ $hasWhiptail == true ] ; then
+        INTERFACE="whiptail"
+        GUI=false
+    elif  [ $hasDialog == true ] ; then
+        INTERFACE="dialog"
+        GUI=false
+    fi
 fi
 
 TITLE="Script"
