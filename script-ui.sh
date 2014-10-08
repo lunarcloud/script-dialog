@@ -315,9 +315,41 @@ function datepicker() {
 	M=`echo $INPUT_DATE | cut -d'/' -f2`
 	Y=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "zenity" ]; then
-        messagebox "not implemented" #TODO
+        INPUT_DATE=$(zenity --calendar "Select Date")
+	D=`echo $INPUT_DATE | cut -d'/' -f1`
+	M=`echo $INPUT_DATE | cut -d'/' -f2`
+	Y=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "kdialog" ]; then
-        messagebox "not implemented" #TODO
+        INPUT_DATE=$(kdialog --calendar "Select Date")
+        TEXT_M=`echo $INPUT | cut -d' ' -f2`
+	if [ "$TEXT_M" == "Jan" ]; then
+	    M=1
+	elif [ "$TEXT_M" == "Feb" ]; then
+	    M=2
+	elif [ "$TEXT_M" == "Mar" ]; then
+	    M=3
+	elif [ "$TEXT_M" == "Apr" ]; then
+	    M=4
+	elif [ "$TEXT_M" == "May" ]; then
+	    M=5
+	elif [ "$TEXT_M" == "Jun" ]; then
+	    M=6
+	elif [ "$TEXT_M" == "Jul" ]; then
+	    M=7
+	elif [ "$TEXT_M" == "Aug" ]; then
+	    M=8
+	elif [ "$TEXT_M" == "Sep" ]; then
+	    M=9
+	elif [ "$TEXT_M" == "Oct" ]; then
+	    M=10
+	elif [ "$TEXT_M" == "Nov" ]; then
+	    M=11
+	elif [ "$TEXT_M" == "Dec" ]; then
+	    M=12
+	fi
+	
+	D=`echo $INPUT | cut -d' ' -f3`
+	Y=`echo $INPUT | cut -d' ' -f4`
     else
 	read -p "Date (DD/MM/YYY): " INPUT_DATE
 	D=`echo $INPUT_DATE | cut -d'/' -f1`
