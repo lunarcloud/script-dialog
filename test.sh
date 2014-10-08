@@ -22,3 +22,9 @@ ACTIVITY="Name"
 ANSWER=$(inputbox "What's your name?" " ")
 
 messagebox "Nice to meet you, $ANSWER"
+
+ACTIVITY="APT Repositories"
+displayFile /etc/apt/sources.list
+
+ACTIVITY="Pretend Login"
+userandpassword Username Password

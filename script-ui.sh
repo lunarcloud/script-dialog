@@ -106,7 +106,7 @@ function superuser() {
 }
 
 function updateGUITitle() {
-    if [ -n $ACTIVITY ]; then
+    if [ -n "$ACTIVITY" ]; then
         GUI_TITLE="$ACTIVITY - $APP_NAME"
     else
         GUI_TITLE="$APP_NAME"
@@ -182,35 +182,39 @@ function inputbox() {
 	echo "$INPUT"
 }
 
-function passwordbox() {
+function userandpassword() {
     updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
-		messagebox "not implemented" #TODO
+        inputbox "$1"
+        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" 10 40
 	elif [ "$INTERFACE" == "dialog" ]; then
-		messagebox "not implemented" #TODO
+        inputbox "$1"
+		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" 10 40
 	elif [ "$INTERFACE" == "zenity" ]; then
-		messagebox "not implemented" #TODO
+        ENTRY=`zenity --password --username`
+        USERNAME=`echo $ENTRY | cut -d'|' -f1`
+        PASSWORD=`echo $ENTRY | cut -d'|' -f2`
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		messagebox "not implemented" #TODO
+        inputbox "$1"
+		password=`kdialog --password "$2"`
 	else
-		messagebox "not implemented" #TODO
+		read -p "username: " USERNAME
+        read  -sp "password: " PASSWORD
 	fi
-
-	return "TODO"
 }
 
 function displayFile() {
     updateGUITitle
     if [ "$INTERFACE" == "whiptail" ]; then
-        echo "not implemented" #TODO
+        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --scrolltext --textbox "$1" 12 80
     elif [ "$INTERFACE" == "dialog" ]; then
-        echo "not implemented" #TODO
+        dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --scrolltext --textbox "$1" 12 80
     elif [ "$INTERFACE" == "zenity" ]; then
-        echo "not implemented" #TODO
+        zenity --text-info --filename="$1"
     elif [ "$INTERFACE" == "kdialog" ]; then
-        echo "not implemented" #TODO
+        kdialog --textbox "$1" 512 256
     else
-        echo "not implemented" #TODO
+        more $FILE
     fi
 }
 
@@ -225,10 +229,15 @@ function checklist() {
 	elif [ "$INTERFACE" == "kdialog" ]; then
 		messagebox "not implemented" #TODO
 	else
-		messagebox "not implemented" #TODO
+		echo "$ACTIVITY:"
+		while test ${#} -gt 0
+        do
+            yesno $2
+            shift
+            shift
+            shift
+        done
 	fi
-
-	return "TODO"
 }
 
 function radiolist() {
@@ -242,23 +251,72 @@ function radiolist() {
 	elif [ "$INTERFACE" == "kdialog" ]; then
 		messagebox "not implemented" #TODO
 	else
-		messagebox "not implemented" #TODO
+        OPTION_COUNT=${#[@]}
+        ITERATOR=0
+        CHOICE=0
+		if [ $CHOICE -le 0 ] || [ $CHOICE -gt $OPTION_COUNT ] ; then
+            echo "$ACTIVITY: "
+            while test ${#} -gt 0; do
+                ((ITERATOR++))
+                echo "$ITERATOR $2"
+                shift
+                shift
+                shift
+            done
+            read CHOICE
+        done
 	fi
-
-	return "TODO"
 }
 
 function progressbar() {
     updateGUITitle
-	if [ "$INTERFACE" == "whiptail" ]; then
-		messagebox "not implemented" #TODO
-	elif [ "$INTERFACE" == "dialog" ]; then
-		messagebox "not implemented" #TODO
-	elif [ "$INTERFACE" == "zenity" ]; then
-		messagebox "not implemented" #TODO
-	elif [ "$INTERFACE" == "kdialog" ]; then
-		messagebox "not implemented" #TODO
-	else
-		messagebox "not implemented" #TODO
-	fi
+    if [ "$INTERFACE" == "whiptail" ]; then
+        messagebox "not implemented" #TODO
+    elif [ "$INTERFACE" == "dialog" ]; then
+        echo percentage | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "$1" 10 70 0
+        sleep 1
+        echo "10" | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "$1" 10 70 0
+        sleep 1
+        echo "50" | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "$1" 10 70 0
+        sleep 1
+        echo "100" | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "$1" 10 70 0
+    elif [ "$INTERFACE" == "zenity" ]; then
+        messagebox "not implemented" #TODO
+    elif [ "$INTERFACE" == "kdialog" ]; then
+        messagebox "not implemented" #TODO
+    else
+        messagebox "not implemented" #TODO
+    fi
 }
+
+function filepicker() {
+    updateGUITitle
+    if [ "$INTERFACE" == "whiptail" ]; then
+        messagebox "not implemented" #TODO
+    elif [ "$INTERFACE" == "dialog" ]; then
+        #needs work to support driving down into files
+        FILE=$(dialog --stdout --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --fselect $HOME/ 14 48)
+    elif [ "$INTERFACE" == "zenity" ]; then
+        messagebox "not implemented" #TODO
+    elif [ "$INTERFACE" == "kdialog" ]; then
+        messagebox "not implemented" #TODO
+    else
+        read -e -p "$1: " FILE
+    fi
+}
+
+function datepicker() {
+    updateGUITitle
+    if [ "$INTERFACE" == "whiptail" ]; then
+        messagebox "not implemented" #TODO
+    elif [ "$INTERFACE" == "dialog" ]; then
+        dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --calendar "Choose Date" 0 40
+    elif [ "$INTERFACE" == "zenity" ]; then
+        messagebox "not implemented" #TODO
+    elif [ "$INTERFACE" == "kdialog" ]; then
+        messagebox "not implemented" #TODO
+    else
+        read -p "$1: " Y M D h m s <<< ${date//[-:]/ }
+    fi
+}
+
