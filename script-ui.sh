@@ -81,9 +81,24 @@ else
     fi
 fi
 
+# which sudo to use
+if [ `which kdesudo` > /dev/null ] && [ $INTERFACE == "kdialog" ]; then
+    SUDO="kdesudo"
+elif [ `which gdsudo` > /dev/null ] && [ $INTERFACE == "zenity" ]; then
+    SUDO="gksudo"
+elif [ `which gdsu` > /dev/null ] && [ $INTERFACE == "zenity" ]; then
+    SUDO="gksu"
+elif [ `which sudo` > /dev/null ]; then
+    SUDO="sudo"
+fi
+
 APP_NAME="Script"
 ACTIVITY=""
 GUI_TITLE="$APP_NAME"
+
+function superuser() {
+	$SUDO $1
+}
 
 function updateGUITitle() {
     if [ -n $ACTIVITY ]; then
