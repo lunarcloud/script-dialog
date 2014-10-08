@@ -81,14 +81,16 @@ else
 	fi
 fi
 
-parentScript=$(basename `readlink -f ${BASH_SOURCE[0]}`)
-
-if [ $GUI == false ] && [ $terminal == false ]; then
-	x-terminal-emulator --hold -e "./$parentScript"
-	exit $?;
-fi
-
 TITLE="Script"
+
+function relaunchIfNotVisible() {
+	parentScript=$(basename `readlink -f ${BASH_SOURCE[0]}`)
+
+	if [ $GUI == false ] && [ $terminal == false ]; then
+		x-terminal-emulator --hold -e "./$parentScript"
+		exit $?;
+	fi
+}
 
 function messagebox() {
 	if [ "$INTERFACE" == "whiptail" ]; then
