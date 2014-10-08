@@ -34,19 +34,39 @@ else
 	hasZenity=false
 fi
 
+if which whiptail > /dev/null; then
+	hasWhiptail=true
+else
+	hasWhiptail=false
+fi
+
+if which dialog > /dev/null; then
+	hasDialog=true
+else
+	hasDialog=false
+fi
+
 if [ "$desktop" == "kde" ]; then
 	if  [ $hasKDialog == true ] && [ $GUI == true ] ; then
 		INTERFACE="kdialog"
-	else
+	elif  [ $hasWhiptail == true ] ; then
 		INTERFACE="whiptail"
+	elif  [ $hasDialog == true ] ; then
+		INTERFACE="dialog"
 	fi
 elif [ "$INTERFACE" == "" ]; then
-	INTERFACE="whiptail"
+	if  [ $hasWhiptail == true ] ; then
+		INTERFACE="whiptail"
+	elif  [ $hasDialog == true ] ; then
+		INTERFACE="dialog"
+	fi
 else
 	if [ $hasZenity == true ] && [ $GUI == true ] ; then
 		INTERFACE="zenity"
-	else
+	elif  [ $hasWhiptail == true ] ; then
 		INTERFACE="whiptail"
+	elif  [ $hasDialog == true ] ; then
+		INTERFACE="dialog"
 	fi
 fi
 
