@@ -11,7 +11,12 @@ To Use
 Simply add the following at the top of your script files and have script-ui.sh in the same directory
 
     source $(dirname $(readlink -f $0))/script-ui.sh #multi-ui scripting
-    TITLE="Your Title goes here"
+    APP_NAME="Your Title goes here"
+
+Then use dialogs
+
+    ACTIVITY="Test Message"
+    messagebox "Hello World!"
 
 TODO
 ------
