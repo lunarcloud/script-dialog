@@ -19,9 +19,6 @@ else
 fi
 
 ACTIVITY="Name"
-TMP=$(mktemp)
-inputbox "What's your name?" " " 2>"$TMP"
-ANSWER=$(cat "$TMP")
-rm "$TMP"
+ANSWER=$(inputbox "What's your name?" " " 3>&1 1>&2 2>&3)
 
 messagebox "Nice to meet you, $ANSWER"

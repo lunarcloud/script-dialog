@@ -159,21 +159,6 @@ function yesno() {
 	return $answer
 }
 
-function displayFile() {
-    updateGUITitle
-	if [ "$INTERFACE" == "whiptail" ]; then
-		echo "not implemented" #TODO
-	elif [ "$INTERFACE" == "dialog" ]; then
-		echo "not implemented" #TODO
-	elif [ "$INTERFACE" == "zenity" ]; then
-		echo "not implemented" #TODO
-	elif [ "$INTERFACE" == "kdialog" ]; then
-		echo "not implemented" #TODO
-	else
-		echo "not implemented" #TODO
-	fi
-}
-
 function echoerr() {
     echo "$@" 1>&2;
 }
@@ -216,6 +201,21 @@ function passwordbox() {
 	fi
 
 	return "TODO"
+}
+
+function displayFile() {
+    updateGUITitle
+    if [ "$INTERFACE" == "whiptail" ]; then
+        echo "not implemented" #TODO
+    elif [ "$INTERFACE" == "dialog" ]; then
+        echo "not implemented" #TODO
+    elif [ "$INTERFACE" == "zenity" ]; then
+        echo "not implemented" #TODO
+    elif [ "$INTERFACE" == "kdialog" ]; then
+        echo "not implemented" #TODO
+    else
+        echo "not implemented" #TODO
+    fi
 }
 
 function checklist() {
