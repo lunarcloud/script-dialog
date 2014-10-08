@@ -310,16 +310,19 @@ function datepicker() {
     if [ "$INTERFACE" == "whiptail" ]; then
         messagebox "not implemented" #TODO
     elif [ "$INTERFACE" == "dialog" ]; then
-        dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --calendar "Choose Date" 0 40
+        INPUT_DATE=$(dialog --stdout --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --calendar "Choose Date" 0 40)
+	D=`echo $INPUT_DATE | cut -d'/' -f1`
+	M=`echo $INPUT_DATE | cut -d'/' -f2`
+	Y=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "zenity" ]; then
         messagebox "not implemented" #TODO
     elif [ "$INTERFACE" == "kdialog" ]; then
         messagebox "not implemented" #TODO
     else
-	read -p "Date (YYYY/MM/DD): " INPUT_DATE
-	Y=`echo $INPUT_DATE | cut -d'/' -f1`
+	read -p "Date (DD/MM/YYY): " INPUT_DATE
+	D=`echo $INPUT_DATE | cut -d'/' -f1`
 	M=`echo $INPUT_DATE | cut -d'/' -f2`
-	D=`echo $INPUT_DATE | cut -d'/' -f3`
+	Y=`echo $INPUT_DATE | cut -d'/' -f3`
     fi
 }
 
