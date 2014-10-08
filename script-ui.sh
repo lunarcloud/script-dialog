@@ -159,31 +159,28 @@ function yesno() {
 	return $answer
 }
 
-function echoerr() {
-    echo "$@" 1>&2;
-}
-
 function inputbox() {
     updateGUITitle
 	if [ "$INTERFACE" == "whiptail" ]; then
         TMP=$(mktemp)
-        whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "$1" 10 40 2>$TMP
+        whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" 10 40 2>$TMP
         INPUT=$(cat "$TMP")
         rm "$TMP"
 	elif [ "$INTERFACE" == "dialog" ]; then
         TMP=$(mktemp)
-        dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "$1" 10 40 2>$TMP
+        dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" 10 40 2>$TMP
         INPUT=$(cat "$TMP")
         rm "$TMP"
 	elif [ "$INTERFACE" == "zenity" ]; then
 		INPUT="`zenity --entry --title="$GUI_TITLE" --text="$1" --entry-text "$2"`"
 	elif [ "$INTERFACE" == "kdialog" ]; then
 		INPUT="`kdialog --title "$GUI_TITLE" --inputbox "$1" "$2"`"
+		echo "$INPUT" > log.txt
 	else
 		read -p "$1: " INPUT
 	fi
 
-	echoerr "$INPUT"
+	echo "$INPUT"
 }
 
 function passwordbox() {
