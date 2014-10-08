@@ -50,6 +50,9 @@ if [ "$desktop" == "kde" ]; then
 	if  [ $hasKDialog == true ] && [ $GUI == true ] ; then
 		INTERFACE="kdialog"
 		GUI=true
+	elif [ $hasZenity == true ] && [ $GUI == true ] ; then
+		INTERFACE="zenity"
+		GUI=true
 	elif  [ $hasWhiptail == true ] ; then
 		INTERFACE="whiptail"
 		GUI=false
