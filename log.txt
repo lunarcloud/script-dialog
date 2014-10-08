@@ -1,8 +1,0 @@
-GUI: true
-hasKDialog: false
-hasZenity: true
-hasWhiptail: true
-hasDialog: true
-desktop: unity
-other branch of logic
-interface: zenity
