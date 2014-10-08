@@ -17,7 +17,6 @@ TODO
 ------
 
   * File Display
-  * Input Box
   * Password Box
   * Checklist
   * Radio List
