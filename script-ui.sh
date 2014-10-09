@@ -253,7 +253,7 @@ function userandpassword() {
 	elif [ "$INTERFACE" == "dialog" ]; then
 #         USERNAME=$(inputbox "$1")
 # 		PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
-		ENTRY=$(dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "User name : " 1 1 "" 1 20 20 0 0 "Password :" 2 1 "" 2 20 20 0 1   3>&1 1>&2 2>&3)
+		ENTRY=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3)
 		ENTRY=${ENTRY//$'\n'/$'|'}
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
         PASSWORD=`echo $ENTRY | cut -d'|' -f2`
@@ -388,7 +388,7 @@ function datepicker() {
         MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
         YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "dialog" ]; then
-        INPUT_DATE=$(dialog --stdout --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --calendar "Choose Date" 0 40)
+        INPUT_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "Choose Date" 0 40)
         DAY=`echo $INPUT_DATE | cut -d'/' -f1`
         MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
         YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
