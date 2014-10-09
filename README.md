@@ -23,6 +23,16 @@ Then use dialogs
     ACTIVITY="Test Message"
     messagebox "Hello World!"
 
+Working
+------
+  * **messagebox** "text"
+  * **yesno** "text"
+  * ANSWER=$(**inputbox** "text" "default")
+  * **displayFile** /path/to/file
+  * ANSWER=$(**userandpassword** "Username" "Password"); USERNAME=`echo $ANSWER | cut -d'|' -f1`; PASSWORD=`echo $ANSWER | cut -d'|' -f2`
+  * ANSWER=$(**datepicker**)
+
+
 TODO
 ------
   * Checklist
