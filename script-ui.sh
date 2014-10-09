@@ -34,16 +34,16 @@ else
 	hasZenity=false
 fi
 
-if which whiptail > /dev/null; then
-	hasWhiptail=true
-else
-	hasWhiptail=false
-fi
-
 if which dialog > /dev/null; then
 	hasDialog=true
 else
 	hasDialog=false
+fi
+
+if which whiptail > /dev/null; then
+    hasWhiptail=true
+else
+    hasWhiptail=false
 fi
 
 if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxqt" ]  || [ "$desktop" == "maui" ] ; then
@@ -53,30 +53,30 @@ if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxq
 	elif [ $hasZenity == true ] && [ $GUI == true ] ; then
 		INTERFACE="zenity"
 		GUI=true
+    elif  [ $hasDialog == true ] ; then
+        INTERFACE="dialog"
+        GUI=false
 	elif  [ $hasWhiptail == true ] ; then
 		INTERFACE="whiptail"
-		GUI=false
-	elif  [ $hasDialog == true ] ; then
-		INTERFACE="dialog"
 		GUI=false
 	fi
 elif [ "$desktop" == "unity" ] || [ "$desktop" == "gnome" ]  || [ "$desktop" == "xfce" ]  || [ -n $INTERFACE ]; then
     if [ $hasZenity == true ] && [ $GUI == true ] ; then
         INTERFACE="zenity"
         GUI=true
+    elif  [ $hasDialog == true ] ; then
+        INTERFACE="dialog"
+        GUI=false
     elif  [ $hasWhiptail == true ] ; then
         INTERFACE="whiptail"
         GUI=false
-    elif  [ $hasDialog == true ] ; then
-        INTERFACE="dialog"
-        GUI=false
     fi
 else
-    if  [ $hasWhiptail == true ] ; then
-        INTERFACE="whiptail"
-        GUI=false
-    elif  [ $hasDialog == true ] ; then
+    if  [ $hasDialog == true ] ; then
         INTERFACE="dialog"
+        GUI=false
+    elif  [ $hasWhiptail == true ] ; then
+        INTERFACE="whiptail"
         GUI=false
     fi
 fi
