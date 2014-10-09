@@ -25,10 +25,6 @@ Then use dialogs
 
 TODO
 ------
-
-  * File Display
-  * Password Box
   * Checklist
   * Radio List
   * Progress Bar
-  * Calendar
