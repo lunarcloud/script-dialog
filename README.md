@@ -35,6 +35,8 @@ Working
 
 TODO
 ------
-  * Checklist
-  * Radio List
-  * Progress Bar
+  * Cancelling / quit states
+  * Dialogs
+      * Checklist
+      * Radio List
+      * Progress Bar
