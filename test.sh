@@ -27,7 +27,11 @@ ACTIVITY="APT Repositories"
 displayFile /etc/apt/sources.list
 
 ACTIVITY="Pretend Login"
-userandpassword Username Password
+ANSWER=$(userandpassword Username Password)
+USERNAME=`echo $ANSWER | cut -d'|' -f1`
+PASSWORD=`echo $ANSWER | cut -d'|' -f2`
+
+messagebox "So, that was: $USERNAME - $PASSWORD"
 
 ACTIVITY="Enter Birthday"
 ANSWER=$(datepicker)

@@ -251,22 +251,23 @@ function userandpassword() {
 	fi
 
 	if [ "$INTERFACE" == "whiptail" ]; then
-        inputbox "$1"
-        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH
+        USERNAME=$(inputbox "$1")
+        PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-        inputbox "$1"
-		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH
+        USERNAME=$(inputbox "$1")
+		PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "zenity" ]; then
-        ENTRYEAR=`zenity --title="$GUI_TITLE" --password --username`
+        ENTRY=`zenity --title="$GUI_TITLE" --password --username`
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
-        PASSWORDAY=`echo $ENTRY | cut -d'|' -f2`
+        PASSWORD=`echo $ENTRY | cut -d'|' -f2`
 	elif [ "$INTERFACE" == "kdialog" ]; then
-        inputbox "$1"
+        USERNAME=$(inputbox "$1")
 		password=`kdialog --title="$GUI_TITLE" --password "$2"`
 	else
 		read -p "username: " USERNAME
         read  -sp "password: " PASSWORD
 	fi
+	echo "$USERNAME|$PASSWORD"
 }
 
 function displayFile() {
