@@ -113,6 +113,49 @@ function updateGUITitle() {
     fi
 }
 
+MIN_HEIGHT=10
+MIN_WIDTH=40
+
+function updateDialogMaxSize() {
+	MAX_HEIGHT=$(( $(tput lines) / 2 ))
+	MAX_WIDTH=$(( $(tput cols) * 3 / 4 ))
+}
+
+RECMD_HEIGHT=10
+RECMD_WIDTH=40
+RECMD_SCROLL=false
+TEST_STRING=""
+
+function calculateTextDialogSize() {
+	updateDialogMaxSize
+	CHARS=${#TEST_STRING}
+	RECMD_SCROLL=false
+	ORIG_RECMD_HEIGHT=$(($CHARS  / $MIN_WIDTH))
+	ORIG_RECMD_WIDTH=$(($CHARS / $MIN_HEIGHT))
+	RECMD_HEIGHT=$(($CHARS  / $MIN_WIDTH))
+	RECMD_WIDTH=$(($CHARS / $MIN_HEIGHT))
+
+	if [ "$RECMD_HEIGHT" -gt "$MAX_HEIGHT" ] ; then
+		RECMD_HEIGHT=$MAX_HEIGHT
+		RECMD_SCROLL=true
+	fi
+	if [ "$RECMD_WIDTH" -gt "$MAX_WIDTH" ]; then
+		RECMD_WIDTH=$MAX_WIDTH
+		#RECMD_SCROLL=true
+	fi
+
+	if [ "$RECMD_HEIGHT" -lt "$MIN_HEIGHT" ] ; then
+		RECMD_HEIGHT=$MIN_HEIGHT
+		RECMD_SCROLL=false
+	fi
+	if [ "$RECMD_WIDTH" -lt "$MIN_WIDTH" ]; then
+		RECMD_WIDTH=$MIN_WIDTH
+		RECMD_SCROLL=false
+	fi
+
+	TEST_STRING="" #blank out for memory's sake
+}
+
 function relaunchIfNotVisible() {
 	parentScript=$(basename `readlink -f ${BASH_SOURCE[0]}`)
 
@@ -124,10 +167,16 @@ function relaunchIfNotVisible() {
 
 function messagebox() {
     updateGUITitle
+
+    if [ $GUI == false ] ; then
+		TEST_STRING="$1"
+		calculateTextDialogSize
+	fi
+
 	if [ "$INTERFACE" == "whiptail" ]; then
-		whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" 20 80
+		whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
 	elif [ "$INTERFACE" == "dialog" ]; then
-		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" 20 80
+		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
 	elif [ "$INTERFACE" == "zenity" ]; then
 		zenity --title "$GUI_TITLE" --info --text "$1"
 	elif [ "$INTERFACE" == "kdialog" ]; then
@@ -139,11 +188,17 @@ function messagebox() {
 
 function yesno() {
     updateGUITitle
+
+    if [ $GUI == false ] ; then
+		TEST_STRING="$1"
+		calculateTextDialogSize
+	fi
+
 	if [ "$INTERFACE" == "whiptail" ]; then
-		whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" 20 80
+		whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" $RECMD_HEIGHT $RECMD_WIDTH
 		answer=$?
 	elif [ "$INTERFACE" == "dialog" ]; then
-		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" 20 80
+		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" $RECMD_HEIGHT $RECMD_WIDTH
 		answer=$?
 	elif [ "$INTERFACE" == "zenity" ]; then
 		zenity --title "$GUI_TITLE" --question --text "$1"
@@ -166,15 +221,20 @@ function yesno() {
 
 function inputbox() {
     updateGUITitle
+
+    if [ $GUI == false ] ; then
+		TEST_STRING="$1"
+		calculateTextDialogSize
+	fi
+
 	if [ "$INTERFACE" == "whiptail" ]; then
-        INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" 10 40  3>&1 1>&2 2>&3)
+        INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" $RECMD_HEIGHT $RECMD_WIDTH  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-        INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" 10 40  3>&1 1>&2 2>&3)
+        INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" $RECMD_HEIGHT $RECMD_WIDTH  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "zenity" ]; then
 		INPUT="`zenity --entry --title="$GUI_TITLE" --text="$1" --entry-text "$2"`"
 	elif [ "$INTERFACE" == "kdialog" ]; then
 		INPUT="`kdialog --title "$GUI_TITLE" --inputbox "$1" "$2"`"
-		echo "$INPUT" > log.txt
 	else
 		read -p "$1: " INPUT
 	fi
@@ -184,12 +244,18 @@ function inputbox() {
 
 function userandpassword() {
     updateGUITitle
+
+    if [ $GUI == false ] ; then
+		TEST_STRING="$1"
+		calculateTextDialogSize
+	fi
+
 	if [ "$INTERFACE" == "whiptail" ]; then
         inputbox "$1"
-        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" 10 40
+        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH
 	elif [ "$INTERFACE" == "dialog" ]; then
         inputbox "$1"
-		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" 10 40
+		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH
 	elif [ "$INTERFACE" == "zenity" ]; then
         ENTRYEAR=`zenity --title="$GUI_TITLE" --password --username`
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
@@ -205,16 +271,22 @@ function userandpassword() {
 
 function displayFile() {
     updateGUITitle
+
+    if [ $GUI == false ] ; then
+		TEST_STRING="`cat $1`"
+		calculateTextDialogSize
+	fi
+
     if [ "$INTERFACE" == "whiptail" ]; then
-        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --scrolltext --textbox "$1" 12 80
+        whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
     elif [ "$INTERFACE" == "dialog" ]; then
-        dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --scrolltext --textbox "$1" 12 80
+        dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
     elif [ "$INTERFACE" == "zenity" ]; then
         zenity --title="$GUI_TITLE" --text-info --filename="$1"
     elif [ "$INTERFACE" == "kdialog" ]; then
         kdialog --title="$GUI_TITLE" --textbox "$1" 512 256
     else
-        more $FILE
+        more $1
     fi
 }
 
@@ -328,7 +400,7 @@ function datepicker() {
         YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "kdialog" ]; then
         INPUT_DATE=$(kdialog --calendar "Select Date")
-        TEXT_MONTH=`echo $INPUT | cut -d' ' -f2`
+        TEXT_MONTH=`echo $INPUT_DATE | cut -d' ' -f2`
         if [ "$TEXT_MONTH" == "Jan" ]; then
             MONTH=1
         elif [ "$TEXT_MONTH" == "Feb" ]; then
@@ -355,8 +427,8 @@ function datepicker() {
             MONTH=12
         fi
 
-        DAY=`echo $INPUT | cut -d' ' -f3`
-        YEAR=`echo $INPUT | cut -d' ' -f4`
+        DAY=`echo $INPUT_DATE | cut -d' ' -f3`
+        YEAR=`echo $INPUT_DATE | cut -d' ' -f4`
     else
         read -p "Date (DD/MM/YYYY): " INPUT_DATE
         DAY=`echo $INPUT_DATE | cut -d'/' -f1`
