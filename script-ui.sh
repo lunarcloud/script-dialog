@@ -117,8 +117,17 @@ MIN_HEIGHT=10
 MIN_WIDTH=40
 
 function updateDialogMaxSize() {
-	MAX_HEIGHT=$(( $(tput lines) / 2 ))
-	MAX_WIDTH=$(( $(tput cols) * 3 / 4 ))
+	if [ $GUI == true ] ; then
+        MAX_HEIGHT=$( xdpyinfo | grep "dimensions" | awk '{ print $2 }' | cut -d'x' -f2)
+        MAX_WIDTH=$( xdpyinfo | grep "dimensions" | awk '{ print $2 }' | cut -d'x' -f1)
+	else
+        MAX_HEIGHT=$(tput lines)
+        MAX_WIDTH=$(tput cols)
+    fi
+
+    # Never really fill the whole screen space
+    MAX_HEIGHT=$(( $MAX_HEIGHT / 2 ))
+    MAX_WIDTH=$(( $MAX_WIDTH * 3 / 4 ))
 }
 
 RECMD_HEIGHT=10
@@ -167,11 +176,8 @@ function relaunchIfNotVisible() {
 
 function messagebox() {
     updateGUITitle
-
-    if [ $GUI == false ] ; then
-		TEST_STRING="$1"
-		calculateTextDialogSize
-	fi
+	TEST_STRING="$1"
+	calculateTextDialogSize
 
 	if [ "$INTERFACE" == "whiptail" ]; then
 		whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
@@ -188,11 +194,8 @@ function messagebox() {
 
 function yesno() {
     updateGUITitle
-
-    if [ $GUI == false ] ; then
-		TEST_STRING="$1"
-		calculateTextDialogSize
-	fi
+	TEST_STRING="$1"
+	calculateTextDialogSize
 
 	if [ "$INTERFACE" == "whiptail" ]; then
 		whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" $RECMD_HEIGHT $RECMD_WIDTH
@@ -221,11 +224,8 @@ function yesno() {
 
 function inputbox() {
     updateGUITitle
-
-    if [ $GUI == false ] ; then
-		TEST_STRING="$1"
-		calculateTextDialogSize
-	fi
+	TEST_STRING="$1"
+	calculateTextDialogSize
 
 	if [ "$INTERFACE" == "whiptail" ]; then
         INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" $RECMD_HEIGHT $RECMD_WIDTH  3>&1 1>&2 2>&3)
@@ -244,11 +244,8 @@ function inputbox() {
 
 function userandpassword() {
     updateGUITitle
-
-    if [ $GUI == false ] ; then
-		TEST_STRING="$1"
-		calculateTextDialogSize
-	fi
+	TEST_STRING="$1"
+	calculateTextDialogSize
 
 	if [ "$INTERFACE" == "whiptail" ]; then
         USERNAME=$(inputbox "$1")
@@ -272,11 +269,8 @@ function userandpassword() {
 
 function displayFile() {
     updateGUITitle
-
-    if [ $GUI == false ] ; then
-		TEST_STRING="`cat $1`"
-		calculateTextDialogSize
-	fi
+	TEST_STRING="`cat $1`"
+	calculateTextDialogSize
 
     if [ "$INTERFACE" == "whiptail" ]; then
         whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
