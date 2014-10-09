@@ -12,7 +12,7 @@ Simply add the following at the top of your script files and have script-ui.sh i
 
     source $(dirname $(readlink -f $0))/script-ui.sh
     APP_NAME="Your Title goes here"
-    
+
 Or if you've run install.sh
 
     source /usr/local/bin/script-ui
@@ -40,3 +40,4 @@ TODO
       * Checklist
       * Radio List
       * Progress Bar
+  * Standalone mode (calling to it like one would dialog, as opposed to an included script via *source*)

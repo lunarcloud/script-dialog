@@ -251,8 +251,12 @@ function userandpassword() {
         USERNAME=$(inputbox "$1")
         PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-        USERNAME=$(inputbox "$1")
-		PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
+#         USERNAME=$(inputbox "$1")
+# 		PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
+		ENTRY=$(dialog --backtitle "$APP_NAME" --title "$ACTIVITY" --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "User name : " 1 1 "" 1 20 20 0 0 "Password :" 2 1 "" 2 20 20 0 1   3>&1 1>&2 2>&3)
+		ENTRY=${ENTRY//$'\n'/$'|'}
+        USERNAME=`echo $ENTRY | cut -d'|' -f1`
+        PASSWORD=`echo $ENTRY | cut -d'|' -f2`
 	elif [ "$INTERFACE" == "zenity" ]; then
         ENTRY=`zenity --title="$GUI_TITLE" --password --username`
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
