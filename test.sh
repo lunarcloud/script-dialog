@@ -1,5 +1,5 @@
 #!/bin/bash
-source $(dirname $(readlink -f $0))/script-ui.sh #multi-ui scripting
+source $(dirname "$(readlink -f "$0")")/script-ui.sh #multi-ui scripting
 relaunchIfNotVisible
 
 APP_NAME="Test Script"
