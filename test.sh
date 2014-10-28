@@ -1,8 +1,10 @@
 #!/bin/bash
-source $(dirname "$(readlink -f "$0")")/script-ui.sh #multi-ui scripting
+CURRENT_DIR=$(dirname "$(readlink -f "$0")")/
+source "$CURRENT_DIR"/script-ui.sh #multi-ui scripting
 relaunchIfNotVisible
 
 APP_NAME="Test Script"
+WINDOW_ICON="$CURRENT_DIR/ic_announcement_black_18dp.png"
 
 ACTIVITY="Salutations"
 messagebox "Hello World";

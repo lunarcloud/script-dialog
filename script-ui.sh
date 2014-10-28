@@ -94,6 +94,7 @@ fi
 
 APP_NAME="Script"
 ACTIVITYEAR=""
+WINDOW_ICON=""
 GUI_TITLE="$APP_NAME"
 
 function superuser() {
@@ -184,9 +185,9 @@ function messagebox() {
 	elif [ "$INTERFACE" == "dialog" ]; then
 		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
 	elif [ "$INTERFACE" == "zenity" ]; then
-		zenity --title "$GUI_TITLE" --info --text "$1"
+		zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --info --text "$1"
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		kdialog --title "$GUI_TITLE" --msgbox "$1"
+		kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --msgbox "$1"
 	else
 		echo "$1"
 	fi
@@ -204,10 +205,10 @@ function yesno() {
 		dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" $RECMD_HEIGHT $RECMD_WIDTH
 		answer=$?
 	elif [ "$INTERFACE" == "zenity" ]; then
-		zenity --title "$GUI_TITLE" --question --text "$1"
+		zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --question --text "$1"
 		answer=$?
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		kdialog --title "$GUI_TITLE" --yesno "$1"
+		kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --yesno "$1"
 		answer=$?
 	else
 		echo "$1 (y/n)"
@@ -232,9 +233,9 @@ function inputbox() {
 	elif [ "$INTERFACE" == "dialog" ]; then
         INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" $RECMD_HEIGHT $RECMD_WIDTH  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "zenity" ]; then
-		INPUT="`zenity --entry --title="$GUI_TITLE" --text="$1" --entry-text "$2"`"
+		INPUT="`zenity --entry --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --text="$1" --entry-text "$2"`"
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		INPUT="`kdialog --title "$GUI_TITLE" --inputbox "$1" "$2"`"
+		INPUT="`kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --inputbox "$1" "$2"`"
 	else
 		read -p "$1: " INPUT
 	fi
@@ -258,12 +259,12 @@ function userandpassword() {
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
         PASSWORD=`echo $ENTRY | cut -d'|' -f2`
 	elif [ "$INTERFACE" == "zenity" ]; then
-        ENTRY=`zenity --title="$GUI_TITLE" --password --username`
+        ENTRY=`zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --password --username`
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
         PASSWORD=`echo $ENTRY | cut -d'|' -f2`
 	elif [ "$INTERFACE" == "kdialog" ]; then
         USERNAME=$(inputbox "$1")
-		password=`kdialog --title="$GUI_TITLE" --password "$2"`
+		password=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$2"`
 	else
 		read -p "username: " USERNAME
         read  -sp "password: " PASSWORD
@@ -281,9 +282,9 @@ function displayFile() {
     elif [ "$INTERFACE" == "dialog" ]; then
         dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
     elif [ "$INTERFACE" == "zenity" ]; then
-        zenity --title="$GUI_TITLE" --text-info --filename="$1"
+        zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --text-info --filename="$1"
     elif [ "$INTERFACE" == "kdialog" ]; then
-        kdialog --title="$GUI_TITLE" --textbox "$1" 512 256
+        kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --textbox "$1" 512 256
     else
         more $1
     fi
