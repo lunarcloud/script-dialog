@@ -394,12 +394,12 @@ function datepicker() {
         MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
         YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "zenity" ]; then
-        INPUT_DATE=$(zenity --calendar "Select Date")
+        INPUT_DATE=$(zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --calendar "Select Date")
         MONTH=`echo $INPUT_DATE | cut -d'/' -f1`
         DAY=`echo $INPUT_DATE | cut -d'/' -f2`
         YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
     elif [ "$INTERFACE" == "kdialog" ]; then
-        INPUT_DATE=$(kdialog --calendar "Select Date")
+        INPUT_DATE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --calendar "Select Date")
         TEXT_MONTH=`echo $INPUT_DATE | cut -d' ' -f2`
         if [ "$TEXT_MONTH" == "Jan" ]; then
             MONTH=1

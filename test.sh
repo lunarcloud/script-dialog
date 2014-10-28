@@ -28,8 +28,8 @@ messagebox "Nice to meet you, $ANSWER"
 ACTIVITY="APT Repositories"
 displayFile /etc/apt/sources.list
 
-ACTIVITY="Pretend Login"
-ANSWER=$(userandpassword Username Password)
+ ACTIVITY="Pretend Login"
+ ANSWER=$(userandpassword Username Password)
 USERNAME=`echo $ANSWER | cut -d'|' -f1`
 PASSWORD=`echo $ANSWER | cut -d'|' -f2`
 
