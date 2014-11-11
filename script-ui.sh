@@ -1,8 +1,7 @@
 #!/bin/bash
 #multi-ui scripting
 
-if [ "$XDG_CURRENT_DESKTOP" = "" ]
-then
+if [ "$XDG_CURRENT_DESKTOP" = "" ]; then
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 else
   desktop=$XDG_CURRENT_DESKTOP
@@ -116,6 +115,8 @@ function updateGUITitle() {
 
 MIN_HEIGHT=10
 MIN_WIDTH=40
+MAX_HEIGHT=$MIN_HEIGHT
+MAX_WIDTH=$MIN_WIDTH
 
 function updateDialogMaxSize() {
 	if [ $GUI == true ] ; then
@@ -292,24 +293,51 @@ function displayFile() {
 
 function checklist() {
     updateGUITitle
+    TEXT=$1
+    NUM_OPTIONS=$2
+    shift
+    shift
+
 	if [ "$INTERFACE" == "whiptail" ]; then
-		messagebox "not implemented" #TODO
+		CHOSEN=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-		messagebox "not implemented" #TODO
+		CHOSEN=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "zenity" ]; then
-		messagebox "not implemented" #TODO
+        OPTIONS=()
+        while test ${#} -gt 0;  do
+            if [ "$3" == "ON" ]; then
+                OPTIONS+=("TRUE")
+            else
+                OPTIONS+=("FALSE")
+            fi
+            OPTIONS+=("$1")
+            OPTIONS+=("$2")
+            shift
+            shift
+            shift
+        done
+		CHOSEN_LIST=$(zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
+
+		ORIG_IFS="$IFS"
+		IFS="|"
+		CHOSEN=( $CHOSEN_LIST )
+		IFS="$ORIG_IFS"
+
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		messagebox "not implemented" #TODO
+        CHOSEN=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --checklist "$TEXT" "$@")
 	else
-		echo "$ACTIVITY:"
+		echo "$ACTIVITY\n $TEXT:"
+		CHOSEN=()
 		while test ${#} -gt 0
         do
-            yesno $2
+            CHOSEN+="$(yesno "$2 (default: $3)")"
             shift
             shift
             shift
         done
 	fi
+
+    echo $CHOSEN
 }
 
 function radiolist() {

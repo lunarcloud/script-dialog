@@ -38,3 +38,12 @@ messagebox "So, that was: $USERNAME - $PASSWORD"
 ACTIVITY="Enter Birthday"
 ANSWER=$(datepicker)
 messagebox "Cool, it's on $ANSWER"
+
+ACTIVITY="Pretend Configuration"
+ANSWER=$( checklist "Select the appropriate network options for this computer" 4  \
+        "NET_OUT" "Allow connections to other hosts" ON \
+        "NET_IN" "Allow connections from other hosts" OFF \
+        "LOCAL_MOUNT" "Allow mounting of local drives" OFF \
+        "REMOTE_MOUNT" "Allow mounting of remote drives" OFF )
+
+messagebox "So you chose to enable: ${ANSWER[@]}"
