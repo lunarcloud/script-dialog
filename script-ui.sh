@@ -328,8 +328,8 @@ function checklist() {
 	else
 		echo "$ACTIVITY\n $TEXT:"
 		CHOSEN=()
-		while test ${#} -gt 0
-        do
+		#TODO while loop does not work
+		while test ${#} -gt 0; do
             CHOSEN+="$(yesno "$2 (default: $3)")"
             shift
             shift
@@ -342,50 +342,87 @@ function checklist() {
 
 function radiolist() {
     updateGUITitle
+    TEXT=$1
+    NUM_OPTIONS=$2
+    shift
+    shift
+
 	if [ "$INTERFACE" == "whiptail" ]; then
-		messagebox "not implemented" #TODO
+        CHOSEN=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-		messagebox "not implemented" #TODO
+		CHOSEN=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "zenity" ]; then
-		messagebox "not implemented" #TODO
+		OPTIONS=()
+        while test ${#} -gt 0;  do
+            if [ "$3" == "ON" ]; then
+                OPTIONS+=("TRUE")
+            else
+                OPTIONS+=("FALSE")
+            fi
+            OPTIONS+=("$1")
+            OPTIONS+=("$2")
+            shift
+            shift
+            shift
+        done
+        CHOSEN=$(zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
 	elif [ "$INTERFACE" == "kdialog" ]; then
-		messagebox "not implemented" #TODO
+        CHOSEN=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --radiolist "$TEXT" "$@")
 	else
-        OPTION_COUNT=${#[@]}
-        ITERATOR=0
-        CHOICE=0
-		if [ $CHOICE -le 0 ] || [ $CHOICE -gt $OPTION_COUNT ] ; then
-            echo "$ACTIVITY: "
-            while test ${#} -gt 0; do
-                ((ITERATOR++))
-                echo "$ITERATOR $2"
-                shift
-                shift
-                shift
-            done
-            read CHOICE
-        fi
+        echo "$ACTIVITY: "
+        #TODO while loop does not work
+        while test ${#} -gt 0;  do
+            echo "$1 ($2)"
+            shift
+            shift
+            shift
+        done
+        read -p "$TEXT: " CHOSEN
     fi
+
+    echo $CHOSEN
 }
 
+#TODO have the progressbar updating actually mean something.
 function progressbar() {
     updateGUITitle
     if [ "$INTERFACE" == "whiptail" ]; then
-        messagebox "not implemented" #TODO
+        {
+            for ((i = 0 ; i <= 100 ; i+=5)); do
+                sleep 0.1
+                echo $i
+            done
+        } | whiptail --gauge "$ACTIVITY" $RECMD_HEIGHT $RECMD_WIDTH 0
+
     elif [ "$INTERFACE" == "dialog" ]; then
-        echo percentage | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "$1" 10 70 0
-        sleep 1
-        echo "10" | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "$1" 10 70 0
-        sleep 1
-        echo "50" | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "$1" 10 70 0
-        sleep 1
-        echo "100" | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "$1" 10 70 0
+        {
+            for ((i = 0 ; i <= 100 ; i+=5)); do
+                sleep 0.1
+                echo $i
+            done
+        } | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "" $RECMD_HEIGHT $RECMD_WIDTH 0
     elif [ "$INTERFACE" == "zenity" ]; then
-        messagebox "not implemented" #TODO
+        {
+            for ((i = 0 ; i <= 100 ; i+=5)); do
+                sleep 0.1
+                echo $i
+            done
+        } | zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
+
     elif [ "$INTERFACE" == "kdialog" ]; then
-        messagebox "not implemented" #TODO
+        dbusRef=`kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --progressbar "$ACTIVITY" 100`
+
+        for ((i = 0 ; i <= 100 ; i+=5)); do
+            sleep 0.1
+            qdbus $dbusRef Set "" value $i
+        done
+        qdbus $dbusRef close
     else
-        messagebox "not implemented" #TODO
+        for ((i = 0 ; i <= 100 ; i+=5)); do
+            sleep 0.1
+            echo -ne "\r$ACTIVITY $i%"
+        done
+        echo ""
     fi
 }
 

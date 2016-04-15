@@ -6,6 +6,8 @@ relaunchIfNotVisible
 APP_NAME="Test Script"
 WINDOW_ICON="$CURRENT_DIR/ic_announcement_black_18dp.png"
 
+#INTERFACE="text" #force an interface, but only do this for testing
+
 ACTIVITY="Salutations"
 messagebox "Hello World";
 
@@ -28,8 +30,8 @@ messagebox "Nice to meet you, $ANSWER"
 ACTIVITY="APT Repositories"
 displayFile /etc/apt/sources.list
 
- ACTIVITY="Pretend Login"
- ANSWER=$(userandpassword Username Password)
+ACTIVITY="Pretend Login"
+ANSWER=$(userandpassword Username Password)
 USERNAME=`echo $ANSWER | cut -d'|' -f1`
 PASSWORD=`echo $ANSWER | cut -d'|' -f2`
 
@@ -45,5 +47,15 @@ ANSWER=$( checklist "Select the appropriate network options for this computer" 4
         "NET_IN" "Allow connections from other hosts" OFF \
         "LOCAL_MOUNT" "Allow mounting of local drives" OFF \
         "REMOTE_MOUNT" "Allow mounting of remote drives" OFF )
-
 messagebox "So you chose to enable: ${ANSWER[@]}"
+
+ACTIVITY="Waiting for network..."
+progressbar
+
+ACTIVITY="Pretend Configuration 2"
+ANSWER=$( radiolist "Favorite Primary Color? " 4  \
+        "blue" "Blue" OFF \
+        "yellow" "Yellow" OFF \
+        "green" "Green" ON \
+        "red" "Red" OFF )
+messagebox "So you like $ANSWER, neat."
