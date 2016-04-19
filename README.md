@@ -26,23 +26,17 @@ Then use dialogs
 Working
 ------
   * **messagebox** "text"
-  * **yesno** "text"
+  * **yesno** "text"; ANSWER=$?
   * ANSWER=$(**inputbox** "text" "default")
   * **displayFile** /path/to/file
   * ANSWER=$(**userandpassword** "Username" "Password"); USERNAME=`echo $ANSWER | cut -d'|' -f1`; PASSWORD=`echo $ANSWER | cut -d'|' -f2`
   * ANSWER=$(**datepicker**)
 
-
 TODO
 ------
   * Cancelling / quit states
-  * Dialogs
-      * Checklist
-      * Radio List
-      * Progress Bar
+  * Progress Bar
   * Standalone mode (calling to it like one would dialog, as opposed to an included script via *source*)
-
-
 
 Licence
 --------
