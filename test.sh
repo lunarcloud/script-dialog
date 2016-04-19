@@ -6,7 +6,7 @@ relaunchIfNotVisible
 APP_NAME="Test Script"
 WINDOW_ICON="$CURRENT_DIR/ic_announcement_black_18dp.png"
 
-#INTERFACE="text" #force an interface, but only do this for testing
+#INTERFACE="whiptail" #force an interface, but only do this for testing
 
 ACTIVITY="Salutations"
 messagebox "Hello World";
@@ -43,19 +43,22 @@ messagebox "Cool, it's on $ANSWER"
 
 ACTIVITY="Pretend Configuration"
 ANSWER=$( checklist "Select the appropriate network options for this computer" 4  \
-        "NET_OUT" "Allow connections to other hosts" ON \
+        "NET OUT" "Allow connections to other hosts" ON \
         "NET_IN" "Allow connections from other hosts" OFF \
         "LOCAL_MOUNT" "Allow mounting of local drives" OFF \
         "REMOTE_MOUNT" "Allow mounting of remote drives" OFF )
-messagebox "So you chose to enable: ${ANSWER[@]}"
-
-ACTIVITY="Waiting for network..."
-progressbar
+messagebox "So you chose to enable: $ANSWER"
 
 ACTIVITY="Pretend Configuration 2"
-ANSWER=$( radiolist "Favorite Primary Color? " 4  \
+ANSWER=$(radiolist "Favorite Primary Color? " 4  \
         "blue" "Blue" OFF \
         "yellow" "Yellow" OFF \
         "green" "Green" ON \
         "red" "Red" OFF )
 messagebox "So you like $ANSWER, neat."
+
+ANSWER=$(filepicker $HOME "open")
+messagebox "File selected was $ANSWER"
+
+ACTIVITY="Waiting for something..."
+progressbar

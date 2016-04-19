@@ -212,7 +212,7 @@ function yesno() {
 		kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --yesno "$1"
 		answer=$?
 	else
-		echo "$1 (y/n)"
+		echo "$1 (y/n)" 3>&1 1>&2 2>&3
 		read answer
 		if [ "$answer" == "y" ]; then
 			answer=0
@@ -255,7 +255,7 @@ function userandpassword() {
 	elif [ "$INTERFACE" == "dialog" ]; then
 #         USERNAME=$(inputbox "$1")
 # 		PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
-		ENTRY=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3)
+		ENTRY=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3)
 		ENTRY=${ENTRY//$'\n'/$'|'}
         USERNAME=`echo $ENTRY | cut -d'|' -f1`
         PASSWORD=`echo $ENTRY | cut -d'|' -f2`
@@ -287,7 +287,7 @@ function displayFile() {
     elif [ "$INTERFACE" == "kdialog" ]; then
         kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --textbox "$1" 512 256
     else
-        more $1
+        less $1
     fi
 }
 
@@ -301,7 +301,8 @@ function checklist() {
 	if [ "$INTERFACE" == "whiptail" ]; then
 		CHOSEN=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-		CHOSEN=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
+		CHOSEN=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
+		#TODO quote the resulting items
 	elif [ "$INTERFACE" == "zenity" ]; then
         OPTIONS=()
         while test ${#} -gt 0;  do
@@ -318,19 +319,26 @@ function checklist() {
         done
 		CHOSEN_LIST=$(zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
 
-		ORIG_IFS="$IFS"
-		IFS="|"
-		CHOSEN=( $CHOSEN_LIST )
-		IFS="$ORIG_IFS"
+        ORIG_IFS="$IFS"
+        IFS="|"
+        CHOSEN_LIST=( $CHOSEN_LIST )
+        IFS="$ORIG_IFS"
+
+        CHOSEN=""
+        for i in "${CHOSEN_LIST[@]}"; do
+            CHOSEN+="\"$i\" "
+        done
 
 	elif [ "$INTERFACE" == "kdialog" ]; then
         CHOSEN=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --checklist "$TEXT" "$@")
 	else
-		echo "$ACTIVITY\n $TEXT:"
-		CHOSEN=()
-		#TODO while loop does not work
+		echo "$ACTIVITY\n $TEXT:" 3>&1 1>&2 2>&3
+		CHOSEN=""
 		while test ${#} -gt 0; do
-            CHOSEN+="$(yesno "$2 (default: $3)")"
+            $(yesno "$2 (default: $3)?")
+            if [ $? -eq 0 ]; then
+                CHOSEN+="\"$1\" "
+            fi
             shift
             shift
             shift
@@ -350,7 +358,7 @@ function radiolist() {
 	if [ "$INTERFACE" == "whiptail" ]; then
         CHOSEN=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-		CHOSEN=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
+		CHOSEN=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "zenity" ]; then
 		OPTIONS=()
         while test ${#} -gt 0;  do
@@ -369,15 +377,15 @@ function radiolist() {
 	elif [ "$INTERFACE" == "kdialog" ]; then
         CHOSEN=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --radiolist "$TEXT" "$@")
 	else
-        echo "$ACTIVITY: "
-        #TODO while loop does not work
+        echo "$ACTIVITY: " 3>&1 1>&2 2>&3
+        OPTIONS=""
         while test ${#} -gt 0;  do
-            echo "$1 ($2)"
+            OPTIONS+="$1 ($2)\n"
             shift
             shift
             shift
         done
-        read -p "$TEXT: " CHOSEN
+        read -p "$(echo -e "$OPTIONS$TEXT: ")" CHOSEN
     fi
 
     echo $CHOSEN
@@ -386,6 +394,7 @@ function radiolist() {
 #TODO have the progressbar updating actually mean something.
 function progressbar() {
     updateGUITitle
+    ACTIVITY+=" (Fake Progress, Intelligent Progressbars Not Implemented)"
     if [ "$INTERFACE" == "whiptail" ]; then
         {
             for ((i = 0 ; i <= 100 ; i+=5)); do
@@ -429,17 +438,27 @@ function progressbar() {
 function filepicker() {
     updateGUITitle
     if [ "$INTERFACE" == "whiptail" ]; then
-        messagebox "not implemented" #TODO
+        #TODO support driving down into folders
+        SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --menu YourTitle $RECMD_HEIGHT $RECMD_WIDTH 10 `ls $1/` 3>&1 1>&2 2>&3)
+        FILE=$1/$SELECTED
     elif [ "$INTERFACE" == "dialog" ]; then
-        #needs work to support driving down into files
-        FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect $HOME/ 14 48)
+        FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect $1/ 14 48)
     elif [ "$INTERFACE" == "zenity" ]; then
-        messagebox "not implemented" #TODO
+        FILE=$(zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --file-selection --filename $1/ )
     elif [ "$INTERFACE" == "kdialog" ]; then
-        messagebox "not implemented" #TODO
+        if [ "$2" == "save" ]; then
+            FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getopenfilename $1/ )
+        else #elif [ "$2" == "open" ]; then
+            FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getsavefilename $1/ )
+        fi
     else
-        read -e -p "$1: " FILE
+        read -e -p "You need to $2 a file in $1/. Hit enter to browse this folder" IGNORE
+        less "$( ls $1/ )"
+        read -e -p "Enter name of file to $2 in $1/: " SELECTED
+        FILE=$1/$SELECTED
     fi
+
+    echo $FILE
 }
 
 function datepicker() {
