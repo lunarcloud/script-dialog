@@ -11,38 +11,33 @@ desktop=${desktop,,}  # convert to lower case
 
 [ -t 0 ] && terminal=1
 
-if xdpyinfo | grep X.Org > /dev/null; then
-	if [ $terminal ] ; then
-		GUI=false
-	else
+hasKDialog=false
+hasZenity=false
+hasDialog=false
+hasWhiptail=false
+
+GUI=false
+
+if [ ! -e xdpyinfo ] || [ xdpyinfo | grep X.Org > /dev/null ]; then
+	if [ ! $terminal ] ; then
 		GUI=true
+                
+        if which kdialog > /dev/null; then
+            hasKDialog=true
+        fi
+
+        if which zenity > /dev/null; then
+            hasZenity=true
+        fi
 	fi
-else
-	GUI=false
-fi
-
-if which kdialog > /dev/null; then
-	hasKDialog=true
-else
-	hasKDialog=false
-fi
-
-if which zenity > /dev/null; then
-	hasZenity=true
-else
-	hasZenity=false
 fi
 
 if which dialog > /dev/null; then
 	hasDialog=true
-else
-	hasDialog=false
 fi
 
 if which whiptail > /dev/null; then
     hasWhiptail=true
-else
-    hasWhiptail=false
 fi
 
 if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxqt" ]  || [ "$desktop" == "maui" ] ; then
@@ -81,14 +76,17 @@ else
 fi
 
 # which sudo to use
-if [ "`which kdesudo`" > /dev/null ] && [ "$INTERFACE" == "kdialog" ]; then
+NO_SUDO=false
+if [ "$INTERFACE" == "kdialog" ] && [ "`which kdesudo`" > /dev/null ]; then
     SUDO="kdesudo"
-elif [ `which gksudo` > /dev/null ] && [ "$INTERFACE" == "zenity" ]; then
+elif [ "$INTERFACE" == "zenity" ] && [ `which gksudo` > /dev/null ]; then
     SUDO="gksudo"
-elif [ `which gksu` > /dev/null ] && [ "$INTERFACE" == "zenity" ]; then
+elif [ "$INTERFACE" == "zenity" ] && [ `which gksu` > /dev/null ]; then
     SUDO="gksu"
 elif [ `which sudo` > /dev/null ]; then
     SUDO="sudo"
+else
+    NO_SUDO=true
 fi
 
 APP_NAME="Script"
@@ -97,6 +95,11 @@ WINDOW_ICON=""
 GUI_TITLE="$APP_NAME"
 
 function superuser() {
+    if [ $NO_SUDO == true ]; then
+        (>&2 echo "No sudo available!")
+        return 201
+    fi
+
     ARGS=""
     while (( $# )); do
         ARGS="$ARGS $1"
