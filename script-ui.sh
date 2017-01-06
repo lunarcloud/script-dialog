@@ -9,69 +9,75 @@ fi
 
 desktop=${desktop,,}  # convert to lower case
 
-[ -t 0 ] && terminal=1
+[ -t 0 ] && terminal=true || terminal=false
 
 hasKDialog=false
 hasZenity=false
 hasDialog=false
 hasWhiptail=false
 
-GUI=false
-
-if [ ! -e xdpyinfo ] || [ xdpyinfo | grep X.Org > /dev/null ]; then
-	if [ ! $terminal ] ; then
-		GUI=true
-                
-        if which kdialog > /dev/null; then
-            hasKDialog=true
+if [ -z ${GUI+x} ]; then
+    GUI=false
+    if [ ! -e xdpyinfo ] || [ xdpyinfo | grep X.Org > /dev/null ]; then
+        if [ $terminal == false ] ; then
+            GUI=true
         fi
-
-        if which zenity > /dev/null; then
-            hasZenity=true
-        fi
-	fi
+    fi
 fi
 
-if which dialog > /dev/null; then
-	hasDialog=true
-fi
+if [ $GUI == true ] ; then
+    if which kdialog > /dev/null; then
+        hasKDialog=true
+    fi
 
-if which whiptail > /dev/null; then
-    hasWhiptail=true
-fi
-
-if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxqt" ]  || [ "$desktop" == "maui" ] ; then
-	if  [ $hasKDialog == true ] && [ $GUI == true ] ; then
-		INTERFACE="kdialog"
-		GUI=true
-	elif [ $hasZenity == true ] && [ $GUI == true ] ; then
-		INTERFACE="zenity"
-		GUI=true
-    elif  [ $hasDialog == true ] ; then
-        INTERFACE="dialog"
-        GUI=false
-	elif  [ $hasWhiptail == true ] ; then
-		INTERFACE="whiptail"
-		GUI=false
-	fi
-elif [ "$desktop" == "unity" ] || [ "$desktop" == "gnome" ]  || [ "$desktop" == "xfce" ]  || [ -n $INTERFACE ]; then
-    if [ $hasZenity == true ] && [ $GUI == true ] ; then
-        INTERFACE="zenity"
-        GUI=true
-    elif  [ $hasDialog == true ] ; then
-        INTERFACE="dialog"
-        GUI=false
-    elif  [ $hasWhiptail == true ] ; then
-        INTERFACE="whiptail"
-        GUI=false
+    if which zenity > /dev/null; then
+        hasZenity=true
     fi
 else
-    if  [ $hasDialog == true ] ; then
-        INTERFACE="dialog"
-        GUI=false
-    elif  [ $hasWhiptail == true ] ; then
-        INTERFACE="whiptail"
-        GUI=false
+    if which dialog > /dev/null; then
+        hasDialog=true
+    fi
+
+    if which whiptail > /dev/null; then
+        hasWhiptail=true
+    fi
+fi
+
+
+if [ -z ${INTERFACE+x} ]; then
+    if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxqt" ]  || [ "$desktop" == "maui" ] ; then
+        if  [ $hasKDialog == true ] && [ $GUI == true ] ; then
+            INTERFACE="kdialog"
+            GUI=true
+        elif [ $hasZenity == true ] && [ $GUI == true ] ; then
+            INTERFACE="zenity"
+            GUI=true
+        elif  [ $hasDialog == true ] ; then
+            INTERFACE="dialog"
+            GUI=false
+        elif  [ $hasWhiptail == true ] ; then
+            INTERFACE="whiptail"
+            GUI=false
+        fi
+    elif [ "$desktop" == "unity" ] || [ "$desktop" == "gnome" ]  || [ "$desktop" == "xfce" ]  || [ -n $INTERFACE ]; then
+        if [ $hasZenity == true ] && [ $GUI == true ] ; then
+            INTERFACE="zenity"
+            GUI=true
+        elif  [ $hasDialog == true ] ; then
+            INTERFACE="dialog"
+            GUI=false
+        elif  [ $hasWhiptail == true ] ; then
+            INTERFACE="whiptail"
+            GUI=false
+        fi
+    else
+        if  [ $hasDialog == true ] ; then
+            INTERFACE="dialog"
+            GUI=false
+        elif  [ $hasWhiptail == true ] ; then
+            INTERFACE="whiptail"
+            GUI=false
+        fi
     fi
 fi
 
@@ -171,12 +177,21 @@ function calculateTextDialogSize() {
 }
 
 function relaunchIfNotVisible() {
-	parentScript=$(basename `readlink -f ${BASH_SOURCE[0]}`)
+	parentScript=$(basename $0)
 
-	if [ $GUI == false ] && [ $terminal == false ]; then
-		x-terminal-emulator --hold -e "./$parentScript"
-		exit $?;
-	fi
+    if [ $GUI == false ] && [ $terminal == false ]; then
+        if [ -e "/tmp/relaunching" ] && [ `cat /tmp/relaunching` == "$parentScript" ]; then
+            echo "Won't relaunch $parentScript more than once"
+        else
+            echo "$parentScript" > /tmp/relaunching
+
+            echo "Relaunching $parentScript ..."
+
+                x-terminal-emulator -e "./$parentScript"
+                rm /tmp/relaunching
+                exit $?;
+        fi
+    fi
 }
 
 function messagebox() {
@@ -394,46 +409,47 @@ function radiolist() {
     echo $CHOSEN
 }
 
-#TODO have the progressbar updating actually mean something.
+#TODO Fix this so that standard echo progress works
 function progressbar() {
     updateGUITitle
-    ACTIVITY+=" (Fake Progress, Intelligent Progressbars Not Implemented)"
+
     if [ "$INTERFACE" == "whiptail" ]; then
-        {
-            for ((i = 0 ; i <= 100 ; i+=5)); do
-                sleep 0.1
-                echo $i
-            done
-        } | whiptail --gauge "$ACTIVITY" $RECMD_HEIGHT $RECMD_WIDTH 0
-
+        whiptail --gauge "$ACTIVITY" $RECMD_HEIGHT $RECMD_WIDTH 0
     elif [ "$INTERFACE" == "dialog" ]; then
-        {
-            for ((i = 0 ; i <= 100 ; i+=5)); do
-                sleep 0.1
-                echo $i
-            done
-        } | dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "" $RECMD_HEIGHT $RECMD_WIDTH 0
+        dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "" $RECMD_HEIGHT $RECMD_WIDTH 0
     elif [ "$INTERFACE" == "zenity" ]; then
-        {
-            for ((i = 0 ; i <= 100 ; i+=5)); do
-                sleep 0.1
-                echo $i
-            done
-        } | zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
-
+        zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
     elif [ "$INTERFACE" == "kdialog" ]; then
         dbusRef=`kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --progressbar "$ACTIVITY" 100`
+        qdbus $dbusRef Set "" value 0
 
-        for ((i = 0 ; i <= 100 ; i+=5)); do
-            sleep 0.1
-            qdbus $dbusRef Set "" value $i
-        done
-        qdbus $dbusRef close
+        mkdir -p /tmp/script-ui.$$/
+        DBUS_BAR_PATH=/tmp/script-ui.$$/progressbar_dbus
+        echo "$dbusRef" > $DBUS_BAR_PATH
     else
-        for ((i = 0 ; i <= 100 ; i+=5)); do
-            sleep 0.1
-            echo -ne "\r$ACTIVITY $i%"
-        done
+        echo -ne "\r$ACTIVITY 0%"
+    fi
+}
+
+function progressbar_update() {
+    if [ "$INTERFACE" == "kdialog" ]; then
+        DBUS_BAR_PATH=/tmp/script-ui.$$/progressbar_dbus
+        dbusRef=`cat $DBUS_BAR_PATH`
+        qdbus $dbusRef Set "" value $1
+    elif [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ] || [ "$INTERFACE" == "zenity" ]; then
+        echo "$1"
+    else
+        echo -ne "\r$ACTIVITY $1%"
+    fi
+}
+
+function progressbar_finish() {
+    if [ "$INTERFACE" == "kdialog" ]; then
+        DBUS_BAR_PATH=/tmp/script-ui.$$/progressbar_dbus
+        dbusRef=`cat $DBUS_BAR_PATH`
+        qdbus $dbusRef close
+        rm $DBUS_BAR_PATH
+    elif [ "$INTERFACE" != "whiptail" ] && [ "$INTERFACE" != "dialog" ] && [ "$INTERFACE" != "zenity" ]; then
         echo ""
     fi
 }

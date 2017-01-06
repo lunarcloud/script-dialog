@@ -1,12 +1,24 @@
 #!/bin/bash
 CURRENT_DIR=$(dirname "$(readlink -f "$0")")/
 source "$CURRENT_DIR"/script-ui.sh #multi-ui scripting
+
+#GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing
+
 relaunchIfNotVisible
 
 APP_NAME="Test Script"
 WINDOW_ICON="$CURRENT_DIR/ic_announcement_black_18dp.png"
 
-#INTERFACE="whiptail" #force an interface, but only do this for testing
+#INTERFACE="text" #force an interface, but only do this for testing
+
+ACTIVITY="Pretending to load..."
+{
+    for ((i = 0 ; i <= 100 ; i+=5)); do
+        progressbar_update $i
+        sleep 0.2
+    done
+} | progressbar
+progressbar_finish
 
 ACTIVITY="Salutations"
 messagebox "Hello World";
@@ -59,6 +71,3 @@ messagebox "So you like $ANSWER, neat."
 
 ANSWER=$(filepicker $HOME "open")
 messagebox "File selected was $ANSWER"
-
-ACTIVITY="Waiting for something..."
-progressbar
