@@ -1,6 +1,7 @@
 #!/bin/bash
 CURRENT_DIR=$(dirname "$(readlink -f "$0")")/
-source "$CURRENT_DIR"/script-ui.sh #multi-ui scripting
+source "$CURRENT_DIR"/script-ui.sh #folder local version
+#source /usr/local/bin/script-ui #installed version
 
 #GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing
 
@@ -71,3 +72,5 @@ messagebox "So you like $ANSWER, neat."
 
 ANSWER=$(filepicker $HOME "open")
 messagebox "File selected was $ANSWER"
+
+clear
