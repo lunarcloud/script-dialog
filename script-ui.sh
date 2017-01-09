@@ -319,8 +319,18 @@ function checklist() {
 	if [ "$INTERFACE" == "whiptail" ]; then
 		CHOSEN=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
 	elif [ "$INTERFACE" == "dialog" ]; then
-		CHOSEN=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
-		#TODO quote the resulting items
+		CHOSEN_LIST=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
+
+		ORIG_IFS="$IFS"
+        IFS=$'\n'
+        CHOSEN_LIST=( $CHOSEN_LIST )
+        IFS="$ORIG_IFS"
+
+        CHOSEN=""
+        for i in "${CHOSEN_LIST[@]}"; do
+            CHOSEN+="\"$i\" "
+        done
+
 	elif [ "$INTERFACE" == "zenity" ]; then
         OPTIONS=()
         while test ${#} -gt 0;  do
@@ -458,9 +468,9 @@ function progressbar_finish() {
 function filepicker() {
     updateGUITitle
     if [ "$INTERFACE" == "whiptail" ]; then
-        #TODO support driving down into folders
         SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --menu YourTitle $RECMD_HEIGHT $RECMD_WIDTH 10 `ls $1/` 3>&1 1>&2 2>&3)
         FILE=$1/$SELECTED
+        #TODO support driving down into folders
     elif [ "$INTERFACE" == "dialog" ]; then
         FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect $1/ 14 48)
     elif [ "$INTERFACE" == "zenity" ]; then
@@ -476,10 +486,13 @@ function filepicker() {
         less "$( ls $1/ )"
         read -e -p "Enter name of file to $2 in $1/: " SELECTED
         FILE=$1/$SELECTED
+        #TODO support driving down into folders
     fi
 
     echo $FILE
 }
+
+#function folderpicker() { } #TODO
 
 function datepicker() {
     updateGUITitle
