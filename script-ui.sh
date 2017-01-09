@@ -128,6 +128,10 @@ MAX_HEIGHT=$MIN_HEIGHT
 MAX_WIDTH=$MIN_WIDTH
 
 function updateDialogMaxSize() {
+    if ! [ "`which tput`" > /dev/null ]; then
+        return;
+    fi
+
 	if [ $GUI == true ] ; then
         MAX_HEIGHT=$( xdpyinfo | grep "dimensions" | awk '{ print $2 }' | cut -d'x' -f2)
         MAX_WIDTH=$( xdpyinfo | grep "dimensions" | awk '{ print $2 }' | cut -d'x' -f1)
