@@ -1,10 +1,14 @@
 script-dialog
 =============
 
-Allows you to use the best scripting UIs available in a common way
+Create bash scripts that utilize the best dialog system that is available. Intended for Linux, but has been tested on Windows, and should work on other unix-like OSs.
 
-If it's launched in a terminal it will use terminal UI, whiptail or dialog
-If launched without a terminal it will prefer kdialog in kde and zenity in anything other environment
+* If it's launched from a GUI,
+ 1. it will prefer kdialog in kde and zenity in anything other environment.
+ 2. If neither of those are available, then "relaunchIfNotVisible" will relaunch the app in a terminal so that a terminal UI can be used.
+* If it's launched in a terminal,
+ 1. It will use whiptail or dialog.
+ 2. If neither of those are available, then it will fallback to basic terminal input/output with tools like read and echo.
 
 To Use
 -------
