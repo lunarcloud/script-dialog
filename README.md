@@ -25,18 +25,19 @@ Then use dialogs
 
 Working
 ------
-  * **messagebox** "text"
-  * **yesno** "text"; ANSWER=$?
-  * ANSWER=$(**inputbox** "text" "default")
-  * **displayFile** /path/to/file
-  * ANSWER=$(**userandpassword** "Username" "Password"); USERNAME=`echo $ANSWER | cut -d'|' -f1`; PASSWORD=`echo $ANSWER | cut -d'|' -f2`
-  * ANSWER=$(**datepicker**)
+* **messagebox** "text"
+* **yesno** "text"; ANSWER=$?
+* ANSWER=$(**inputbox** "text" "default")
+* **displayFile** /path/to/file
+* ANSWER=$(**user and password** "Username" "Password"); USERNAME=`echo $ANSWER | cut -d'|' -f1'; PASSWORD='echo $ANSWER | cut -d'|' -f2`
+* ANSWER=$(**datepicker**)
+* { **progressbar_update** # } | **progressbar**; **progressbar_finish**
+* ​
 
 TODO
 ------
-  * Cancelling / quit states
-  * Progress Bar
-  * Standalone mode (calling to it like one would dialog, as opposed to an included script via *source*)
+* Cancelling / quit states
+* Standalone mode (calling to it like one would dialog, as opposed to an included script via *source*)
 
 Licence
 --------
