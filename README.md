@@ -23,22 +23,12 @@ Then use dialogs
     ACTIVITY="Test Message"
     messagebox "Hello World!"
 
-Working
-------
-* **messagebox** "text"
-* **yesno** "text"; ANSWER=$?
-* ANSWER=$(**inputbox** "text" "default")
-* **displayFile** /path/to/file
-* ANSWER=$(**user and password** "Username" "Password"); USERNAME=`echo $ANSWER | cut -d'|' -f1'; PASSWORD='echo $ANSWER | cut -d'|' -f2`
-* ANSWER=$(**datepicker**)
-* { **progressbar_update** # } | **progressbar**; **progressbar_finish**
-* ​
-
-TODO
-------
-* Cancelling / quit states
-* Standalone mode (calling to it like one would dialog, as opposed to an included script via *source*)
+Examples of function use
+------------------------
+"test.sh" will contain uses of every feature.
 
 Licence
 --------
-ic_announcement_black_18dp.png is released under an [Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/) license. as part of Google's Material Design icon set.
+The code is under the license described in the "LICENSE" file, which is the LGPL license.
+
+The example icon, "ic_announcement_black_18dp.png", is released under an [Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/) license. as part of Google's Material Design icon set.
