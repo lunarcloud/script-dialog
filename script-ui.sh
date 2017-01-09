@@ -96,7 +96,7 @@ else
 fi
 
 APP_NAME="Script"
-ACTIVITYEAR=""
+ACTIVITY=""
 WINDOW_ICON=""
 GUI_TITLE="$APP_NAME"
 
@@ -409,7 +409,6 @@ function radiolist() {
     echo $CHOSEN
 }
 
-#TODO Fix this so that standard echo progress works
 function progressbar() {
     updateGUITitle
 
@@ -428,6 +427,7 @@ function progressbar() {
         echo "$dbusRef" > $DBUS_BAR_PATH
     else
         echo -ne "\r$ACTIVITY 0%"
+        cat
     fi
 }
 
@@ -439,6 +439,7 @@ function progressbar_update() {
     elif [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ] || [ "$INTERFACE" == "zenity" ]; then
         echo "$1"
     else
+#         echo -ne "\r$ACTIVITY $1%"
         echo -ne "\r$ACTIVITY $1%"
     fi
 }
