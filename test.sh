@@ -14,10 +14,10 @@ WINDOW_ICON="$CURRENT_DIR/ic_announcement_black_18dp.png"
 
 ACTIVITY="Pretending to load..."
 {
-    for ((i = 0 ; i <= 100 ; i+=5)); do
-        progressbar_update $i
-        sleep 0.2
-    done
+  for ((i = 0 ; i <= 100 ; i+=5)); do
+    progressbar_update $i
+    sleep 0.2
+  done
 } | progressbar
 progressbar_finish
 
@@ -30,9 +30,9 @@ ANSWER=$?
 
 ACTIVITY="Response"
 if [ $ANSWER -eq 0 ]; then
-    messagebox "Good to hear."
+  messagebox "Good to hear."
 else
-    messagebox "Sorry to hear that."
+  messagebox "Sorry to hear that."
 fi
 
 ACTIVITY="Name"
