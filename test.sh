@@ -55,12 +55,12 @@ ANSWER=$(datepicker)
 messagebox "Cool, it's on $ANSWER"
 
 ACTIVITY="Pretend Configuration"
-ANSWER=$( checklist "Select the appropriate network options for this computer" 4  \
+ANSWER=($( checklist "Select the appropriate network options for this computer" 4  \
         "NET OUT" "Allow connections to other hosts" ON \
         "NET_IN" "Allow connections from other hosts" OFF \
         "LOCAL_MOUNT" "Allow mounting of local drives" OFF \
-        "REMOTE_MOUNT" "Allow mounting of remote drives" OFF )
-messagebox "So you chose to enable: $ANSWER"
+        "REMOTE_MOUNT" "Allow mounting of remote drives" OFF ))
+messagebox "So you chose to enable: ${ANSWER[*]}"
 
 ACTIVITY="Pretend Configuration 2"
 ANSWER=$(radiolist "Favorite Primary Color? " 4  \

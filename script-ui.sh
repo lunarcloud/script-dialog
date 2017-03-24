@@ -276,7 +276,7 @@ function userandpassword() {
     PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
     #         USERNAME=$(inputbox "$1")
-    # 		PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
+    #     PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
     ENTRY=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3)
     ENTRY=${ENTRY//$'\n'/$'|'}
     USERNAME=`echo $ENTRY | cut -d'|' -f1`
@@ -472,18 +472,35 @@ function progressbar_finish() {
 function filepicker() {
   updateGUITitle
   if [ "$INTERFACE" == "whiptail" ]; then
-    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --menu YourTitle $RECMD_HEIGHT $RECMD_WIDTH 10 `ls $1/` 3>&1 1>&2 2>&3)
-    FILE=$1/$SELECTED
-    #TODO support driving down into folders
+    files=($(ls -lBhpa "$1" | awk -F ' ' ' { print $9 " " $5 } '))
+    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+$RECMD_HEIGHT)) $((6+$RECMD_WIDTH)) $RECMD_HEIGHT "${files[@]}" 3>&1 1>&2 2>&3)
+    FILE=$1$SELECTED
+
+    #exitstatus=$?
+    #if [ $exitstatus != 0 ]; then
+        #echo "CANCELLED!"
+        #exit;
+    #fi
+
+    # Ignore choice and relaunch dialog
+    if [[ "$SELECTED" == "./" ]]; then
+      FILE=$(filepicker "$1" "$2")
+    fi
+
+    # Drill into folder
+    if [ -d "$FILE" ]; then
+      FILE=$(filepicker "$FILE" "$2")
+    fi
+
   elif [ "$INTERFACE" == "dialog" ]; then
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect $1/ 14 48)
   elif [ "$INTERFACE" == "zenity" ]; then
     FILE=$(zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --file-selection --filename $1/ )
   elif [ "$INTERFACE" == "kdialog" ]; then
     if [ "$2" == "save" ]; then
-      FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getopenfilename $1/ )
-    else #elif [ "$2" == "open" ]; then
       FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getsavefilename $1/ )
+    else #elif [ "$2" == "open" ]; then
+      FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getopenfilename $1/ )
     fi
   else
     read -e -p "You need to $2 a file in $1/. Hit enter to browse this folder" IGNORE
