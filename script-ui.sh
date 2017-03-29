@@ -119,10 +119,8 @@ function superuser() {
   if sudo -n true 2>/dev/null; then # if credentials cached
     sudo -- $ARGS
   elif [ $SUDO_USE_INTERFACE == true ]; then
-    ACTIVITY="Enter command for \"$ARGS\""
-    PASSWORD=$(password)
-    echo "$PASSWORD" | $SUDO --stdin -- $ARGS
-    PASSWORD=""
+    ACTIVITY="Enter password to run \"$ARGS\""
+    echo $(password) | sudo --prompt="" --stdin -- $ARGS
   else
     $SUDO -- $ARGS
   fi
@@ -289,8 +287,6 @@ function userandpassword() {
     USERNAME=$(inputbox "$1")
     PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    #         USERNAME=$(inputbox "$1")
-    #     PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
     ENTRY=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3)
     ENTRY=${ENTRY//$'\n'/$'|'}
     USERNAME=`echo $ENTRY | cut -d'|' -f1`

@@ -12,6 +12,16 @@ WINDOW_ICON="$CURRENT_DIR/ic_announcement_black_18dp.png"
 
 #INTERFACE="text" #force an interface, but only do this for testing
 
+sudo -k # clear credentials
+superuser echo "Testing SUDO permissions"
+
+ACTIVITY="SUDO Test"
+if [ $? -eq 0 ]; then
+    messagebox "Password accepted"
+else
+    messagebox "Password denied"
+fi
+
 ACTIVITY="Pretending to load..."
 {
   for ((i = 0 ; i <= 100 ; i+=5)); do
