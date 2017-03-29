@@ -1,7 +1,7 @@
 #!/bin/bash
 #multi-ui scripting
 
-if [ "$XDG_CURRENT_DESKTOP" = "" ]; then
+if [ "$XDG_CURRENT_DESKTOP" == "" ]; then
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 else
   desktop=$XDG_CURRENT_DESKTOP
@@ -83,6 +83,7 @@ fi
 
 # which sudo to use
 NO_SUDO=false
+SUDO_USE_INTERFACE=false
 if [ "$INTERFACE" == "kdialog" ] && [ "`which kdesudo`" > /dev/null ]; then
   SUDO="kdesudo"
 elif [ "$INTERFACE" == "zenity" ] && [ `which gksudo` > /dev/null ]; then
@@ -91,6 +92,9 @@ elif [ "$INTERFACE" == "zenity" ] && [ `which gksu` > /dev/null ]; then
   SUDO="gksu"
 elif [ `which sudo` > /dev/null ]; then
   SUDO="sudo"
+  if [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ]; then
+    SUDO_USE_INTERFACE=true
+  fi
 else
   NO_SUDO=true
 fi
@@ -111,7 +115,17 @@ function superuser() {
     ARGS="$ARGS $1"
     shift
   done
-  $SUDO -- $ARGS
+
+  if sudo -n true 2>/dev/null; then # if credentials cached
+    sudo -- $ARGS
+  elif [ $SUDO_USE_INTERFACE == true ]; then
+    ACTIVITY="Enter command for \"$ARGS\""
+    PASSWORD=$(password)
+    echo "$PASSWORD" | $SUDO --stdin -- $ARGS
+    PASSWORD=""
+  else
+    $SUDO -- $ARGS
+  fi
 }
 
 function updateGUITitle() {
@@ -287,12 +301,31 @@ function userandpassword() {
     PASSWORD=`echo $ENTRY | cut -d'|' -f2`
   elif [ "$INTERFACE" == "kdialog" ]; then
     USERNAME=$(inputbox "$1")
-    password=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$2"`
+    PASSWORD=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$2"`
   else
     read -p "username: " USERNAME
     read  -sp "password: " PASSWORD
   fi
   echo "$USERNAME|$PASSWORD"
+}
+
+function password() {
+  updateGUITitle
+  TEST_STRING="$1"
+  calculateTextDialogSize
+
+  if [ "$INTERFACE" == "whiptail" ]; then
+    PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
+  elif [ "$INTERFACE" == "dialog" ]; then
+    PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
+  elif [ "$INTERFACE" == "zenity" ]; then
+    PASSWORD=`zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --password`
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    PASSWORD=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$2"`
+  else
+    read  -sp "password: " PASSWORD
+  fi
+  echo "$PASSWORD"
 }
 
 function displayFile() {
