@@ -111,7 +111,7 @@ function superuser() {
     ARGS="$ARGS $1"
     shift
   done
-  $SUDO $ARGS
+  $SUDO -- $ARGS
 }
 
 function updateGUITitle() {
