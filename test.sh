@@ -1,5 +1,9 @@
 #!/bin/bash
 CURRENT_DIR=$(dirname "$(readlink -f "$0")")/
+if [ "$BASH" = "" ]; then
+    bash $0
+    exit;
+fi
 source "$CURRENT_DIR"/script-ui.sh #folder local version
 #source /usr/local/bin/script-ui #installed version
 
