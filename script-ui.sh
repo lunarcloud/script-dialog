@@ -110,19 +110,13 @@ function superuser() {
     return 201
   fi
 
-  ARGS=""
-  while (( $# )); do
-    ARGS="$ARGS $1"
-    shift
-  done
-
   if sudo -n true 2>/dev/null; then # if credentials cached
-    sudo -- $ARGS
+    sudo -- "$@"
   elif [ $SUDO_USE_INTERFACE == true ]; then
-    ACTIVITY="Enter password to run \"$ARGS\""
-    echo $(password) | sudo --prompt="" --stdin -- $ARGS
+    ACTIVITY="Enter password to run \"""$@""\""
+    echo $(password) | sudo --prompt="" --stdin -- "$@"
   else
-    $SUDO -- $ARGS
+    $SUDO -- "$@"
   fi
 }
 
