@@ -114,7 +114,7 @@ function superuser() {
     sudo -- "$@"
   elif [ $SUDO_USE_INTERFACE == true ]; then
     ACTIVITY="Enter password to run \"""$@""\""
-    echo $(password) | sudo --prompt="" --stdin -- "$@"
+    echo $(password) | sudo -p "" -S -- "$@"
   else
     $SUDO -- "$@"
   fi
