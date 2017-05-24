@@ -34,5 +34,3 @@ Examples of function use
 Licence
 --------
 The code is under the license described in the "LICENSE" file, which is the LGPL license.
-
-The example icon, "ic_announcement_black_18dp.png", is released under an [Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/) license. as part of Google's Material Design icon set.
