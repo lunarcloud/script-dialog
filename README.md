@@ -12,14 +12,14 @@ Create bash scripts that utilize the best dialog system that is available. Inten
 
 To Use
 -------
-Simply add the following at the top of your script files and have script-ui.sh in the same directory
+Simply add the following at the top of your script files and have script-dialog.sh in the same directory
 
-    source $(dirname "$(readlink -f "$0")")/script-ui.sh
+    source $(dirname "$(readlink -f "$0")")/script-dialog.sh
     APP_NAME="Your Title goes here"
 
 Or if you've run install.sh
 
-    source /usr/local/bin/script-ui
+    source /usr/local/bin/script-dialog
     APP_NAME="Your Title goes here"
 
 Then use dialogs

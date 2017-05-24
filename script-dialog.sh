@@ -276,27 +276,26 @@ function userandpassword() {
   updateGUITitle
   TEST_STRING="$1"
   calculateTextDialogSize
+  
+  USERANDPASSWORD=()
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    USERNAME=$(inputbox "$1")
-    PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
+    USERANDPASSWORD[0]=$(inputbox "$1")
+    USERANDPASSWORD[1]=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    ENTRY=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3)
-    ENTRY=${ENTRY//$'\n'/$'|'}
-    USERNAME=`echo $ENTRY | cut -d'|' -f1`
-    PASSWORD=`echo $ENTRY | cut -d'|' -f2`
+    USERANDPASSWORD=($(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3))
   elif [ "$INTERFACE" == "zenity" ]; then
     ENTRY=`zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --password --username`
-    USERNAME=`echo $ENTRY | cut -d'|' -f1`
-    PASSWORD=`echo $ENTRY | cut -d'|' -f2`
+    USERANDPASSWORD[0]=`echo $ENTRY | cut -d'|' -f1`
+    USERANDPASSWORD[1]=`echo $ENTRY | cut -d'|' -f2`
   elif [ "$INTERFACE" == "kdialog" ]; then
-    USERNAME=$(inputbox "$1")
-    PASSWORD=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$2"`
+    USERANDPASSWORD[0]=$(inputbox "$1")
+    USERANDPASSWORD[1]=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$2"`
   else
-    read -p "username: " USERNAME
-    read  -sp "password: " PASSWORD
+    read -p "username: " USERANDPASSWORD[0]
+    read  -sp "password: " USERANDPASSWORD[1]
   fi
-  echo "$USERNAME|$PASSWORD"
+  echo "${USERANDPASSWORD[*]}"
 }
 
 function password() {
@@ -326,7 +325,7 @@ function displayFile() {
   if [ "$INTERFACE" == "whiptail" ]; then
     whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
   elif [ "$INTERFACE" == "dialog" ]; then
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" $RECMD_HEIGHT $RECMD_WIDTH
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --text-info --filename="$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -459,8 +458,8 @@ function progressbar() {
     dbusRef=`kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --progressbar "$ACTIVITY" 100`
     qdbus $dbusRef Set "" value 0
 
-    mkdir -p /tmp/script-ui.$$/
-    DBUS_BAR_PATH=/tmp/script-ui.$$/progressbar_dbus
+    mkdir -p /tmp/script-dialog.$$/
+    DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
     echo "$dbusRef" > $DBUS_BAR_PATH
   else
     echo -ne "\r$ACTIVITY 0%"
@@ -470,7 +469,7 @@ function progressbar() {
 
 function progressbar_update() {
   if [ "$INTERFACE" == "kdialog" ]; then
-    DBUS_BAR_PATH=/tmp/script-ui.$$/progressbar_dbus
+    DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
     dbusRef=`cat $DBUS_BAR_PATH`
     qdbus $dbusRef Set "" value $1
   elif [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ] || [ "$INTERFACE" == "zenity" ]; then
@@ -483,7 +482,7 @@ function progressbar_update() {
 
 function progressbar_finish() {
   if [ "$INTERFACE" == "kdialog" ]; then
-    DBUS_BAR_PATH=/tmp/script-ui.$$/progressbar_dbus
+    DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
     dbusRef=`cat $DBUS_BAR_PATH`
     qdbus $dbusRef close
     rm $DBUS_BAR_PATH
@@ -545,20 +544,15 @@ function datepicker() {
   YEAR="0"
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    INPUT_DATE=$(inputbox "Input Date (DD/MM/YYYY)" " ")
-    DAY=`echo $INPUT_DATE | cut -d'/' -f1`
-    MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
-    YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
+    STANDARD_DATE=$(inputbox "Input Date (DD/MM/YYYY)" " ")
   elif [ "$INTERFACE" == "dialog" ]; then
-    INPUT_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "Choose Date" 0 40)
-    DAY=`echo $INPUT_DATE | cut -d'/' -f1`
-    MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
-    YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
+    STANDARD_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "Choose Date" 0 40)
   elif [ "$INTERFACE" == "zenity" ]; then
     INPUT_DATE=$(zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --calendar "Select Date")
     MONTH=`echo $INPUT_DATE | cut -d'/' -f1`
     DAY=`echo $INPUT_DATE | cut -d'/' -f2`
     YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
+    STANDARD_DATE="$DAY/$MONTH/$YEAR"
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT_DATE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --calendar "Select Date")
     TEXT_MONTH=`echo $INPUT_DATE | cut -d' ' -f2`
@@ -590,13 +584,11 @@ function datepicker() {
 
     DAY=`echo $INPUT_DATE | cut -d' ' -f3`
     YEAR=`echo $INPUT_DATE | cut -d' ' -f4`
+    STANDARD_DATE="$DAY/$MONTH/$YEAR"
   else
-    read -p "Date (DD/MM/YYYY): " INPUT_DATE
-    DAY=`echo $INPUT_DATE | cut -d'/' -f1`
-    MONTH=`echo $INPUT_DATE | cut -d'/' -f2`
-    YEAR=`echo $INPUT_DATE | cut -d'/' -f3`
+    read -p "Date (DD/MM/YYYY): " STANDARD_DATE
   fi
 
-  echo "$DAY/$MONTH/$YEAR"
+  echo "$STANDARD_DATE"
 }
 

@@ -1,16 +1,18 @@
 #!/bin/bash
 CURRENT_DIR=$(dirname "$(readlink -f "$0")")/
-source "$CURRENT_DIR"/script-ui.sh #folder local version
-#source /usr/local/bin/script-ui #installed version
+source "$CURRENT_DIR"/script-dialog.sh #folder local version
+#source /usr/local/bin/script-dialog #installed version
 
 #GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing
-
+uiui
 relaunchIfNotVisible
 
 APP_NAME="Test Script"
 WINDOW_ICON="$CURRENT_DIR/ic_announcement_black_18dp.png"
 
 #INTERFACE="text" #force an interface, but only do this for testing
+
+exit;
 
 sudo -k # clear credentials
 superuser echo "Testing SUDO permissions"
@@ -50,15 +52,12 @@ ANSWER=$(inputbox "What's your name?" " ")
 
 messagebox "Nice to meet you, $ANSWER"
 
-ACTIVITY="APT Repositories"
-displayFile /etc/apt/sources.list
-
 ACTIVITY="Pretend Login"
-ANSWER=$(userandpassword Username Password)
-USERNAME=`echo $ANSWER | cut -d'|' -f1`
-PASSWORD=`echo $ANSWER | cut -d'|' -f2`
+ANSWER=($(userandpassword Username Password))
+messagebox "So, that was: user: ${ANSWER[0]} - password: ${ANSWER[1]}"
 
-messagebox "So, that was: $USERNAME - $PASSWORD"
+ACTIVITY="Test Script"
+displayFile $0
 
 ACTIVITY="Enter Birthday"
 ANSWER=$(datepicker)
