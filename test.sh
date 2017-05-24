@@ -4,15 +4,12 @@ source "$CURRENT_DIR"/script-dialog.sh #folder local version
 #source /usr/local/bin/script-dialog #installed version
 
 #GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing
-uiui
 relaunchIfNotVisible
 
 APP_NAME="Test Script"
 WINDOW_ICON="$CURRENT_DIR/ic_announcement_black_18dp.png"
 
 #INTERFACE="text" #force an interface, but only do this for testing
-
-exit;
 
 sudo -k # clear credentials
 superuser echo "Testing SUDO permissions"
@@ -81,5 +78,8 @@ messagebox "So you like $ANSWER, neat."
 
 ANSWER=$(filepicker $HOME "open")
 messagebox "File selected was $ANSWER"
+
+ANSWER=$(folderpicker $HOME)
+messagebox "Folder selected was $ANSWER"
 
 clear

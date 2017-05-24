@@ -331,7 +331,7 @@ function displayFile() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --textbox "$1" 512 256
   else
-    less $1
+    less $1 3>&1 1>&2 2>&3
   fi
 }
 
@@ -496,23 +496,13 @@ function filepicker() {
   if [ "$INTERFACE" == "whiptail" ]; then
     files=($(ls -lBhpa "$1" | awk -F ' ' ' { print $9 " " $5 } '))
     SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+$RECMD_HEIGHT)) $((6+$RECMD_WIDTH)) $RECMD_HEIGHT "${files[@]}" 3>&1 1>&2 2>&3)
-    FILE=$1$SELECTED
+    FILE="$1/$SELECTED"
 
     #exitstatus=$?
     #if [ $exitstatus != 0 ]; then
         #echo "CANCELLED!"
         #exit;
     #fi
-
-    # Ignore choice and relaunch dialog
-    if [[ "$SELECTED" == "./" ]]; then
-      FILE=$(filepicker "$1" "$2")
-    fi
-
-    # Drill into folder
-    if [ -d "$FILE" ]; then
-      FILE=$(filepicker "$FILE" "$2")
-    fi
 
   elif [ "$INTERFACE" == "dialog" ]; then
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect $1/ 14 48)
@@ -526,16 +516,62 @@ function filepicker() {
     fi
   else
     read -e -p "You need to $2 a file in $1/. Hit enter to browse this folder" IGNORE
-    less "$( ls $1/ )"
+    
+    ls -lBhpa "$1" 3>&1 1>&2 2>&3 #| less
+    
     read -e -p "Enter name of file to $2 in $1/: " SELECTED
+    
+    # TODO if SELECTED is empty
+    
     FILE=$1/$SELECTED
-    #TODO support driving down into folders
   fi
+
+    # Ignore choice and relaunch dialog
+    if [[ "$SELECTED" == "./" ]]; then
+        FILE=$(filepicker "$1" "$2")
+    fi
+
+    # Drill into folder
+    if [ -d "$FILE" ]; then
+        FILE=$(filepicker "$FILE" "$2")
+    fi
 
   echo $FILE
 }
 
-#function folderpicker() { } #TODO
+function folderpicker() {
+  updateGUITitle
+  if [ "$INTERFACE" == "whiptail" ]; then
+    files=($(ls -lBhpa "$1" | grep "^d" | awk -F ' ' ' { print $9 " " $5 } '))
+    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+$RECMD_HEIGHT)) $((6+$RECMD_WIDTH)) $RECMD_HEIGHT "${files[@]}" 3>&1 1>&2 2>&3)
+    FILE="$1/$SELECTED"
+
+    #exitstatus=$?
+    #if [ $exitstatus != 0 ]; then
+        #echo "CANCELLED!"
+        #exit;
+    #fi
+
+  elif [ "$INTERFACE" == "dialog" ]; then
+    FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --dselect $1/ 14 48)
+  elif [ "$INTERFACE" == "zenity" ]; then
+    FILE=$(zenity --title "$GUI_TITLE" --window-icon "$WINDOW_ICON" --file-selection --directory --filename $1/ )
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getexistingdirectory $1/ )
+  else
+    read -e -p "You need to select a folder in $1/. Hit enter to browse this folder" IGNORE
+    
+    ls -lBhpa "$1" | grep "^d" 3>&1 1>&2 2>&3 #| less
+    
+    read -e -p "Enter name of file to $2 in $1/: " SELECTED
+    
+    # TODO if SELECTED is empty
+    
+    FILE=$1/$SELECTED
+  fi
+
+  echo $FILE
+}
 
 function datepicker() {
   updateGUITitle
