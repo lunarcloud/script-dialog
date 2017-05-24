@@ -86,6 +86,8 @@ NO_SUDO=false
 SUDO_USE_INTERFACE=false
 if [ "$INTERFACE" == "kdialog" ] && [ "`which kdesudo`" > /dev/null ]; then
   SUDO="kdesudo"
+elif [ "$INTERFACE" == "kdialog" ] && [ `which gksudo` > /dev/null ]; then
+  SUDO="gksudo"
 elif [ "$INTERFACE" == "zenity" ] && [ `which gksudo` > /dev/null ]; then
   SUDO="gksudo"
 elif [ "$INTERFACE" == "zenity" ] && [ `which gksu` > /dev/null ]; then
@@ -203,6 +205,108 @@ function relaunchIfNotVisible() {
     fi
   fi
 }
+
+#standard window icons
+function standardIconInfo() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "info"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "dialog-information"
+  else
+    echo ""
+  fi
+}
+function standardIconQuestion() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "question"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "dialog-question"
+  else
+    echo ""
+  fi
+}
+function standardIconError() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "error"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "dialog-error"
+  else
+    echo ""
+  fi
+}
+function standardIconWarning() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "warning"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "dialog-warning"
+  else
+    echo ""
+  fi
+}
+function standardIconFolderOpen() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "info"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "folder-open"
+  else
+    echo ""
+  fi
+}
+function standardIconFolderSave() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "info"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "folder-save"
+  else
+    echo ""
+  fi
+}
+function standardIconFileOpen() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "info"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "document-open"
+  else
+    echo ""
+  fi
+}
+function standardIconFileSave() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "info"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "document-save"
+  else
+    echo ""
+  fi
+}
+function standardIconPassword() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "question"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "dialog-password"
+  else
+    echo ""
+  fi
+}
+function standardIconCalendar() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "question"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "x-office-calendar"
+  else
+    echo ""
+  fi
+}
+function standardIconDocument() {
+  if [ "$INTERFACE" == "zenity" ]; then
+    echo "info"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    echo "x-office-document"
+  else
+    echo ""
+  fi
+}
+#end standard icons
 
 function messagebox() {
   updateGUITitle
