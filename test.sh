@@ -16,7 +16,7 @@ if [ $NO_SUDO == true ]; then
 else
     ACTIVITY="SUDO Test"
     sudo -k # clear credentials
-    superuser echo "Testing SUDO permissions"
+    superuser echo "sudo echo test"
 fi
 
 if [ "$?" == "0" ]; then
@@ -54,16 +54,19 @@ fi
 
 WINDOW_ICON=$(standardIconQuestion)
 ACTIVITY="Name"
-ANSWER=$(inputbox "What's your name?" " ")
+NAME=$(inputbox "What's your name?" " ")
 
 WINDOW_ICON=$(standardIconQuestion)
 
 WINDOW_ICON=$(standardIconInfo)
-messagebox "Nice to meet you, $ANSWER"
+messagebox "Nice to meet you, $NAME"
+
+
+SUGGESTED_USERNAME=$(echo "$NAME" | tr '[:upper:]' '[:lower:]')  # convert to lower case
 
 WINDOW_ICON=$(standardIconPassword)
 ACTIVITY="Pretend Login"
-ANSWER=($(userandpassword Username Password))
+ANSWER=($(userandpassword Username Password  $SUGGESTED_USERNAME))
 
 WINDOW_ICON=$(standardIconInfo)
 messagebox "So, that was: user: ${ANSWER[0]} - password: ${ANSWER[1]}"

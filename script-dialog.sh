@@ -366,9 +366,9 @@ function inputbox() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" $RECMD_HEIGHT $RECMD_WIDTH  3>&1 1>&2 2>&3)
+    INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" $RECMD_HEIGHT $RECMD_WIDTH "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" $RECMD_HEIGHT $RECMD_WIDTH  3>&1 1>&2 2>&3)
+    INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" $RECMD_HEIGHT $RECMD_WIDTH "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     INPUT="`zenity --entry --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --text="$1" --entry-text "$2"`"
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -385,23 +385,25 @@ function userandpassword() {
   TEST_STRING="$1"
   calculateTextDialogSize
   
+  SUGGESTED_USERNAME="$3"
+  
   USERANDPASSWORD=()
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    USERANDPASSWORD[0]=$(inputbox "$1")
+    USERANDPASSWORD[0]=$(inputbox "$1" "$3")
     USERANDPASSWORD[1]=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    USERANDPASSWORD=($(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3))
+    USERANDPASSWORD=($(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" $RECMD_HEIGHT $RECMD_WIDTH 0 "Username: " 1 1 "$3" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1   3>&1 1>&2 2>&3))
   elif [ "$INTERFACE" == "zenity" ]; then
     ENTRY=`zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --password --username`
     USERANDPASSWORD[0]=`echo $ENTRY | cut -d'|' -f1`
     USERANDPASSWORD[1]=`echo $ENTRY | cut -d'|' -f2`
   elif [ "$INTERFACE" == "kdialog" ]; then
-    USERANDPASSWORD[0]=$(inputbox "$1")
+    USERANDPASSWORD[0]=$(inputbox "$1" "$3")
     USERANDPASSWORD[1]=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$2"`
   else
-    read -p "username: " USERANDPASSWORD[0]
-    read  -sp "password: " USERANDPASSWORD[1]
+    read -p "$1 ($3): " USERANDPASSWORD[0]
+    read  -sp "$2: " USERANDPASSWORD[1]
   fi
   echo "${USERANDPASSWORD[*]}"
 }
@@ -412,15 +414,15 @@ function password() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
+    PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$2" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
+    PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" $RECMD_HEIGHT $RECMD_WIDTH 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     PASSWORD=`zenity --title="$GUI_TITLE" --window-icon "$WINDOW_ICON" --password`
   elif [ "$INTERFACE" == "kdialog" ]; then
-    PASSWORD=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$2"`
+    PASSWORD=`kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$1"`
   else
-    read  -sp "password: " PASSWORD
+    read  -sp "$1: " PASSWORD
   fi
   echo "$PASSWORD"
 }
