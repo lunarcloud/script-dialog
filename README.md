@@ -1,7 +1,7 @@
 script-dialog
 =============
 
-Create bash scripts that utilize the best dialog system that is available. Intended for Linux, but has been tested on Windows, and should work on other unix-like OSs.
+Create bash scripts that utilize the best dialog system that is available. Intended for Linux, but has been tested on OSX 10.6 and on Windows via the Cygwin environment and via the git bash terminal, and should work on other unix-like OSs.
 
 * If it's launched from a GUI,
  1. it will prefer kdialog in kde and zenity in anything other environment.
@@ -14,7 +14,7 @@ To Use
 -------
 Simply add the following at the top of your script files and have script-dialog.sh in the same directory
 
-    source $(dirname "$(readlink -f "$0")")/script-dialog.sh
+    source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/script-dialog.sh
     APP_NAME="Your Title goes here"
 
 Or if you've run install.sh

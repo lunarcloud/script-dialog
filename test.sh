@@ -1,13 +1,13 @@
 #!/bin/bash
-CURRENT_DIR=$(dirname "$(readlink -f "$0")")/
-source "$CURRENT_DIR"/script-dialog.sh #folder local version
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$SCRIPT_DIR"/script-dialog.sh #folder local version
 #source /usr/local/bin/script-dialog #installed version
 
 #GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing
 relaunchIfNotVisible
 
 APP_NAME="Test Script"
-#WINDOW_ICON="$CURRENT_DIR/icon.png" # if not set, it'll use standard ones
+#WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
 #INTERFACE="text" #force an interface, but only do this for testing
 
 ACTIVITY="SUDO Test"

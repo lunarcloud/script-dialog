@@ -1,13 +1,17 @@
 #!/bin/bash
 #multi-ui scripting
 
-if [ "$XDG_CURRENT_DESKTOP" == "" ]; then
+if [ "$(uname -s)" == "Darwin" ]; then
+    desktop="macos"
+elif [ "$XDG_CURRENT_DESKTOP" != "" ]; then
+  desktop=$XDG_CURRENT_DESKTOP
+elif [ "$XDG_DATA_DIRS" != "" ]; then
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 else
-  desktop=$XDG_CURRENT_DESKTOP
+    desktop="unknown"
 fi
 
-desktop=${desktop,,}  # convert to lower case
+desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')  # convert to lower case
 
 [ -t 0 ] && terminal=true || terminal=false
 
