@@ -10,9 +10,14 @@ APP_NAME="Test Script"
 #WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
 #INTERFACE="text" #force an interface, but only do this for testing
 
-ACTIVITY="SUDO Test"
-sudo -k # clear credentials
-superuser echo "Testing SUDO permissions"
+
+if [ $NO_SUDO == true ]; then
+    messagebox "No SUDO is available on this system."
+else
+    ACTIVITY="SUDO Test"
+    sudo -k # clear credentials
+    superuser echo "Testing SUDO permissions"
+fi
 
 if [ "$?" == "0" ]; then
     WINDOW_ICON=$(standardIconInfo)

@@ -8,7 +8,7 @@ elif [ "$XDG_CURRENT_DESKTOP" != "" ]; then
 elif [ "$XDG_DATA_DIRS" != "" ]; then
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 else
-    desktop="unknown"
+  desktop="unknown"
 fi
 
 desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')  # convert to lower case
