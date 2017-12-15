@@ -10,7 +10,6 @@ APP_NAME="Test Script"
 #WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
 #INTERFACE="text" #force an interface, but only do this for testing
 
-
 if [ $NO_SUDO == true ]; then
     messagebox "No SUDO is available on this system."
 else
@@ -84,12 +83,14 @@ messagebox "Cool, it's on $ANSWER"
 
 WINDOW_ICON=$(standardIconQuestion)
 ACTIVITY="Pretend Configuration"
-ANSWER=($( checklist "Select the appropriate network options for this computer" 4  \
+ANSWER=$( checklist "Select the appropriate network options for this computer" 4  \
         "NET OUT" "Allow connections to other hosts" ON \
         "NET_IN" "Allow connections from other hosts" OFF \
         "LOCAL_MOUNT" "Allow mounting of local drives" OFF \
-        "REMOTE_MOUNT" "Allow mounting of remote drives" OFF ))
-        
+        "REMOTE_MOUNT" "Allow mounting of remote drives" OFF )
+
+ANSWER=( $(eval echo $ANSWER) )
+
 WINDOW_ICON=$(standardIconInfo)
 messagebox "So you chose to enable: ${ANSWER[*]}"
 
@@ -100,7 +101,7 @@ ANSWER=$(radiolist "Favorite Primary Color? " 4  \
         "yellow" "Yellow" OFF \
         "green" "Green" ON \
         "red" "Red" OFF )
-        
+
 WINDOW_ICON=$(standardIconInfo)
 messagebox "So you like $ANSWER, neat."
 
