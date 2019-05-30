@@ -8,7 +8,16 @@ relaunchIfNotVisible
 
 APP_NAME="Test Script"
 #WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
-#INTERFACE="text" #force an interface, but only do this for testing
+INTERFACE="kdialog" #force an interface, but only do this for testing
+
+ACTIVITY="Pretending to load..."
+{
+  for ((i = 0 ; i <= 100 ; i+=5)); do
+    progressbar_update $i
+    sleep 0.2
+  done
+  progressbar_finish
+} | progressbar
 
 if [ $NO_SUDO == true ]; then
     messagebox "No SUDO is available on this system."
@@ -25,15 +34,6 @@ else
     WINDOW_ICON=$(standardIconError)
     messagebox "Password denied"
 fi
-
-ACTIVITY="Pretending to load..."
-{
-  for ((i = 0 ; i <= 100 ; i+=5)); do
-    progressbar_update $i
-    sleep 0.2
-  done
-} | progressbar
-progressbar_finish
 
 ACTIVITY="Salutations"
 messagebox "Hello World";

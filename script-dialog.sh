@@ -88,13 +88,13 @@ fi
 # which sudo to use
 NO_SUDO=false
 SUDO_USE_INTERFACE=false
-if [ "$INTERFACE" == "kdialog" ] && [ "`which kdesudo`" > /dev/null ]; then
-  SUDO="kdesudo"
+if [ $GUI == true ] && [ "`which pkexec`" > /dev/null ]; then
+  SUDO="pkexec"
 elif [ "$INTERFACE" == "kdialog" ] && [ `which gksudo` > /dev/null ]; then
+  SUDO="kdesudo"
+elif [ $GUI == true ] && [ `which gksudo` > /dev/null ]; then
   SUDO="gksudo"
-elif [ "$INTERFACE" == "zenity" ] && [ `which gksudo` > /dev/null ]; then
-  SUDO="gksudo"
-elif [ "$INTERFACE" == "zenity" ] && [ `which gksu` > /dev/null ]; then
+elif [ $GUI == true ] && [ `which gksu` > /dev/null ]; then
   SUDO="gksu"
 elif [ `which sudo` > /dev/null ]; then
   SUDO="sudo"
@@ -384,9 +384,9 @@ function userandpassword() {
   updateGUITitle
   TEST_STRING="$1"
   calculateTextDialogSize
-  
+
   SUGGESTED_USERNAME="$3"
-  
+
   USERANDPASSWORD=()
 
   if [ "$INTERFACE" == "whiptail" ]; then
@@ -571,6 +571,14 @@ function progressbar() {
     mkdir -p /tmp/script-dialog.$$/
     DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
     echo "$dbusRef" > $DBUS_BAR_PATH
+
+	# wait until finish called to leave function, so internal actions finish
+    while [ -e $DBUS_BAR_PATH ]; do
+		sleep 1
+		read "$@" <&0;
+	done
+
+	qdbus $dbusRef close
   else
     echo -ne "\r$ACTIVITY 0%"
     cat
@@ -580,8 +588,12 @@ function progressbar() {
 function progressbar_update() {
   if [ "$INTERFACE" == "kdialog" ]; then
     DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
-    dbusRef=`cat $DBUS_BAR_PATH`
-    qdbus $dbusRef Set "" value $1
+	if [ -e $DBUS_BAR_PATH ]; then
+		dbusRef=`cat $DBUS_BAR_PATH`
+		qdbus $dbusRef Set "" value $1
+	else
+		echo "Could not update progressbar $$"
+    fi
   elif [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ] || [ "$INTERFACE" == "zenity" ]; then
     echo "$1"
   else
@@ -592,10 +604,14 @@ function progressbar_update() {
 
 function progressbar_finish() {
   if [ "$INTERFACE" == "kdialog" ]; then
-    DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
-    dbusRef=`cat $DBUS_BAR_PATH`
-    qdbus $dbusRef close
-    rm $DBUS_BAR_PATH
+	DBUS_BAR_FOLDER=/tmp/script-dialog.$$
+    DBUS_BAR_PATH=$DBUS_BAR_FOLDER/progressbar_dbus
+    if [ -e $DBUS_BAR_PATH ]; then
+		rm $DBUS_BAR_PATH
+		rmdir $DBUS_BAR_FOLDER --ignore-fail-on-non-empty
+	else
+		echo "Could not close progressbar $$"
+    fi
   elif [ "$INTERFACE" != "whiptail" ] && [ "$INTERFACE" != "dialog" ] && [ "$INTERFACE" != "zenity" ]; then
     echo ""
   fi
@@ -626,13 +642,13 @@ function filepicker() {
     fi
   else
     read -e -p "You need to $2 a file in $1/. Hit enter to browse this folder" IGNORE
-    
+
     ls -lBhpa "$1" 3>&1 1>&2 2>&3 #| less
-    
+
     read -e -p "Enter name of file to $2 in $1/: " SELECTED
-    
+
     # TODO if SELECTED is empty
-    
+
     FILE=$1/$SELECTED
   fi
 
@@ -670,13 +686,13 @@ function folderpicker() {
     FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getexistingdirectory $1/ )
   else
     read -e -p "You need to select a folder in $1/. Hit enter to browse this folder" IGNORE
-    
+
     ls -lBhpa "$1" | grep "^d" 3>&1 1>&2 2>&3 #| less
-    
+
     read -e -p "Enter name of file to $2 in $1/: " SELECTED
-    
+
     # TODO if SELECTED is empty
-    
+
     FILE=$1/$SELECTED
   fi
 
