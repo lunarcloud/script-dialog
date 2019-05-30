@@ -591,6 +591,7 @@ function progressbar_update() {
 	if [ -e $DBUS_BAR_PATH ]; then
 		dbusRef=`cat $DBUS_BAR_PATH`
 		qdbus $dbusRef Set "" value $1
+		sleep 0.2 # requires slight sleep
 	else
 		echo "Could not update progressbar $$"
     fi
