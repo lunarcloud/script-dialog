@@ -4,7 +4,7 @@
 if [ "$(uname -s)" == "Darwin" ]; then
     desktop="macos"
 elif [ "$XDG_CURRENT_DESKTOP" != "" ]; then
-  desktop=$XDG_CURRENT_DESKTOP
+  desktop=$(echo "$XDG_CURRENT_DESKTOP" | tr '[:upper:]' '[:lower:]' | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 elif [ "$XDG_DATA_DIRS" != "" ]; then
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 else
