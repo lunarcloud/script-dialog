@@ -121,6 +121,8 @@ function superuser() {
   elif [ $SUDO_USE_INTERFACE == true ]; then
     ACTIVITY="Enter password to run \"""$@""\""
     echo $(password) | sudo -p "" -S -- "$@"
+  elif [ "$SUDO" == "pkexec" ]; then
+    $SUDO "$@"
   else
     $SUDO -- "$@"
   fi
