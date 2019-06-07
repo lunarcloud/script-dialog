@@ -18,3 +18,8 @@ Source the "script-dialog.sh" script. The following example assumes it's in the 
     APP_NAME="Your Title goes here"
 
 Then use the dialog functions. The "test.sh" script will contain uses of every feature.
+
+FAQ
+----
+Scripts open in a text editor instead of running, what gives?
+This is likely a file manager setting. On GNOME, open up the file manager preferences, go to the "Behavior" tab, and change "Executable Text Files" from "Display them" to either "Run them" or "Ask what to do".
