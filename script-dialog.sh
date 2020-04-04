@@ -453,6 +453,7 @@ function checklist() {
   NUM_OPTIONS=$2
   shift
   shift
+  calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
     CHOSEN=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
@@ -520,6 +521,7 @@ function radiolist() {
   NUM_OPTIONS=$2
   shift
   shift
+  calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
     CHOSEN=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH $NUM_OPTIONS "$@"  3>&1 1>&2 2>&3)
@@ -756,4 +758,3 @@ function datepicker() {
 
   echo "$STANDARD_DATE"
 }
-
