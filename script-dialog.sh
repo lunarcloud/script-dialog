@@ -2,11 +2,15 @@
 #multi-ui scripting
 # shellcheck disable=SC2046
 
-if [ "$(uname -s)" == "Darwin" ]; then
+if [[ $OSTYPE == darwin* ]]; then
     desktop="macos"
+elif [[ "$(</proc/sys/kernel/osrelease)" == *microsoft* ]]; then
+    desktop="windows"
 elif [ "$XDG_CURRENT_DESKTOP" != "" ]; then
+  # shellcheck disable=SC2001
   desktop=$(echo "$XDG_CURRENT_DESKTOP" | tr '[:upper:]' '[:lower:]' | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 elif [ "$XDG_DATA_DIRS" != "" ]; then
+  # shellcheck disable=SC2001
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 else
   desktop="unknown"
@@ -635,6 +639,7 @@ function progressbar_finish() {
 function filepicker() {
   updateGUITitle
   if [ "$INTERFACE" == "whiptail" ]; then
+    # shellcheck disable=SC2012
     files=($(ls -lBhpa "$1" | awk -F ' ' ' { print $9 " " $5 } '))
     SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_HEIGHT)) $((6+RECMD_WIDTH)) $RECMD_HEIGHT "${files[@]}" 3>&1 1>&2 2>&3)
     FILE="$1/$SELECTED"
@@ -656,13 +661,13 @@ function filepicker() {
       FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getopenfilename "$1"/ )
     fi
   else
-    read -erp "You need to $2 a file in $1/. Hit enter to browse this folder" IGNORE
+    read -erp "You need to $2 a file in $1/. Hit enter to browse this folder"
 
     ls -lBhpa "$1" 3>&1 1>&2 2>&3 #| less
 
     read -erp "Enter name of file to $2 in $1/: " SELECTED
 
-    # TODO if SELECTED is empty
+    # TODO if SELECTED is empty or folder
 
     FILE=$1/$SELECTED
   fi
@@ -683,6 +688,7 @@ function filepicker() {
 function folderpicker() {
   updateGUITitle
   if [ "$INTERFACE" == "whiptail" ]; then
+    # shellcheck disable=SC2010
     files=($(ls -lBhpa "$1" | grep "^d" | awk -F ' ' ' { print $9 " " $5 } '))
     SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_HEIGHT)) $((6+RECMD_WIDTH)) $RECMD_HEIGHT "${files[@]}" 3>&1 1>&2 2>&3)
     FILE="$1/$SELECTED"
@@ -700,13 +706,14 @@ function folderpicker() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getexistingdirectory "$1"/ )
   else
-    read -erp "You need to select a folder in $1/. Hit enter to browse this folder" IGNORE
+    read -erp "You need to select a folder in $1/. Hit enter to browse this folder" 
 
+    # shellcheck disable=SC2010
     ls -lBhpa "$1" | grep "^d" 3>&1 1>&2 2>&3 #| less
 
     read -erp "Enter name of file to $2 in $1/: " SELECTED
 
-    # TODO if SELECTED is empty
+    # TODO if SELECTED is empty or ..
 
     FILE=$1/$SELECTED
   fi

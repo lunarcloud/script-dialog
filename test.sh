@@ -8,7 +8,7 @@ source "${SCRIPT_DIR}"/script-dialog.sh
 
 relaunchIfNotVisible
 
-export APP_NAME="Test Script"
+APP_NAME="Test Script"
 #WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
 #INTERFACE="kdialog" #force an interface, but only do this for testing
 
@@ -17,7 +17,7 @@ if [ "$NO_SUDO" == true ]; then
 else
     ACTIVITY="SUDO Test"
     sudo -k # clear credentials
-    if superuser echo "sudo echo test"; then
+    if superuser echo; then
         WINDOW_ICON=$(standardIconInfo)
         messagebox "Password accepted"
     else
