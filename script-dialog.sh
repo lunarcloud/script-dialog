@@ -94,7 +94,7 @@ fi
 NO_SUDO=false
 SUDO_USE_INTERFACE=false
 if [ $GUI == true ] && [[ "$(which pkexec)" > /dev/null ]]; then
-  SUDO="pkexec"
+  SUDO="pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY"
 elif [ "$INTERFACE" == "kdialog" ] && [[ $(which gksudo) > /dev/null ]]; then
   SUDO="kdesudo"
 elif [ $GUI == true ] && [[ $(which gksudo) > /dev/null ]]; then
@@ -121,13 +121,13 @@ function superuser() {
     return 201
   fi
 
-  if sudo -n true 2>/dev/null; then # if credentials cached
-    sudo -- "$@"
-  elif [ $SUDO_USE_INTERFACE == true ]; then
+  if [ $SUDO_USE_INTERFACE == true ]; then
     ACTIVITY="Enter password to run \"$*\""
     password "$@" | sudo -p "" -S -- "$@"
-  elif [ "$SUDO" == "pkexec" ]; then
+  elif [[ "$SUDO" == *"pkexec"* ]]; then
     $SUDO "$@"
+  elif sudo -n true 2>/dev/null; then # if credentials cached
+    sudo -- "$@"
   else
     $SUDO -- "$@"
   fi
