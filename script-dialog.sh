@@ -14,6 +14,10 @@ elif [ "$XDG_CURRENT_DESKTOP" != "" ]; then
 elif [ "$XDG_DATA_DIRS" != "" ]; then
   # shellcheck disable=SC2001
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
+elif pgrep -l "mutter" > /dev/null; then
+    desktop="gnome"
+elif pgrep -l "kwin" > /dev/null; then
+    desktop="kde"
 else
   desktop="unknown"
 fi
@@ -221,53 +225,23 @@ function relaunchIfNotVisible() {
 
 #standard window icons
 function standardIconInfo() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "info"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "dialog-information"
-  else
-    echo ""
-  fi
+  echo "dialog-information"
 }
 function standardIconQuestion() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "question"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "dialog-question"
-  else
-    echo ""
-  fi
+  echo "dialog-question"
 }
 function standardIconError() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "error"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "dialog-error"
-  else
-    echo ""
-  fi
+  echo "dialog-error"
 }
 function standardIconWarning() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "warning"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "dialog-warning"
-  else
-    echo ""
-  fi
+  echo "dialog-warning"
 }
 function standardIconFolderOpen() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "info"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "folder-open"
-  else
-    echo ""
-  fi
+  echo "folder-open"
 }
 function standardIconFolderSave() {
   if [ "$INTERFACE" == "zenity" ]; then
-    echo "info"
+    echo "document-save"
   elif [ "$INTERFACE" == "kdialog" ]; then
     echo "folder-save"
   else
@@ -275,49 +249,20 @@ function standardIconFolderSave() {
   fi
 }
 function standardIconFileOpen() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "info"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "document-open"
-  else
-    echo ""
-  fi
+  echo "document-open"
 }
 function standardIconFileSave() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "info"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "document-save"
-  else
-    echo ""
-  fi
+  echo "document-save"
 }
 function standardIconPassword() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "question"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "dialog-password"
-  else
-    echo ""
-  fi
+  echo "dialog-password"
 }
+
 function standardIconCalendar() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "question"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "x-office-calendar"
-  else
-    echo ""
-  fi
+  echo "x-office-calendar"
 }
 function standardIconDocument() {
-  if [ "$INTERFACE" == "zenity" ]; then
-    echo "info"
-  elif [ "$INTERFACE" == "kdialog" ]; then
-    echo "x-office-document"
-  else
-    echo ""
-  fi
+  echo "x-office-document"
 }
 #end standard icons
 
