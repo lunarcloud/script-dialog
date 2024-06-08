@@ -560,9 +560,9 @@ function radiolist() {
     CHOSEN=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --radiolist "$TEXT" "$@")
   else
     echo "$ACTIVITY: " 3>&1 1>&2 2>&3
-    OPTIONS=""
+    OPTIONS=()
     while test ${#} -gt 0;  do
-      OPTIONS+="$1 ($2)\n"
+      OPTIONS+=("$1 ($2)\n")
       shift
       shift
       shift
