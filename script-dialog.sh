@@ -1,5 +1,7 @@
 #!/bin/bash
 #multi-ui scripting
+
+# Disable this rule, as it interferes with purely-numeric parameters
 # shellcheck disable=SC2046
 
 if [[ $OSTYPE == darwin* ]]; then
@@ -418,11 +420,8 @@ function userandpassword() {
     read -srp "$PASS_TEXT: " "CREDS[1]"
   fi
   
-  # shellcheck disable=SC2086
-  eval $__uservar="'${CREDS[0]}'"
-  # shellcheck disable=SC2086
-  eval $__passvar="'${CREDS[1]}'"
-  
+  eval "$__uservar"="'${CREDS[0]}'"
+  eval "$__passvar"="'${CREDS[1]}'"
 }
 
 function password() {
