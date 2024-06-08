@@ -10,7 +10,7 @@ relaunchIfNotVisible
 
 APP_NAME="Test Script"
 #WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
-#INTERFACE="unknown" #force an interface, but only do this for testing
+#INTERFACE="kdialog" #force an interface, but only do this for testing
 
 if [ "$NO_SUDO" == true ]; then
     messagebox "No SUDO is available on this system."
@@ -44,7 +44,7 @@ fi
 
 WINDOW_ICON=$(standardIconQuestion)
 ACTIVITY="Name"
-NAME=$(inputbox "What's your name?" " ")
+NAME=$(inputbox "What's your name?" "")
 
 WINDOW_ICON=$(standardIconQuestion)
 
@@ -67,7 +67,7 @@ ACTIVITY="Pretend Login"
 userandpassword USER PASS "$SUGGESTED_USERNAME"
 
 WINDOW_ICON=$(standardIconInfo)
-messagebox "So, that was: user: $USER - password: $PASS"
+messagebox "So, that was:\n user: $USER\n password: $PASS"
 
 WINDOW_ICON=$(standardIconDocument)
 ACTIVITY="Test Script"
