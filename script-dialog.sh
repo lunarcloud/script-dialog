@@ -28,13 +28,13 @@ hasWhiptail=false
 if [ -z ${GUI+x} ]; then
   GUI=false
   if [ ! -e xdpyinfo ] ||  xdpyinfo | grep X.Org > /dev/null; then
-    if [ $terminal == false ] ; then
+    if [ "$terminal" == "false" ] ; then
       GUI=true
     fi
   fi
 fi
 
-if [ $GUI == true ] ; then
+if [ "$GUI" == "true" ] ; then
   if which kdialog > /dev/null; then
     hasKDialog=true
   fi
@@ -55,35 +55,35 @@ fi
 
 if [ -z ${INTERFACE+x} ]; then
   if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxqt" ]  || [ "$desktop" == "maui" ] ; then
-    if  [ $hasKDialog == true ] && [ $GUI == true ] ; then
+    if  [ "$hasKDialog" == "true" ] && [ "$GUI" == "true" ] ; then
       INTERFACE="kdialog"
       GUI=true
-    elif [ $hasZenity == true ] && [ $GUI == true ] ; then
+    elif [ "$hasZenity" == "true" ] && [ "$GUI" == "true" ] ; then
       INTERFACE="zenity"
       GUI=true
-    elif  [ $hasDialog == true ] ; then
+    elif  [ "$hasDialog" == "true" ] ; then
       INTERFACE="dialog"
       GUI=false
-    elif  [ $hasWhiptail == true ] ; then
+    elif  [ "$hasWhiptail" == "true" ] ; then
       INTERFACE="whiptail"
       GUI=false
     fi
   elif [ "$desktop" == "unity" ] || [ "$desktop" == "gnome" ]  || [ "$desktop" == "xfce" ]  || [ -n "$INTERFACE" ]; then
-    if [ $hasZenity == true ] && [ $GUI == true ] ; then
+    if [ "$hasZenity" == "true" ] && [ "$GUI" == "true" ] ; then
       INTERFACE="zenity"
       GUI=true
-    elif  [ $hasDialog == true ] ; then
+    elif  [ "$hasDialog" == "true" ] ; then
       INTERFACE="dialog"
       GUI=false
-    elif  [ $hasWhiptail == true ] ; then
+    elif  [ "$hasWhiptail" == "true" ] ; then
       INTERFACE="whiptail"
       GUI=false
     fi
   else
-    if  [ $hasDialog == true ] ; then
+    if  [ "$hasDialog" == "true" ] ; then
       INTERFACE="dialog"
       GUI=false
-    elif  [ $hasWhiptail == true ] ; then
+    elif  [ "$hasWhiptail" == "true" ] ; then
       INTERFACE="whiptail"
       GUI=false
     fi
@@ -93,13 +93,13 @@ fi
 # which sudo to use
 NO_SUDO=false
 SUDO_USE_INTERFACE=false
-if [ $GUI == true ] && [[ "$(which pkexec)" > /dev/null ]]; then
+if [ "$GUI" == "true" ] && [[ "$(which pkexec)" > /dev/null ]]; then
   SUDO="pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY"
 elif [ "$INTERFACE" == "kdialog" ] && [[ $(which gksudo) > /dev/null ]]; then
   SUDO="kdesudo"
-elif [ $GUI == true ] && [[ $(which gksudo) > /dev/null ]]; then
+elif [ "$GUI" == "true" ] && [[ $(which gksudo) > /dev/null ]]; then
   SUDO="gksudo"
-elif [ $GUI == true ] && [[ $(which gksu) > /dev/null ]]; then
+elif [ "$GUI" == "true" ] && [[ $(which gksu) > /dev/null ]]; then
   SUDO="gksu"
 elif [[ $(which sudo) > /dev/null ]]; then
   SUDO="sudo"
@@ -151,7 +151,7 @@ function updateDialogMaxSize() {
     return;
   fi
 
-  if [ $GUI == true ] ; then
+  if [ "$GUI" == "true" ] ; then
     MAX_HEIGHT=$( xdpyinfo | grep "dimensions" | awk '{ print $2 }' | cut -d'x' -f2)
     MAX_WIDTH=$( xdpyinfo | grep "dimensions" | awk '{ print $2 }' | cut -d'x' -f1)
   else
@@ -202,7 +202,7 @@ function calculateTextDialogSize() {
 function relaunchIfNotVisible() {
   parentScript=$(basename "$0")
 
-  if [ $GUI == false ] && [ $terminal == false ]; then
+  if [ "$GUI" == "false" ] && [ "$terminal" == "false" ]; then
     if [ -e "/tmp/relaunching" ] && [ "$(cat /tmp/relaunching)" == "$parentScript" ]; then
       echo "Won't relaunch $parentScript more than once"
     else
@@ -414,13 +414,13 @@ function userandpassword() {
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
     CREDS[1]=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$PASS_TEXT")
   else
-    read -rp "$USER_TEXT ($SUGGESTED_USERNAME): " CREDS[0]
-    read -srp "$PASS_TEXT: " CREDS[1]
+    read -rp "$USER_TEXT ($SUGGESTED_USERNAME): " "CREDS[0]"
+    read -srp "$PASS_TEXT: " "CREDS[1]"
   fi
   
-  # shellcheck disable=SC2086  
-  eval $__uservar="'${CREDS[0]}'"  
-  # shellcheck disable=SC2086  
+  # shellcheck disable=SC2086
+  eval $__uservar="'${CREDS[0]}'"
+  # shellcheck disable=SC2086
   eval $__passvar="'${CREDS[1]}'"
   
 }
@@ -439,7 +439,7 @@ function password() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$1")
   else
-    read -srp "$1: " PASSWORD
+    read -srp "$ACTIVITY: " PASSWORD
   fi
   echo "$PASSWORD"
 }
