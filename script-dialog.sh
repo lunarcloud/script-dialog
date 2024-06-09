@@ -174,8 +174,6 @@ function calculateTextDialogSize() {
   updateDialogMaxSize
   CHARS=${#TEST_STRING}
   RECMD_SCROLL=false
-  #ORIG_RECMD_HEIGHT=$((CHARS  / MIN_WIDTH))
-  #ORIG_RECMD_WIDTH=$((CHARS / MIN_HEIGHT))
   RECMD_HEIGHT=$((CHARS  / MIN_WIDTH))
   RECMD_WIDTH=$((CHARS / MIN_HEIGHT))
 
@@ -275,7 +273,7 @@ function messagebox() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --msgbox "$1"
   else
-    echo "$1"
+    echo -e "$1"
   fi
 }
 
