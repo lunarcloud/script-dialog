@@ -39,19 +39,19 @@ if [ -z ${GUI+x} ]; then
 fi
 
 if [ "$GUI" == "true" ] ; then
-  if which kdialog > /dev/null; then
+  if which -s kdialog; then
     hasKDialog=true
   fi
 
-  if which zenity > /dev/null; then
+  if which -s zenity; then
     hasZenity=true
   fi
 else
-  if which dialog > /dev/null; then
+  if which -s dialog; then
     hasDialog=true
   fi
 
-  if which whiptail > /dev/null; then
+  if which -s whiptail; then
     hasWhiptail=true
   fi
 fi
@@ -97,15 +97,15 @@ fi
 # which sudo to use
 NO_SUDO=false
 SUDO_USE_INTERFACE=false
-if [ "$GUI" == "true" ] && [[ "$(which pkexec)" > /dev/null ]]; then
+if [ "$GUI" == "true" ] &&  which -s pkexec; then
   SUDO="pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY"
-elif [ "$INTERFACE" == "kdialog" ] && [[ $(which gksudo) > /dev/null ]]; then
+elif [ "$INTERFACE" == "kdialog" ] && which -s gksudo; then
   SUDO="kdesudo"
-elif [ "$GUI" == "true" ] && [[ $(which gksudo) > /dev/null ]]; then
+elif [ "$GUI" == "true" ] && which -s gksudo; then
   SUDO="gksudo"
-elif [ "$GUI" == "true" ] && [[ $(which gksu) > /dev/null ]]; then
+elif [ "$GUI" == "true" ] && which -s gksu; then
   SUDO="gksu"
-elif [[ $(which sudo) > /dev/null ]]; then
+elif which -s sudo; then
   SUDO="sudo"
   if [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ]; then
     SUDO_USE_INTERFACE=true
@@ -151,7 +151,7 @@ MAX_HEIGHT=$MIN_HEIGHT
 MAX_WIDTH=$MIN_WIDTH
 
 function updateDialogMaxSize() {
-  if ! [[ "$(which tput)" > /dev/null ]]; then
+  if ! which -s tput; then
     return;
   fi
 
