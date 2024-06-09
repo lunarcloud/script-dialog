@@ -32,4 +32,6 @@ One of 2 things has happened:
 
   * Some desktop environments do this as default script behavior, assuming scripts are only run from terminal and edited from GUIs.
 
-    You may have to change your file manager preferences on scripts or "Executable Text Files", or right click and choose to "Run As Program". The latter option may run the script in a terminal instead of GUI.
+    You may have to change your file manager preferences on scripts or "Executable Text Files", or right click and choose to "Run As Program".
+
+    The latter option may run the script in a terminal instead of GUI. Not much can be done about "GNOME choses to force scripts to open via terminal" type issues. If this is for a permanent script, create an application shortcut (by creating a `.desktop` file in `$HOME/.local/share/applications/`).
