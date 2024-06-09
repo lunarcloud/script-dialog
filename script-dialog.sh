@@ -27,7 +27,8 @@ fi
 
 desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')  # convert to lower case
 
-[ -t 0 ] && terminal=true || terminal=false
+# If we have a standard in and out, then terminal
+[ -t 0 ] && [ -t 1 ] && terminal=true || terminal=false
 
 hasKDialog=false
 hasZenity=false

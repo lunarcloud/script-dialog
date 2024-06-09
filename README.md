@@ -32,4 +32,4 @@ One of 2 things has happened:
 
   * Some desktop environments do this as default script behavior, assuming scripts are only run from terminal and edited from GUIs.
 
-    On GNOME, right click the script and choose "Run as a Program".
+    You may have to change your file manager preferences on scripts or "Executable Text Files", or right click and choose to "Run As Program". The latter option may run the script in a terminal instead of GUI.
