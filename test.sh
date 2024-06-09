@@ -67,7 +67,7 @@ ACTIVITY="Pretend Login"
 userandpassword USER PASS "$SUGGESTED_USERNAME"
 
 WINDOW_ICON=$(standardIconInfo)
-messagebox $'So, that was:\n user: $USER\n password: $PASS'
+messagebox $"So, that was:\n user: $USER\n password: $PASS"
 
 WINDOW_ICON=$(standardIconDocument)
 ACTIVITY="Test Script"
