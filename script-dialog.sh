@@ -8,10 +8,13 @@ if [[ $OSTYPE == darwin* ]]; then
     desktop="macos"
 elif [[ "$(</proc/sys/kernel/osrelease)" == *microsoft* ]]; then
     desktop="windows"
-elif [ "$XDG_CURRENT_DESKTOP" != "" ]; then
+elif [ -n "$XDG_SESSION_DESKTOP" ]; then
+  # shellcheck disable=SC2001
+  desktop=$(echo "$XDG_SESSION_DESKTOP" | tr '[:upper:]' '[:lower:]' | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
+elif [ -n "$XDG_CURRENT_DESKTOP" ]; then
   # shellcheck disable=SC2001
   desktop=$(echo "$XDG_CURRENT_DESKTOP" | tr '[:upper:]' '[:lower:]' | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
-elif [ "$XDG_DATA_DIRS" != "" ]; then
+elif [ -n "$XDG_DATA_DIRS" ]; then
   # shellcheck disable=SC2001
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 elif pgrep -l "mutter" > /dev/null; then
@@ -209,7 +212,20 @@ function relaunchIfNotVisible() {
 
       echo "Relaunching $parentScript ..."
 
-      x-terminal-emulator -e "./$parentScript"
+      TERMINAL=xterm
+      # Launch in whatever terminal is available
+      if command -v >/dev/null x-terminal-emulator; then
+        TERMINAL=x-terminal-emulator
+      elif [ "$desktop" != "gnome" ] && command -v >/dev/null kdialog; then
+        TERMINAL=kdialog
+      elif [ "$desktop" != "kde" ] && command -v >/dev/null gnome-terminal; then
+        TERMINAL=gnome-terminal
+      elif command -v >/dev/null xfce4-terminal; then
+        TERMINAL=xfce4-terminal
+      elif command -v >/dev/null qterminal; then
+        TERMINAL=qterminal
+      fi
+      $TERMINAL -e "./$parentScript"
       rm /tmp/relaunching
       exit $?;
     fi
