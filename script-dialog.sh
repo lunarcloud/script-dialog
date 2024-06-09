@@ -33,10 +33,8 @@ hasWhiptail=false
 
 if [ -z ${GUI+x} ]; then
   GUI=false
-  if [ ! -e xdpyinfo ] ||  xdpyinfo | grep X.Org > /dev/null; then
-    if [ "$terminal" == "false" ] ; then
-      GUI=true
-    fi
+  if [ "$terminal" == "false" ] ; then
+    GUI=$([ "$DISPLAY" ] || [ "$WAYLAND_DISPLAY" ] || [ "$MIR_SOCKET" ] && echo true || echo false)
   fi
 fi
 
@@ -157,17 +155,14 @@ function updateDialogMaxSize() {
     return;
   fi
 
-  if [ "$GUI" == "true" ] ; then
-    MAX_HEIGHT=$( xdpyinfo | grep "dimensions" | awk '{ print $2 }' | cut -d'x' -f2)
-    MAX_WIDTH=$( xdpyinfo | grep "dimensions" | awk '{ print $2 }' | cut -d'x' -f1)
-  else
+  if [ "$GUI" == "false" ] ; then
     MAX_HEIGHT=$(tput lines)
     MAX_WIDTH=$(tput cols)
   fi
 
   # Never really fill the whole screen space
-  MAX_HEIGHT=$(( MAX_HEIGHT / 2 ))
-  MAX_WIDTH=$(( MAX_WIDTH * 3 / 4 ))
+  MAX_HEIGHT=$(( MAX_HEIGHT * 3 / 4 ))
+  MAX_WIDTH=$(( MAX_WIDTH * 6 / 9 ))
 }
 
 RECMD_HEIGHT=10

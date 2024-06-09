@@ -10,7 +10,7 @@ relaunchIfNotVisible
 
 APP_NAME="Test Script"
 #WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
-#INTERFACE="zenity" #force an interface, but only do this for testing
+INTERFACE="zenity" #force an interface, but only do this for testing
 
 if [ "$NO_SUDO" == true ]; then
     messagebox "No SUDO is available on this system."
