@@ -371,7 +371,7 @@ function userandpassword() {
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
     CREDS[1]=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$PASS_TEXT")
   else
-    read -rp "$USER_TEXT ($SUGGESTED_USERNAME): " "CREDS[0]"
+    read -ei "$SUGGESTED_USERNAME" -rp "$USER_TEXT: " "CREDS[0]"
     read -srp "$PASS_TEXT: " "CREDS[1]"
   fi
   
