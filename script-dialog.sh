@@ -6,7 +6,7 @@
 
 if [[ $OSTYPE == darwin* ]]; then
     desktop="macos"
-elif [[ "$(</proc/sys/kernel/osrelease)" == *microsoft* ]]; then
+elif [[ $OSTYPE == msys ]] || [[ $(uname -r | tr '[:upper:]' '[:lower:]') == *wsl* ]]; then
     desktop="windows"
 elif [ -n "$XDG_SESSION_DESKTOP" ]; then
   # shellcheck disable=SC2001
@@ -17,9 +17,9 @@ elif [ -n "$XDG_CURRENT_DESKTOP" ]; then
 elif [ -n "$XDG_DATA_DIRS" ]; then
   # shellcheck disable=SC2001
   desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
-elif pgrep -l "mutter" > /dev/null; then
+elif command -v >/dev/null pgrep && pgrep -l "mutter" > /dev/null; then
     desktop="gnome"
-elif pgrep -l "kwin" > /dev/null; then
+elif command -v >/dev/null pgrep && pgrep -l "kwin" > /dev/null; then
     desktop="kde"
 else
   desktop="unknown"
