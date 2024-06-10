@@ -127,7 +127,7 @@ fi
 
 APP_NAME="Script"
 ACTIVITY=""
-WINDOW_ICON=""
+GUI_ICON=""
 GUI_TITLE="$APP_NAME"
 
 function superuser() {
@@ -241,85 +241,16 @@ function relaunchIfNotVisible() {
 }
 
 #standard window icons
-function standardIconInfo() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "info"
-  else
-    echo "dialog-information"
-  fi
-}
-function standardIconQuestion() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "question"
-  else
-    echo "dialog-question"
-  fi
-}
-function standardIconError() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "error"
-  else
-    echo "dialog-error"
-  fi
-}
-function standardIconWarning() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "warning"
-  else
-    echo "dialog-warning"
-  fi
-}
-function standardIconFolderOpen() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "question"
-  else
-    echo "folder-open"
-  fi
-}
-function standardIconFolderSave() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "question"
-  else
-    echo "document-save"
-  fi
-}
-function standardIconFileOpen() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "question"
-  else
-    echo "document-open"
-  fi
-}
-function standardIconFileSave() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "question"
-  else
-    echo "dialog-save"
-  fi
-}
-function standardIconPassword() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "question"
-  else
-    echo "dialog-password"
-  fi
-}
-
-function standardIconCalendar() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "question"
-  else
-    echo "x-office-calendar"
-  fi
-}
-function standardIconDocument() {
-  if [ "$ZENITY_ICON_ARG" == "--icon-name" ]; then
-    echo "question"
-  else
-    echo "x-office-document"
-  fi
-}
-#end standard icons
+XDG_ICO_INFO="dialog-information"
+XDG_ICO_QUESTION="dialog-question"
+XDG_ICO_WARN="dialog-warning"
+XDG_ICO_ERROR="dialog-error"
+XDG_ICO_FOLDER_OPEN="folder-open"
+XDG_ICO_FILE_OPEN="document-open"
+XDG_ICO_SAVE="document-save"
+XDG_ICO_PASSWORD="dialog-password"
+XDG_ICO_CALENDAR="x-office-calendar"
+XDG_ICO_DOCUMENT="x-office-document"
 
 function messagebox() {
   updateGUITitle
@@ -331,9 +262,9 @@ function messagebox() {
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --info --text "$1"
+    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --info --text "$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
-    kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --msgbox "$1"
+    kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --msgbox "$1"
   else
     echo -e "$1"
   fi
@@ -351,10 +282,10 @@ function yesno() {
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
     answer=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --question --text "$1"
+    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --question --text "$1"
     answer=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
-    kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --yesno "$1"
+    kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yesno "$1"
     answer=$?
   else
     echo "$1 (y/n)" 3>&1 1>&2 2>&3
@@ -379,9 +310,9 @@ function inputbox() {
   elif [ "$INTERFACE" == "dialog" ]; then
     INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" "$RECMD_HEIGHT" "$RECMD_WIDTH" "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
-    INPUT="$(zenity --entry --title="$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --text="$1" --entry-text "$2")"
+    INPUT="$(zenity --entry --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text="$1" --entry-text "$2")"
   elif [ "$INTERFACE" == "kdialog" ]; then
-    INPUT="$(kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --inputbox "$1" "$2")"
+    INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
   else
     read -rp "$1: " INPUT
   fi
@@ -409,12 +340,12 @@ function userandpassword() {
   elif [ "$INTERFACE" == "dialog" ]; then
     mapfile -t CREDS < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" "$RECMD_HEIGHT" "$RECMD_WIDTH" 0 "Username: " 1 1 "$SUGGESTED_USERNAME" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1 3>&1 1>&2 2>&3 )
   elif [ "$INTERFACE" == "zenity" ]; then
-    ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --password --username)
+    ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --password --username)
     CREDS[0]=$(echo "$ENTRY" | cut -d'|' -f1)
     CREDS[1]=$(echo "$ENTRY" | cut -d'|' -f2)
   elif [ "$INTERFACE" == "kdialog" ]; then
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
-    CREDS[1]=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$PASS_TEXT")
+    CREDS[1]=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$PASS_TEXT")
   else
     read -ei "$SUGGESTED_USERNAME" -rp "$USER_TEXT: " "CREDS[0]"
     read -srp "$PASS_TEXT: " "CREDS[1]"
@@ -434,9 +365,9 @@ function password() {
   elif [ "$INTERFACE" == "dialog" ]; then
     PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
-    PASSWORD=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --password)
+    PASSWORD=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --password)
   elif [ "$INTERFACE" == "kdialog" ]; then
-    PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --password "$1")
+    PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$1")
   else
     read -srp "$ACTIVITY: " PASSWORD
   fi
@@ -453,9 +384,9 @@ function displayFile() {
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --text-info --filename="$1"
+    zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text-info --filename="$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
-    kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --textbox "$1" 512 256
+    kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --textbox "$1" 512 256
   else
     less "$1" 3>&1 1>&2 2>&3
   fi
@@ -494,7 +425,7 @@ function checklist() {
       shift
       shift
     done
-    IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" )
+    IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" )
 
     CHOSEN=()
     for value in "${CHOSEN_LIST[@]}"
@@ -503,7 +434,7 @@ function checklist() {
     done
 
   elif [ "$INTERFACE" == "kdialog" ]; then
-    mapfile -t CHOSEN < <( kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --checklist "$TEXT" "$@")
+    mapfile -t CHOSEN < <( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --checklist "$TEXT" "$@")
   else
     printf "%s\n $TEXT:\n" "$ACTIVITY" 3>&1 1>&2 2>&3
     CHOSEN=()
@@ -546,9 +477,9 @@ function radiolist() {
       shift
       shift
     done
-    IFS=$'|' mapfile -t CHOSEN < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
+    IFS=$'|' mapfile -t CHOSEN < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
   elif [ "$INTERFACE" == "kdialog" ]; then
-    mapfile -t CHOSEN < <( kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --radiolist "$TEXT" "$@")
+    mapfile -t CHOSEN < <( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --radiolist "$TEXT" "$@")
   else
     echo "$ACTIVITY: " 3>&1 1>&2 2>&3
     OPTIONS=()
@@ -572,9 +503,9 @@ function progressbar() {
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "" "$RECMD_HEIGHT" "$RECMD_WIDTH" 0
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
+    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
   elif [ "$INTERFACE" == "kdialog" ]; then
-    read -r -d '' -a dbusRef < <( kdialog --title "$GUI_TITLE" --icon "$WINDOW_ICON" --progressbar "$ACTIVITY" 100)
+    read -r -d '' -a dbusRef < <( kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --progressbar "$ACTIVITY" 100)
     qdbus "${dbusRef[@]}" Set "" value 0
 
     mkdir -p /tmp/script-dialog.$$/
@@ -644,12 +575,12 @@ function filepicker() {
   elif [ "$INTERFACE" == "dialog" ]; then
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect "$1"/ 14 48)
   elif [ "$INTERFACE" == "zenity" ]; then
-    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --file-selection --filename "$1"/ )
+    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --file-selection --filename "$1"/ )
   elif [ "$INTERFACE" == "kdialog" ]; then
     if [ "$2" == "save" ]; then
-      FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getsavefilename "$1"/ )
+      FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getsavefilename "$1"/ )
     else #elif [ "$2" == "open" ]; then
-      FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getopenfilename "$1"/ )
+      FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getopenfilename "$1"/ )
     fi
   else
     read -erp "You need to $2 a file in $1/. Hit enter to browse this folder"
@@ -693,9 +624,9 @@ function folderpicker() {
   elif [ "$INTERFACE" == "dialog" ]; then
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --dselect "$1"/ 14 48)
   elif [ "$INTERFACE" == "zenity" ]; then
-    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --file-selection --directory --filename "$1"/ )
+    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --file-selection --directory --filename "$1"/ )
   elif [ "$INTERFACE" == "kdialog" ]; then
-    FILE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --getexistingdirectory "$1"/ )
+    FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getexistingdirectory "$1"/ )
   else
     read -erp "You need to select a folder in $1/. Hit enter to browse this folder" 
 
@@ -723,13 +654,13 @@ function datepicker() {
   elif [ "$INTERFACE" == "dialog" ]; then
     STANDARD_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "Choose Date" 0 40)
   elif [ "$INTERFACE" == "zenity" ]; then
-    INPUT_DATE=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$WINDOW_ICON" --calendar "Select Date")
+    INPUT_DATE=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --calendar "Select Date")
     MONTH=$(echo "$INPUT_DATE" | cut -d'/' -f1)
     DAY=$(echo "$INPUT_DATE" | cut -d'/' -f2)
     YEAR=$(echo "$INPUT_DATE" | cut -d'/' -f3)
     STANDARD_DATE="$DAY/$MONTH/$YEAR"
   elif [ "$INTERFACE" == "kdialog" ]; then
-    INPUT_DATE=$(kdialog --title="$GUI_TITLE" --icon "$WINDOW_ICON" --calendar "Select Date")
+    INPUT_DATE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --calendar "Select Date")
     TEXT_MONTH=$(echo "$INPUT_DATE" | cut -d' ' -f2)
     if [ "$TEXT_MONTH" == "Jan" ]; then
       MONTH=1
