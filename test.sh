@@ -12,6 +12,7 @@ APP_NAME="Test Script"
 #WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
 #INTERFACE="unknown" #force an interface, but only do this for testing
 
+WINDOW_ICON=$(standardIconInfo)
 ACTIVITY="Salutations"
 messagebox "Hello $desktop desktop user.\nUsing the ${INTERFACE-basic} interface for dialogs";
 
