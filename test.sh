@@ -12,22 +12,8 @@ APP_NAME="Test Script"
 #WINDOW_ICON="$SCRIPT_DIR/icon.png" # if not set, it'll use standard ones
 #INTERFACE="unknown" #force an interface, but only do this for testing
 
-if [ "$NO_SUDO" == true ]; then
-    messagebox "No SUDO is available on this system."
-else
-    ACTIVITY="SUDO Test"
-    sudo -k # clear credentials
-    if superuser echo; then
-        WINDOW_ICON=$(standardIconInfo)
-        messagebox "Password accepted"
-    else
-        WINDOW_ICON=$(standardIconError)
-        messagebox "Password denied"
-    fi
-fi
-
 ACTIVITY="Salutations"
-messagebox "Hello World";
+messagebox "Hello $desktop desktop user.\nUsing the ${INTERFACE-basic} interface for dialogs";
 
 WINDOW_ICON=$(standardIconQuestion)
 ACTIVITY="Inquiry"
@@ -113,5 +99,19 @@ ANSWER=$(folderpicker "$HOME")
 
 WINDOW_ICON=$(standardIconInfo)
 messagebox "Folder selected was ${ANSWER[*]}"
+
+if [ "$NO_SUDO" == true ]; then
+    messagebox "No SUDO is available on this system."
+else
+    ACTIVITY="SUDO Test"
+    sudo -k # clear credentials
+    if superuser echo; then
+        WINDOW_ICON=$(standardIconInfo)
+        messagebox "Password accepted"
+    else
+        WINDOW_ICON=$(standardIconError)
+        messagebox "Password denied"
+    fi
+fi
 
 exit 0;
