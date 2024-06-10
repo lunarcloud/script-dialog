@@ -8,15 +8,14 @@ if [[ $OSTYPE == darwin* ]]; then
     desktop="macos"
 elif [[ $OSTYPE == msys ]] || [[ $(uname -r | tr '[:upper:]' '[:lower:]') == *wsl* ]]; then
     desktop="windows"
-elif [ -n "$XDG_SESSION_DESKTOP" ]; then
-  # shellcheck disable=SC2001
-  desktop=$(echo "$XDG_SESSION_DESKTOP" | tr '[:upper:]' '[:lower:]' | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
 elif [ -n "$XDG_CURRENT_DESKTOP" ]; then
   # shellcheck disable=SC2001
   desktop=$(echo "$XDG_CURRENT_DESKTOP" | tr '[:upper:]' '[:lower:]' | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
-elif [ -n "$XDG_DATA_DIRS" ]; then
+elif [ -n "$XDG_SESSION_DESKTOP" ]; then
   # shellcheck disable=SC2001
-  desktop=$(echo "$XDG_DATA_DIRS" | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
+  desktop=$(echo "$XDG_SESSION_DESKTOP" | tr '[:upper:]' '[:lower:]' | sed 's/.*\(xfce\|kde\|gnome\).*/\1/')
+elif command -v >/dev/null pgrep && pgrep -l "gnome-shell" > /dev/null; then
+    desktop="gnome"
 elif command -v >/dev/null pgrep && pgrep -l "mutter" > /dev/null; then
     desktop="gnome"
 elif command -v >/dev/null pgrep && pgrep -l "kwin" > /dev/null; then
@@ -24,6 +23,7 @@ elif command -v >/dev/null pgrep && pgrep -l "kwin" > /dev/null; then
 else
   desktop="unknown"
 fi
+
 
 desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')  # convert to lower case
 
