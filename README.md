@@ -38,22 +38,22 @@ One of 2 things has happened:
 
 Global Variables
 ----------------
-|   |   |
-| - | - |
-| **APP_NAME** | The script's app name, for title bars |
-| **ACTIVITY** | The current activity, for title bars |
-| **INTERFACE** | Detected if not manually set, the GUI or TUI to use |
-| **GUI** | Detected, whether the interface is a GUI not TUI |
-| **DETECTED_DESKTOP** | Detected desktop in use |
-| **NOCOLORS** | Optional, disables otherwise-detected use of colored/bolded text basic CLI |
-| **NOSYMBOLS** | Optional, disables otherwise-detected use of unicode symbols in TUIs |
-| **ZENITY_HEIGHT** | Optional, overrides the automatic height of zenity dialogs |
-| **ZENITY_WIDTH** | Optional, overrides the automatic width of zenity dialogs |
+| Name | Use | Description |
+| ---- | --- | ----------- |
+| **APP_NAME** | User-defined | The script's app name, for title bars |
+| **ACTIVITY** | User-defined | The current activity, for title bars |
+| **INTERFACE** | Override or Detected | the GUI or TUI to use |
+| **GUI** | Detected | Whether the interface is a GUI not TUI |
+| **DETECTED_DESKTOP** | Detected | Desktop in use |
+| **NOCOLORS** | Optional override | disables otherwise-detected use of colored/bolded text basic CLI |
+| **NOSYMBOLS** | Optional override |disables otherwise-detected use of unicode symbols in TUIs |
+| **ZENITY_HEIGHT** | Optional override | height of zenity dialogs |
+| **ZENITY_WIDTH** | Optional override | width of zenity dialogs |
 
 Functions
 ----------------
 | Name | Description | Arguments | Output or Return |
-| - | - | - | - |
+| ---- | ----------- | --------- | ---------------- |
 | **superuser** | Attempts to run a priviledged command (sudo or eqiuvalent) | Command to run with elevated priviledge | return code 0 if success, non-zero otherwise |
 | **relaunch-if-not-visible** | if neither GUI nor terminal interfaces can be used, relaunch the script in a terminal emulator | |  |
 | **message-info** | Display an 'info' message box | The text to display | |
