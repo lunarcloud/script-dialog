@@ -26,7 +26,7 @@ else
 fi
 
 ACTIVITY="Name"
-NAME=$(inputbox "What's your name?" "")
+NAME=$(inputbox "What's your name?" "$USER")
 
 message-info "Nice to meet you, $NAME"
 
@@ -42,9 +42,9 @@ ACTIVITY="Pretending to load..."
 SUGGESTED_USERNAME=$(echo "$NAME" | tr '[:upper:]' '[:lower:]')  # convert to lower case
 
 ACTIVITY="Pretend Login"
-userandpassword USER PASS "$SUGGESTED_USERNAME"
+userandpassword S_USER S_PASS "$SUGGESTED_USERNAME"
 
-message-info $"So, that was:\n user: $USER\n password: $PASS"
+message-info $"So, that was:\n user: $S_USER\n password: $S_PASS"
 
 ACTIVITY="Test Script"
 displayFile "$0"

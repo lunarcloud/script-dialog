@@ -105,6 +105,10 @@ if command -v >/dev/null zenity && printf "%s\n4.0.0\n" "$(zenity --version)" | 
   ZENITY_ICON_ARG=--icon-name
 fi
 
+if  [ "$INTERFACE" == "kdialog" ] || [ "$INTERFACE" == "zenity" ] ; then
+  GUI=true
+fi
+
 # which sudo to use
 NO_SUDO=false
 SUDO_USE_INTERFACE=false
@@ -257,17 +261,22 @@ function message-info() {
 
 function message-warn() {
   GUI_ICON=$XDG_ICO_WARN
+  KDIALOG_ARG=--sorry
   messagebox "$@"
 }
 
 function message-error() {
   GUI_ICON=$XDG_ICO_ERROR
+  KDIALOG_ARG=--error
   messagebox "$@"
 }
 
 function messagebox() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_INFO
+  fi
+  if [ -z ${KDIALOG_ARG+x} ]; then
+    KDIALOG_ARG=--msgbox
   fi
   updateGUITitle
   TEST_STRING="$1"
@@ -280,7 +289,7 @@ function messagebox() {
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --info --text "$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
-    kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --msgbox "$1"
+    kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" "$KDIALOG_ARG" "$1"
   else
     echo -e "$1"
   fi
@@ -336,7 +345,7 @@ function inputbox() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
   else
-    read -rp "$1: " INPUT
+    read -ei "$2" -rp "$1: " INPUT
   fi
 
   echo "$INPUT"
@@ -365,7 +374,7 @@ function userandpassword() {
   elif [ "$INTERFACE" == "dialog" ]; then
     mapfile -t CREDS < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" "$RECMD_HEIGHT" "$RECMD_WIDTH" 0 "Username: " 1 1 "$SUGGESTED_USERNAME" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1 3>&1 1>&2 2>&3 )
   elif [ "$INTERFACE" == "zenity" ]; then
-    ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --password --username)
+    ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --password --username "$SUGGESTED_USERNAME")
     CREDS[0]=$(echo "$ENTRY" | cut -d'|' -f1)
     CREDS[1]=$(echo "$ENTRY" | cut -d'|' -f2)
   elif [ "$INTERFACE" == "kdialog" ]; then
