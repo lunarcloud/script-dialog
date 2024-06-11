@@ -127,7 +127,6 @@ fi
 
 APP_NAME="Script"
 ACTIVITY=""
-GUI_ICON=""
 GUI_TITLE="$APP_NAME"
 
 function superuser() {
@@ -252,7 +251,24 @@ XDG_ICO_PASSWORD="dialog-password"
 XDG_ICO_CALENDAR="x-office-calendar"
 XDG_ICO_DOCUMENT="x-office-document"
 
+function message-info() {
+  messagebox "$@"
+}
+
+function message-warn() {
+  GUI_ICON=$XDG_ICO_WARN
+  messagebox "$@"
+}
+
+function message-error() {
+  GUI_ICON=$XDG_ICO_ERROR
+  messagebox "$@"
+}
+
 function messagebox() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_INFO
+  fi
   updateGUITitle
   TEST_STRING="$1"
   calculateTextDialogSize
@@ -271,6 +287,9 @@ function messagebox() {
 }
 
 function yesno() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_QUESTION
+  fi
   updateGUITitle
   TEST_STRING="$1"
   calculateTextDialogSize
@@ -301,6 +320,9 @@ function yesno() {
 }
 
 function inputbox() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_QUESTION
+  fi
   updateGUITitle
   TEST_STRING="$1"
   calculateTextDialogSize
@@ -321,6 +343,9 @@ function inputbox() {
 }
 
 function userandpassword() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_PASSWORD
+  fi
   updateGUITitle
   TEST_STRING="$4"
   calculateTextDialogSize
@@ -356,6 +381,9 @@ function userandpassword() {
 }
 
 function password() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_PASSWORD
+  fi
   updateGUITitle
   TEST_STRING="$1"
   calculateTextDialogSize
@@ -375,6 +403,9 @@ function password() {
 }
 
 function displayFile() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_DOCUMENT
+  fi
   updateGUITitle
   TEST_STRING="$(cat "$1")"
   calculateTextDialogSize
@@ -393,6 +424,9 @@ function displayFile() {
 }
 
 function checklist() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_QUESTION
+  fi
   updateGUITitle
   TEXT=$1
   NUM_OPTIONS=$2
@@ -452,6 +486,9 @@ function checklist() {
 }
 
 function radiolist() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_QUESTION
+  fi
   updateGUITitle
   TEXT=$1
   NUM_OPTIONS=$2
@@ -496,6 +533,9 @@ function radiolist() {
 }
 
 function progressbar() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_INFO
+  fi
   updateGUITitle
 
   if [ "$INTERFACE" == "whiptail" ]; then
@@ -559,6 +599,13 @@ function progressbar_finish() {
 }
 
 function filepicker() {
+  if [ -z ${GUI_ICON+x} ]; then
+    if [ "$2" == "save" ]; then
+      GUI_ICON=$XDG_ICO_SAVE
+    else
+      GUI_ICON=$XDG_ICO_FILE_OPEN
+    fi
+  fi
   updateGUITitle
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2012
@@ -608,6 +655,9 @@ function filepicker() {
 }
 
 function folderpicker() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_FOLDER_OPEN
+  fi
   updateGUITitle
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2010
@@ -644,6 +694,9 @@ function folderpicker() {
 }
 
 function datepicker() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_CALENDAR
+  fi
   updateGUITitle
   DAY="0"
   MONTH="0"
