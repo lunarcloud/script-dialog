@@ -201,10 +201,14 @@ function updateGUITitle() {
   fi
 }
 
-MIN_HEIGHT=10
-MIN_WIDTH=40
-MAX_HEIGHT=$MIN_HEIGHT
-MAX_WIDTH=$MIN_WIDTH
+MIN_LINES=10
+MIN_COLS=40
+MAX_LINES=$MIN_LINES
+MAX_COLS=$MIN_COLS
+RECMD_LINES=10
+RECMD_COLS=40
+RECMD_SCROLL=false
+TEST_STRING=""
 
 function updateDialogMaxSize() {
   if ! command -v >/dev/null tput; then
@@ -212,42 +216,42 @@ function updateDialogMaxSize() {
   fi
 
   if [ "$GUI" == "false" ] ; then
-    MAX_HEIGHT=$(tput lines)
-    MAX_WIDTH=$(tput cols)
+    MAX_LINES=$(tput lines)
+    MAX_COLS=$(tput cols)
   fi
 
   # Never really fill the whole screen space
-  MAX_HEIGHT=$(( MAX_HEIGHT * 3 / 4 ))
-  MAX_WIDTH=$(( MAX_WIDTH * 6 / 9 ))
+  MAX_LINES=$(( MAX_LINES - 5 ))
+  MAX_COLS=$(( MAX_COLS - 4 ))
 }
 
-RECMD_HEIGHT=10
-RECMD_WIDTH=40
-RECMD_SCROLL=false
-TEST_STRING=""
 
 function calculateTextDialogSize() {
   updateDialogMaxSize
   CHARS=${#TEST_STRING}
   RECMD_SCROLL=false
-  RECMD_HEIGHT=$((CHARS  / MIN_WIDTH))
-  RECMD_WIDTH=$((CHARS / MIN_HEIGHT))
+  RECMD_COLS=$((( MAX_COLS - MIN_COLS ) * 3 / 4))
+  RECMD_LINES=$(((CHARS / RECMD_COLS) + 5))
+  if [[ "$RECMD_LINES" -lt 7 ]]; then
+    RECMD_COLS=$MIN_COLS
+    RECMD_LINES=$(((CHARS / RECMD_COLS) + 5))
+  fi
 
-  if [ "$RECMD_HEIGHT" -gt "$MAX_HEIGHT" ] ; then
-    RECMD_HEIGHT=$MAX_HEIGHT
+  if [ "$RECMD_LINES" -gt "$MAX_LINES" ] ; then
+    RECMD_LINES=$MAX_LINES
     RECMD_SCROLL=true
   fi
-  if [ "$RECMD_WIDTH" -gt "$MAX_WIDTH" ]; then
-    RECMD_WIDTH=$MAX_WIDTH
+  if [ "$RECMD_COLS" -gt "$MAX_COLS" ]; then
+    RECMD_COLS=$MAX_COLS
     #RECMD_SCROLL=true
   fi
 
-  if [ "$RECMD_HEIGHT" -lt "$MIN_HEIGHT" ] ; then
-    RECMD_HEIGHT=$MIN_HEIGHT
+  if [ "$RECMD_LINES" -lt "$MIN_LINES" ] ; then
+    RECMD_LINES=$MIN_LINES
     RECMD_SCROLL=false
   fi
-  if [ "$RECMD_WIDTH" -lt "$MIN_WIDTH" ]; then
-    RECMD_WIDTH=$MIN_WIDTH
+  if [ "$RECMD_COLS" -lt "$MIN_COLS" ]; then
+    RECMD_COLS=$MIN_COLS
     RECMD_SCROLL=false
   fi
 
@@ -332,9 +336,9 @@ function messagebox() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "dialog" ]; then
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --info --text "$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -353,10 +357,10 @@ function yesno() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "${QUESTION_SYMBOL}$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "${QUESTION_SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
     answer=$?
   elif [ "$INTERFACE" == "dialog" ]; then
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" "$RECMD_LINES" "$RECMD_COLS"
     answer=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --question --text "$1"
@@ -391,9 +395,9 @@ function inputbox() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_HEIGHT" "$RECMD_WIDTH" "$2" 3>&1 1>&2 2>&3)
+    INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_LINES" "$RECMD_COLS" "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_HEIGHT" "$RECMD_WIDTH" "$2" 3>&1 1>&2 2>&3)
+    INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_LINES" "$RECMD_COLS" "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     INPUT="$(zenity --entry --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text="$1" --entry-text "$2")"
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -424,9 +428,9 @@ function userandpassword() {
 
   if [ "$INTERFACE" == "whiptail" ]; then
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
-    CREDS[1]=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$PASS_TEXT" "$RECMD_HEIGHT" "$RECMD_WIDTH" 3>&1 1>&2 2>&3)
+    CREDS[1]=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$PASS_TEXT" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    mapfile -t CREDS < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" "$RECMD_HEIGHT" "$RECMD_WIDTH" 0 "Username: " 1 1 "$SUGGESTED_USERNAME" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1 3>&1 1>&2 2>&3 )
+    mapfile -t CREDS < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" "$RECMD_LINES" "$RECMD_COLS" 0 "Username: " 1 1 "$SUGGESTED_USERNAME" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1 3>&1 1>&2 2>&3 )
   elif [ "$INTERFACE" == "zenity" ]; then
     ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --password --username "$SUGGESTED_USERNAME")
     CREDS[0]=$(echo "$ENTRY" | cut -d'|' -f1)
@@ -453,9 +457,9 @@ function password() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH" 3>&1 1>&2 2>&3)
+    PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH" 3>&1 1>&2 2>&3)
+    PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     PASSWORD=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --password)
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -475,9 +479,9 @@ function displayFile() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "dialog" ]; then
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text-info --filename="$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -499,9 +503,9 @@ function checklist() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
 
     local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
@@ -563,9 +567,9 @@ function radiolist() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     OPTIONS=()
     while test ${#} -gt 0;  do
@@ -615,9 +619,9 @@ function progressbar() {
   updateGUITitle
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --gauge "$ACTIVITY" "$RECMD_HEIGHT" "$RECMD_WIDTH" 0
+    whiptail --gauge "$ACTIVITY" "$RECMD_LINES" "$RECMD_COLS" 0
   elif [ "$INTERFACE" == "dialog" ]; then
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "" "$RECMD_HEIGHT" "$RECMD_WIDTH" 0
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "" "$RECMD_LINES" "$RECMD_COLS" 0
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -685,7 +689,7 @@ function filepicker() {
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2012
     read -r -d '' -a files < <(ls -lBhpa "$1" | awk -F ' ' ' { print $9 " " $5 } ')
-    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_HEIGHT)) $((6+RECMD_WIDTH)) $RECMD_HEIGHT "${files[@]}" 3>&1 1>&2 2>&3)
+    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_LINES)) $((6+RECMD_COLS)) $RECMD_LINES "${files[@]}" 3>&1 1>&2 2>&3)
     FILE="$1/$SELECTED"
 
     #exitstatus=$?
@@ -737,7 +741,7 @@ function folderpicker() {
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2010
     read -r -d '' -a files < <(ls -lBhpa "$1" | grep "^d" | awk -F ' ' ' { print $9 " " $5 } ')
-    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_HEIGHT)) $((6+RECMD_WIDTH)) $RECMD_HEIGHT "${files[@]}" 3>&1 1>&2 2>&3)
+    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_LINES)) $((6+RECMD_COLS)) $RECMD_LINES "${files[@]}" 3>&1 1>&2 2>&3)
     FILE="$1/$SELECTED"
 
     #exitstatus=$?
