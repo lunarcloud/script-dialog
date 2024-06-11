@@ -60,7 +60,7 @@ fi
 
 # see if it supports colors...
 ncolors=$(tput colors)
-if test -n "$ncolors" && test "$ncolors" -ge 8; then
+if [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
   bold="$(tput bold)"
   underline="$(tput smul)"
   #standout="$(tput smso)"
@@ -77,6 +77,29 @@ else
   normal=""
   red=""
   yellow=""
+fi
+
+# see if we have unicode support
+if [[ $LANG == *UTF-8* ]]; then
+  INFO_SYMBOL="🛈  "
+  WARN_SYMBOL="⚠️  "
+  ERR_SYMBOL="⛔  "
+  QUESTION_SYMBOL="❓  "
+  PASSWORD_SYMBOL="🔑  "
+  CALENDAR_SYMBOL="📅  "
+  DOCUMENT_SYMBOL="🗎  "
+  FOLDER_SYMBOL="🗀  "
+  HOURGLASS_SYMBOL="⌛  "
+else
+  INFO_SYMBOL="[i]  "
+  WARN_SYMBOL="[!]  "
+  ERR_SYMBOL="[!]  "
+  QUESTION_SYMBOL="[?]  "
+  PASSWORD_SYMBOL="[?]  "
+  CALENDAR_SYMBOL=""
+  DOCUMENT_SYMBOL=""
+  FOLDER_SYMBOL=""
+  HOURGLASS_SYMBOL=""
 fi
 
 
@@ -154,7 +177,7 @@ GUI_TITLE="$APP_NAME"
 
 function superuser() {
   if [ $NO_SUDO == true ]; then
-    (>&2 echo "No sudo available!")
+    (>&2 echo "${red}No sudo available!${normal}")
     return 201
   fi
 
@@ -275,12 +298,14 @@ XDG_ICO_CALENDAR="x-office-calendar"
 XDG_ICO_DOCUMENT="x-office-document"
 
 function message-info() {
+  local SYMBOL=$INFO_SYMBOL
   messagebox "$@"
 }
 
 function message-warn() {
   GUI_ICON=$XDG_ICO_WARN
-  KDIALOG_ARG=--sorry
+  local KDIALOG_ARG=--sorry
+  local SYMBOL=$WARN_SYMBOL
   echo -n "${yellow}"
   messagebox "$@"
   echo -n "${normal}"
@@ -288,7 +313,8 @@ function message-warn() {
 
 function message-error() {
   GUI_ICON=$XDG_ICO_ERROR
-  KDIALOG_ARG=--error
+  local KDIALOG_ARG=--error
+  local SYMBOL=$ERR_SYMBOL
   echo -n "${red}"
   messagebox "$@"
   echo -n "${normal}"
@@ -302,19 +328,19 @@ function messagebox() {
     KDIALOG_ARG=--msgbox
   fi
   updateGUITitle
-  TEST_STRING="$1"
+  TEST_STRING="${SYMBOL}$1"
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
   elif [ "$INTERFACE" == "dialog" ]; then
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --info --text "$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" "$KDIALOG_ARG" "$1"
   else
-    echo -e "$1"
+    echo -e "${SYMBOL}$1"
   fi
 }
 
@@ -323,11 +349,11 @@ function yesno() {
     GUI_ICON=$XDG_ICO_QUESTION
   fi
   updateGUITitle
-  TEST_STRING="$1"
+  TEST_STRING="${QUESTION_SYMBOL}$1"
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
+    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "${QUESTION_SYMBOL}$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
     answer=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" "$RECMD_HEIGHT" "$RECMD_WIDTH"
@@ -339,7 +365,7 @@ function yesno() {
     kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yesno "$1"
     answer=$?
   else
-    echo -n "${bold}$1 (y/n): ${normal}" 3>&1 1>&2 2>&3
+    echo -ne "${QUESTION_SYMBOL}${bold}$1 (y/n): ${normal}" 3>&1 1>&2 2>&3
     read -r answer
     if [ "$answer" == "y" ]; then
       answer=0
@@ -355,20 +381,25 @@ function inputbox() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_QUESTION
   fi
+
+  if [ -z ${SYMBOL+x} ]; then
+    local SYMBOL=$QUESTION_SYMBOL
+  fi
+
   updateGUITitle
-  TEST_STRING="$1"
+  TEST_STRING="${QUESTION_SYMBOL} $1"
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" "$RECMD_HEIGHT" "$RECMD_WIDTH" "$2" 3>&1 1>&2 2>&3)
+    INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_HEIGHT" "$RECMD_WIDTH" "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox " $1" "$RECMD_HEIGHT" "$RECMD_WIDTH" "$2" 3>&1 1>&2 2>&3)
+    INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_HEIGHT" "$RECMD_WIDTH" "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     INPUT="$(zenity --entry --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text="$1" --entry-text "$2")"
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
   else
-    read -ei "$2" -rp "${bold}$1: ${normal}" INPUT
+    read -ei "$2" -rp "${SYMBOL}${bold}$1: ${normal}" INPUT
   fi
 
   echo "$INPUT"
@@ -404,8 +435,9 @@ function userandpassword() {
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
     CREDS[1]=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$PASS_TEXT")
   else
-    read -ei "$SUGGESTED_USERNAME" -rp "${bold}$USER_TEXT: ${normal}" "CREDS[0]"
-    read -srp "${bold}$PASS_TEXT: ${normal}" "CREDS[1]"
+    read -ei "$SUGGESTED_USERNAME" -rp "${QUESTION_SYMBOL}${bold}$USER_TEXT: ${normal}" "CREDS[0]"
+    read -srp "${bold}${PASSWORD_SYMBOL}$PASS_TEXT: ${normal}" "CREDS[1]"
+    echo
   fi
   
   eval "$__uservar"="'${CREDS[0]}'"
@@ -417,7 +449,7 @@ function password() {
     GUI_ICON=$XDG_ICO_PASSWORD
   fi
   updateGUITitle
-  TEST_STRING="$1"
+  TEST_STRING="{PASSWORD_SYMBOL}$1"
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
@@ -429,7 +461,7 @@ function password() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$1")
   else
-    read -srp "${bold}$ACTIVITY: ${normal}" PASSWORD
+    read -srp "{PASSWORD_SYMBOL}${bold}$ACTIVITY: ${normal}" PASSWORD
   fi
   echo "$PASSWORD"
 }
@@ -467,9 +499,9 @@ function checklist() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    mapfile -t CHOSEN < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    mapfile -t CHOSEN < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
 
     CHOSEN=()
     for value in "${CHOSEN_LIST[@]}"
@@ -502,10 +534,12 @@ function checklist() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     mapfile -t CHOSEN < <( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --checklist "$TEXT" "$@")
   else
-    printf "%s\n $TEXT:\n" "$ACTIVITY" 3>&1 1>&2 2>&3
+    printf "%s\n $TEXT:\n" "${QUESTION_SYMBOL}$ACTIVITY" 3>&1 1>&2 2>&3
     CHOSEN=()
     while test ${#} -gt 0; do
       if yesno "$2 (default: $3)?"; then
+        CHOSEN+=( "\"$1\"" )
+      elif [ "$3" == "ON" ]; then
         CHOSEN+=( "\"$1\"" )
       fi
       shift
@@ -529,9 +563,9 @@ function radiolist() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    mapfile -t CHOSEN < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    mapfile -t CHOSEN < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    IFS=$'\n' mapfile -t CHOSEN < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    IFS=$'\n' mapfile -t CHOSEN < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     OPTIONS=()
     while test ${#} -gt 0;  do
@@ -550,15 +584,24 @@ function radiolist() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     mapfile -t CHOSEN < <( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --radiolist "$TEXT" "$@")
   else
-    echo "$ACTIVITY: " 3>&1 1>&2 2>&3
+    echo -e "${QUESTION_SYMBOL}$ACTIVITY: " 3>&1 1>&2 2>&3
     OPTIONS=()
+    local DEFAULT=""
     while test ${#} -gt 0;  do
-      OPTIONS+=("\t- ${underline}$1${normal} ($2)\n")
+      local DEFAULT_NOTATION=""
+      if [ "$3" == "ON" ]; then
+        local DEFAULT+=( "\"$1\"" )
+        local DEFAULT_NOTATION="*"
+      fi
+      OPTIONS+=("\t- ${underline}$1${normal}$DEFAULT_NOTATION ($2)\n")
       shift
       shift
       shift
     done
-    read -rp "$(echo -e "${OPTIONS[*]}${bold}$TEXT: ${normal}")" CHOSEN
+    read -rp "$(echo -e "${OPTIONS[*]}${QUESTION_SYMBOL}${bold}$TEXT: ${normal}")" CHOSEN
+    if [ "$CHOSEN" == "" ]; then
+      CHOSEN=$DEFAULT
+    fi
   fi
 
   echo "$CHOSEN"
@@ -592,7 +635,7 @@ function progressbar() {
 
 	qdbus "${dbusRef[@]}" close
   else
-    echo -ne "\r$ACTIVITY 0%"
+    echo -ne "\r${HOURGLASS_SYMBOL}$ACTIVITY 0%"
     cat
   fi
 }
@@ -605,13 +648,12 @@ function progressbar_update() {
 		qdbus "${dbusRef[@]}" Set "" value "$1"
 		sleep 0.2 # requires slight sleep
 	else
-		echo "Could not update progressbar $$"
+		echo -e "Could not update progressbar $$"
     fi
   elif [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ] || [ "$INTERFACE" == "zenity" ]; then
-    echo "$1"
+    echo -e "$1"
   else
-    #         echo -ne "\r$ACTIVITY $1%"
-    echo -ne "\r$ACTIVITY $1%"
+    echo -ne "\r${HOURGLASS_SYMBOL}$ACTIVITY $1%"
   fi
 }
 
@@ -662,7 +704,7 @@ function filepicker() {
       FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getopenfilename "$1"/ )
     fi
   else
-    read -erp "You need to $2 a file in $1/. Hit enter to browse this folder"
+    read -erp "${DOCUMENT_SYMBOL}You need to $2 a file in $1/. Hit enter to browse this folder"
 
     ls -lBhpa "$1" 3>&1 1>&2 2>&3 #| less
 
@@ -710,7 +752,7 @@ function folderpicker() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getexistingdirectory "$1"/ )
   else
-    read -erp "You need to select a folder in $1/. Hit enter to browse this folder" 
+    read -erp "${FOLDER_SYMBOL}You need to select a folder in $1/. Hit enter to browse this folder"
 
     # shellcheck disable=SC2010
     ls -lBhpa "$1" | grep "^d" 3>&1 1>&2 2>&3 #| less
@@ -731,14 +773,16 @@ function datepicker() {
   fi
   updateGUITitle
 
+  NOW=$( printf '%(%d/%m/%Y)T' )
   DAY=$( printf '%(%d)T' )
   MONTH=$( printf '%(%m)T' )
   YEAR=$( printf '%(%Yd)T' )
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    STANDARD_DATE=$(inputbox "Input Date (DD/MM/YYYY)" " ")
+    local SYMBOL=$CALENDAR_SYMBOL
+    STANDARD_DATE=$(inputbox "Input Date (DD/MM/YYYY)" "$NOW")
   elif [ "$INTERFACE" == "dialog" ]; then
-    STANDARD_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "Choose Date" 0 40)
+    STANDARD_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "${CALENDAR_SYMBOL}Choose Date" 0 40)
   elif [ "$INTERFACE" == "zenity" ]; then
     INPUT_DATE=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --calendar "Select Date")
     MONTH=$(echo "$INPUT_DATE" | cut -d'/' -f1)
@@ -778,7 +822,7 @@ function datepicker() {
     YEAR=$(echo "$INPUT_DATE" | cut -d' ' -f4)
     STANDARD_DATE="$DAY/$MONTH/$YEAR"
   else
-    read -ei "$( printf '%(%d/%m/%Y)T' )" -rp "${bold}Date (DD/MM/YYYY): ${normal}" STANDARD_DATE
+    read -ei "$NOW" -rp "${CALENDAR_SYMBOL}${bold}Date (DD/MM/YYYY): ${normal}" STANDARD_DATE
   fi
 
   echo "$STANDARD_DATE"
