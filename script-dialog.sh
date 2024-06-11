@@ -206,7 +206,7 @@ else
 fi
 
 #######################################
-# Attempts to run a command as admin
+# Attempts to run a priviledged command (sudo or eqiuvalent)
 # GLOBALS:
 # 	NO_SUDO
 #   SUDO
@@ -257,7 +257,6 @@ function _calculate-gui-title() {
     GUI_TITLE="$APP_NAME"
   fi
 }
-
 
 
 #######################################
@@ -443,7 +442,7 @@ function message-error() {
 }
 
 #######################################
-# Display an 'error' message box
+# Display a message box
 # GLOBALS:
 # 	GUI_ICON
 #   GUI_TITLE
@@ -714,7 +713,7 @@ function password() {
 }
 
 #######################################
-# Display an input box for entering a password
+# Display the contents of a file
 # GLOBALS:
 # 	GUI_ICON
 #   GUI_TITLE

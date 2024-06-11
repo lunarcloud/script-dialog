@@ -52,27 +52,24 @@ Global Variables
 
 Functions
 ----------------
-|   |   |
-| - | - |
-| **superuser** | TODO |
-| **_updateGUITitle** | TODO |
-| **_updateDialogMaxSize** | TODO |
-| **_calculateTextDialogSize** | TODO |
-| **relaunchIfNotVisible** | TODO |
-| **message-info** | TODO |
-| **message-warn** | TODO |
-| **message-error** | TODO |
-| **messagebox** | TODO |
-| **yesno** | TODO |
-| **inputbox** | TODO |
-| **userandpassword** | TODO |
-| **password** | TODO |
-| **display-file** | TODO |
-| **checklist** | TODO |
-| **radiolist** | TODO |
-| **progressbar** | TODO |
-| **progressbar_update** | TODO |
-| **progressbar_finish** | TODO |
-| **filepicker** | TODO |
-| **folderpicker** | TODO |
-| **datepicker** | TODO |
+| Name | Description | Arguments | Output or Return |
+| - | - | - | - |
+| **superuser** | Attempts to run a priviledged command (sudo or eqiuvalent) | Command to run with elevated priviledge | return code 0 if success, non-zero otherwise |
+| **relaunch-if-not-visible** | if neither GUI nor terminal interfaces can be used, relaunch the script in a terminal emulator | |  |
+| **message-info** | Display an 'info' message box | The text to display | |
+| **message-warn** | Display a 'warning' message box | The text to display | |
+| **message-error** | Display an 'error' message box | The text to display | |
+| **messagebox** | Display a message box | The text to display | |
+| **yesno** | Display a yes-no decision message box | The text to display | return code 0 if yes, 1 if no |
+| **inputbox** | Display a text input box | <ol><li>The text to display</li><li>The initial input value</li></ol> | the entered text |
+| **userandpassword** | Display a (single or series of) input box(es) for entering a username and a password |  <ol><li>The name of the username variable</li><li>The name of the password variable</li><li>The initial username input value</li><li>The text to display for username entry</li><li>The text to display for password entry</li></ol> | |
+| **password** | Display an input box for entering a password | The text to display for password entry | the entered text |
+| **display-file** | Display the contents of a file | <ol><li>The file whose text to display</li><li>width of GUI display (512 if omitted)</li><li>height of GUI display (640 if omitted)</li></ol> | |
+| **checklist** | Display a list of multiply-selectable items | <ol><li>The file whose text to display</li><li>Number of options</li><li>First item's value</li><li>First item's description</li><li>First item's default checked status (ON or OFF)</li><li>(repeat for all items)</li></ol> | Value text of the selected item (or the default item) |
+| **radiolist** | Display a list of singularly-selectable items | <ol><li>The file whose text to display</li><li>Number of options</li><li>First item's value</li><li>First item's description</li><li>First item's default selected status (ON or OFF)</li><li>(repeat for all items)</li></ol> | Value text of the selected item (or the default item) |
+| **progressbar** | A pipe that displays a progressbar | the current value of the bar (repeatable, should be piped) | |
+| **progressbar_update** | Updates the value of the progressbar (call from within the progressbar piped block) | the value to set the bar | |
+| **progressbar_finish** | Completes the the progressbar (call from within the progressbar piped block) | | |
+| **filepicker** | Display a file selector dialog | <ol><li>The starting folder</li><li>"save" or "open" (assume "open" if omitted)</li></ol> | Path to selected file | |
+| **folderpicker** | Display a folder selector dialog | The starting folder | Path to selected folder |
+| **datepicker** | Display a calendar date selector dialog | The starting folder | Selected date text (DD/MM/YYYY) |
