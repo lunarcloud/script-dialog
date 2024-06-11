@@ -133,7 +133,7 @@ else
 fi
 
 # Handle when read command doesn't support default text option
-if read -i "test" <<< echo "test" >/dev/null; then
+if echo "test" | read -i "test" 2>/dev/null; then
   NO_READ_DEFAULT=""
 fi
 
@@ -1230,10 +1230,13 @@ function datepicker() {
   fi
   _calculate-gui-title
 
-  NOW=$( printf '%(%d/%m/%Y)T' )
-  DAY=$( printf '%(%d)T' )
-  MONTH=$( printf '%(%m)T' )
-  YEAR=$( printf '%(%Yd)T' )
+  NOW="31/12/2024"
+  if [ ! -z ${NO_READ_DEFAULT+x} ]; then
+    NOW=$( printf '%(%d/%m/%Y)T' )
+  fi
+  DAY=0
+  MONTH=0
+  YEAR=0
 
   if [ "$INTERFACE" == "whiptail" ]; then
     local SYMBOL=$CALENDAR_SYMBOL
