@@ -132,6 +132,12 @@ else
   NO_SUDO=true
 fi
 
+# Handle different implementations of read command
+if read -i "test" <<< echo "test"; then
+  NO_READ_DEFAULT=""
+fi
+
+
 ################################
 # Variables
 ################################
@@ -592,7 +598,7 @@ function inputbox() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
   else
-    read -ei "$2" -rp "${SYMBOL}${bold}$1: ${normal}" INPUT
+    read "${NO_READ_DEFAULT+-i "$2"}" -rep "${SYMBOL}${bold}$1: ${normal}" INPUT
   fi
 
   echo "$INPUT"
