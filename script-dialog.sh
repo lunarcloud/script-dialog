@@ -132,8 +132,8 @@ else
   NO_SUDO=true
 fi
 
-# Handle different implementations of read command
-if read -i "test" <<< echo "test"; then
+# Handle when read command doesn't support default text option
+if read -i "test" <<< echo "test" >/dev/null; then
   NO_READ_DEFAULT=""
 fi
 
@@ -598,7 +598,7 @@ function inputbox() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
   else
-    read "${NO_READ_DEFAULT+-i "$2"}" -rep "${SYMBOL}${bold}$1: ${normal}" INPUT
+    read ${NO_READ_DEFAULT+-i "$2"} -rep "${SYMBOL}${bold}$1: ${normal}" INPUT
   fi
 
   echo "$INPUT"
@@ -664,7 +664,7 @@ function userandpassword() {
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
     CREDS[1]=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$PASS_TEXT")
   else
-    read -ei "$SUGGESTED_USERNAME" -rp "${QUESTION_SYMBOL}${bold}$USER_TEXT: ${normal}" "CREDS[0]"
+    read ${NO_READ_DEFAULT+-i "$SUGGESTED_USERNAME"} -rep "${QUESTION_SYMBOL}${bold}$USER_TEXT: ${normal}" "CREDS[0]"
     read -srp "${bold}${PASSWORD_SYMBOL}$PASS_TEXT: ${normal}" "CREDS[1]"
     echo
   fi
@@ -1279,7 +1279,7 @@ function datepicker() {
     YEAR=$(echo "$INPUT_DATE" | cut -d' ' -f4)
     STANDARD_DATE="$DAY/$MONTH/$YEAR"
   else
-    read -ei "$NOW" -rp "${CALENDAR_SYMBOL}${bold}Date (DD/MM/YYYY): ${normal}" STANDARD_DATE
+    read ${NO_READ_DEFAULT+-i "$NOW"} -rep "${CALENDAR_SYMBOL}${bold}Date (DD/MM/YYYY): ${normal}" STANDARD_DATE
   fi
 
   echo "$STANDARD_DATE"
