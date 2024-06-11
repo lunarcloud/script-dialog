@@ -7,12 +7,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # shellcheck source=./script-dialog.sh
 source "${SCRIPT_DIR}"/script-dialog.sh
 
-relaunchIfNotVisible
-
+relaunch-if-not-visible
 APP_NAME="Test Script"
 
 ACTIVITY="Salutations"
-message-info "Hello $desktop desktop user.\nUsing the ${INTERFACE-basic} interface for dialogs";
+message-info "Hello $DETECTED_DESKTOP desktop user.\nUsing the ${INTERFACE-basic} interface for dialogs";
 
 ACTIVITY="Inquiry"
 yesno "Are you well?";
@@ -74,7 +73,7 @@ ANSWER=$(filepicker "$HOME" "open")
 message-info "File selected was ${ANSWER[*]}"
 
 ACTIVITY="Test Script"
-displayFile "$0"
+display-file "$0"
 
 ANSWER=$(folderpicker "$HOME")
 

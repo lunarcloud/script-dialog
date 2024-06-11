@@ -35,3 +35,44 @@ One of 2 things has happened:
     You may have to change your file manager preferences on scripts or "Executable Text Files", or right click and choose to "Run As Program".
 
     The latter option may run the script in a terminal instead of GUI. Not much can be done about "GNOME choses to force scripts to open via terminal" type issues. If this is for a permanent script, create an application shortcut (by creating a `.desktop` file in `$HOME/.local/share/applications/`).
+
+Global Variables
+----------------
+|   |   |
+| - | - |
+| **APP_NAME** | The script's app name, for title bars |
+| **ACTIVITY** | The current activity, for title bars |
+| **INTERFACE** | Detected if not manually set, the GUI or TUI to use |
+| **GUI** | Detected, whether the interface is a GUI not TUI |
+| **DETECTED_DESKTOP** | Detected desktop in use |
+| **NOCOLORS** | Optional, disables otherwise-detected use of colored/bolded text basic CLI |
+| **NOSYMBOLS** | Optional, disables otherwise-detected use of unicode symbols in TUIs |
+| **ZENITY_HEIGHT** | Optional, overrides the automatic height of zenity dialogs |
+| **ZENITY_WIDTH** | Optional, overrides the automatic width of zenity dialogs |
+
+Functions
+----------------
+|   |   |
+| - | - |
+| **superuser** | TODO |
+| **_updateGUITitle** | TODO |
+| **_updateDialogMaxSize** | TODO |
+| **_calculateTextDialogSize** | TODO |
+| **relaunchIfNotVisible** | TODO |
+| **message-info** | TODO |
+| **message-warn** | TODO |
+| **message-error** | TODO |
+| **messagebox** | TODO |
+| **yesno** | TODO |
+| **inputbox** | TODO |
+| **userandpassword** | TODO |
+| **password** | TODO |
+| **display-file** | TODO |
+| **checklist** | TODO |
+| **radiolist** | TODO |
+| **progressbar** | TODO |
+| **progressbar_update** | TODO |
+| **progressbar_finish** | TODO |
+| **filepicker** | TODO |
+| **folderpicker** | TODO |
+| **datepicker** | TODO |

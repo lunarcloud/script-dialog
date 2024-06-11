@@ -1,8 +1,12 @@
 #!/bin/bash
-#multi-ui scripting
+# Multi-UI Scripting
 
 # Disable this rule, as it interferes with purely-numeric parameters
 # shellcheck disable=SC2046
+
+################################
+# Do auto-detections at the top
+################################
 
 if [[ $OSTYPE == darwin* ]]; then
     desktop="macos"
@@ -26,6 +30,7 @@ fi
 
 
 desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')  # convert to lower case
+export DETECTED_DESKTOP=$desktop
 
 # If we have a standard in and out, then terminal
 [ -t 0 ] && [ -t 1 ] && terminal=true || terminal=false
@@ -56,50 +61,6 @@ fi
 
 if command -v >/dev/null whiptail; then
   hasWhiptail=true
-fi
-
-# see if it supports colors...
-ncolors=$(tput colors)
-if [ "$NOCOLORS" == "" ] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
-  bold="$(tput bold)"
-  underline="$(tput smul)"
-  #standout="$(tput smso)"
-  normal="$(tput sgr0)"
-  red="$(tput setaf 1)"
-  #green="$(tput setaf 2)"
-  yellow="$(tput setaf 3)"
-  #blue="$(tput setaf 4)"
-  #magenta="$(tput setaf 5)"
-  #cyan="$(tput setaf 6)"
-else
-  bold=""
-  underline=""
-  normal=""
-  red=""
-  yellow=""
-fi
-
-# see if we have unicode symbols support
-if [ "$NOSYMBOLS" == "" ] && [[ $LANG == *UTF-8* ]]; then
-  INFO_SYMBOL="🛈  "
-  WARN_SYMBOL="⚠️  "
-  ERR_SYMBOL="⛔  "
-  QUESTION_SYMBOL="❓  "
-  PASSWORD_SYMBOL="🔑  "
-  CALENDAR_SYMBOL="📅  "
-  DOCUMENT_SYMBOL="🗎  "
-  FOLDER_SYMBOL="🗀  "
-  HOURGLASS_SYMBOL="⌛  "
-else
-  INFO_SYMBOL="[i]  "
-  WARN_SYMBOL="[!]  "
-  ERR_SYMBOL="[!]  "
-  QUESTION_SYMBOL="[?]  "
-  PASSWORD_SYMBOL="[?]  "
-  CALENDAR_SYMBOL=""
-  DOCUMENT_SYMBOL=""
-  FOLDER_SYMBOL=""
-  HOURGLASS_SYMBOL=""
 fi
 
 
@@ -171,9 +132,78 @@ else
   NO_SUDO=true
 fi
 
+################################
+# Variables
+################################
+
 APP_NAME="Script"
 ACTIVITY=""
 GUI_TITLE="$APP_NAME"
+
+MIN_LINES=10
+MIN_COLS=40
+MAX_LINES=$MIN_LINES
+MAX_COLS=$MIN_COLS
+RECMD_LINES=10
+RECMD_COLS=40
+RECMD_SCROLL=false
+TEST_STRING=""
+
+#standard window icons
+XDG_ICO_INFO="dialog-information"
+XDG_ICO_QUESTION="dialog-question"
+XDG_ICO_WARN="dialog-warning"
+XDG_ICO_ERROR="dialog-error"
+XDG_ICO_FOLDER_OPEN="folder-open"
+XDG_ICO_FILE_OPEN="document-open"
+XDG_ICO_SAVE="document-save"
+XDG_ICO_PASSWORD="dialog-password"
+XDG_ICO_CALENDAR="x-office-calendar"
+XDG_ICO_DOCUMENT="x-office-document"
+
+# see if it supports colors...
+ncolors=$(tput colors)
+if [ "$NOCOLORS" == "" ] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+  bold="$(tput bold)"
+  underline="$(tput smul)"
+  #standout="$(tput smso)"
+  normal="$(tput sgr0)"
+  red="$(tput setaf 1)"
+  #green="$(tput setaf 2)"
+  yellow="$(tput setaf 3)"
+  #blue="$(tput setaf 4)"
+  #magenta="$(tput setaf 5)"
+  #cyan="$(tput setaf 6)"
+else
+  bold=""
+  underline=""
+  normal=""
+  red=""
+  yellow=""
+fi
+
+# see if we have unicode symbols support
+if [ "$NOSYMBOLS" == "" ] && [[ $LANG == *UTF-8* ]]; then
+  INFO_SYMBOL="🛈  "
+  WARN_SYMBOL="⚠️  "
+  ERR_SYMBOL="⛔  "
+  QUESTION_SYMBOL="❓  "
+  PASSWORD_SYMBOL="🔑  "
+  CALENDAR_SYMBOL="📅  "
+  DOCUMENT_SYMBOL="🗎  "
+  FOLDER_SYMBOL="🗀  "
+  HOURGLASS_SYMBOL="⌛  "
+else
+  INFO_SYMBOL="[i]  "
+  WARN_SYMBOL="[!]  "
+  ERR_SYMBOL="[!]  "
+  QUESTION_SYMBOL="[?]  "
+  PASSWORD_SYMBOL="[?]  "
+  CALENDAR_SYMBOL=""
+  DOCUMENT_SYMBOL=""
+  FOLDER_SYMBOL=""
+  HOURGLASS_SYMBOL=""
+fi
 
 #######################################
 # Attempts to run a command as admin
@@ -220,7 +250,7 @@ function superuser() {
 # RETURN:
 # 	n/a
 #######################################
-function updateGUITitle() {
+function _calculate-gui-title() {
   if [ -n "$ACTIVITY" ]; then
     GUI_TITLE="$ACTIVITY - $APP_NAME"
   else
@@ -228,14 +258,6 @@ function updateGUITitle() {
   fi
 }
 
-MIN_LINES=10
-MIN_COLS=40
-MAX_LINES=$MIN_LINES
-MAX_COLS=$MIN_COLS
-RECMD_LINES=10
-RECMD_COLS=40
-RECMD_SCROLL=false
-TEST_STRING=""
 
 
 #######################################
@@ -251,7 +273,7 @@ TEST_STRING=""
 # RETURN:
 # 	n/a
 #######################################
-function updateDialogMaxSize() {
+function _calculate-tui-max() {
   if ! command -v >/dev/null tput; then
     return;
   fi
@@ -265,7 +287,6 @@ function updateDialogMaxSize() {
   MAX_LINES=$(( MAX_LINES - 5 ))
   MAX_COLS=$(( MAX_COLS - 4 ))
 }
-
 
 
 #######################################
@@ -286,8 +307,8 @@ function updateDialogMaxSize() {
 # RETURN:
 # 	n/a
 #######################################
-function calculateTextDialogSize() {
-  updateDialogMaxSize
+function _calculate-tui-size() {
+  _calculate-tui-max
   local CHARS=${#TEST_STRING}
   RECMD_SCROLL=false
   RECMD_COLS=$((( MAX_COLS - MIN_COLS ) * 3 / 4))
@@ -330,7 +351,7 @@ function calculateTextDialogSize() {
 # RETURN:
 # 	0 if success, non-zero otherwise.
 #######################################
-function relaunchIfNotVisible() {
+function relaunch-if-not-visible() {
   local parentScript
   parentScript=$(basename "$0")
 
@@ -361,18 +382,6 @@ function relaunchIfNotVisible() {
     fi
   fi
 }
-
-#standard window icons
-XDG_ICO_INFO="dialog-information"
-XDG_ICO_QUESTION="dialog-question"
-XDG_ICO_WARN="dialog-warning"
-XDG_ICO_ERROR="dialog-error"
-XDG_ICO_FOLDER_OPEN="folder-open"
-XDG_ICO_FILE_OPEN="document-open"
-XDG_ICO_SAVE="document-save"
-XDG_ICO_PASSWORD="dialog-password"
-XDG_ICO_CALENDAR="x-office-calendar"
-XDG_ICO_DOCUMENT="x-office-document"
 
 
 #######################################
@@ -447,6 +456,8 @@ function message-error() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 #   KDIALOG_ARG
 # ARGUMENTS:
 # 	The text to display
@@ -462,16 +473,16 @@ function messagebox() {
   if [ -z ${KDIALOG_ARG+x} ]; then
     KDIALOG_ARG=--msgbox
   fi
-  updateGUITitle
+  _calculate-gui-title
   TEST_STRING="${SYMBOL}$1"
-  calculateTextDialogSize
+  _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
     whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --info --text "$1"
+    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --info --text "$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" "$KDIALOG_ARG" "$1"
   else
@@ -492,6 +503,8 @@ function messagebox() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 #   QUESTION_SYMBOL
 # ARGUMENTS:
 # 	The text to display
@@ -504,9 +517,9 @@ function yesno() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_QUESTION
   fi
-  updateGUITitle
+  _calculate-gui-title
   TEST_STRING="${QUESTION_SYMBOL}$1"
-  calculateTextDialogSize
+  _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
     whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "${QUESTION_SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
@@ -515,7 +528,7 @@ function yesno() {
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" "$RECMD_LINES" "$RECMD_COLS"
     answer=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --question --text "$1"
+    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$1"
     answer=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yesno "$1"
@@ -548,6 +561,8 @@ function yesno() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	The text to display
 #   The initial input value
@@ -565,16 +580,16 @@ function inputbox() {
     local SYMBOL=$QUESTION_SYMBOL
   fi
 
-  updateGUITitle
+  _calculate-gui-title
   TEST_STRING="${QUESTION_SYMBOL} $1"
-  calculateTextDialogSize
+  _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
     INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_LINES" "$RECMD_COLS" "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
     INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_LINES" "$RECMD_COLS" "$2" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
-    INPUT="$(zenity --entry --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text="$1" --entry-text "$2")"
+    INPUT="$(zenity --entry --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --text="$1" --entry-text "$2")"
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
   else
@@ -599,6 +614,8 @@ function inputbox() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 #   $1
 #   $2
 # ARGUMENTS:
@@ -616,9 +633,9 @@ function userandpassword() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_PASSWORD
   fi
-  updateGUITitle
+  _calculate-gui-title
   TEST_STRING="$4"
-  calculateTextDialogSize
+  _calculate-tui-size
 
   local __uservar="$1"
   local __passvar="$2"
@@ -635,7 +652,7 @@ function userandpassword() {
   elif [ "$INTERFACE" == "dialog" ]; then
     mapfile -t CREDS < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" "$RECMD_LINES" "$RECMD_COLS" 0 "Username: " 1 1 "$SUGGESTED_USERNAME" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1 3>&1 1>&2 2>&3 )
   elif [ "$INTERFACE" == "zenity" ]; then
-    ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --password --username "$SUGGESTED_USERNAME")
+    ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --password --username "$SUGGESTED_USERNAME")
     CREDS[0]=$(echo "$ENTRY" | cut -d'|' -f1)
     CREDS[1]=$(echo "$ENTRY" | cut -d'|' -f2)
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -665,6 +682,8 @@ function userandpassword() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	The text to display for password entry
 # OUTPUTS:
@@ -676,16 +695,16 @@ function password() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_PASSWORD
   fi
-  updateGUITitle
+  _calculate-gui-title
   TEST_STRING="${PASSWORD_SYMBOL}$1"
-  calculateTextDialogSize
+  _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
     PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
     PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
-    PASSWORD=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --password)
+    PASSWORD=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --password)
   elif [ "$INTERFACE" == "kdialog" ]; then
     PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$1")
   else
@@ -707,29 +726,35 @@ function password() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	The file whose text to display
+# 	width of GUI display (512 if omitted)
+# 	height of GUI display (640 if omitted)
 # OUTPUTS:
 # 	n/a
 # RETURN:
 # 	0 if success, non-zero otherwise.
 #######################################
-function displayFile() {
+function display-file() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_DOCUMENT
   fi
-  updateGUITitle
+  _calculate-gui-title
   TEST_STRING="$(cat "$1")"
-  calculateTextDialogSize
+  local width=${2-${ZENITY_WIDTH-512}}
+  local height=${3-${ZENITY_HEIGHT-640}}
+  _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
     whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text-info --filename="$1" --height=512 --width=256
+    zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="$height" --width="$width" --text-info --filename="$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
-    kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --textbox "$1" 512 256
+    kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --textbox "$1" "$width" "$height"
   else
     less "$1" 3>&1 1>&2 2>&3
   fi
@@ -749,6 +774,8 @@ function displayFile() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	The file whose text to display
 #   Number of options
@@ -765,12 +792,12 @@ function checklist() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_QUESTION
   fi
-  updateGUITitle
+  _calculate-gui-title
   TEXT=$1
   NUM_OPTIONS=$2
   shift
   shift
-  calculateTextDialogSize
+  _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
     mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
@@ -797,7 +824,7 @@ function checklist() {
       shift
       shift
     done
-    IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" )
+    IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" )
 
     local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
@@ -840,6 +867,8 @@ function checklist() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	The file whose text to display
 #   Number of options
@@ -856,12 +885,12 @@ function radiolist() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_QUESTION
   fi
-  updateGUITitle
+  _calculate-gui-title
   TEXT=$1
   NUM_OPTIONS=$2
   shift
   shift
-  calculateTextDialogSize
+  _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
     CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
@@ -881,7 +910,7 @@ function radiolist() {
       shift
       shift
     done
-    CHOSEN_ITEM=$( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
+    CHOSEN_ITEM=$( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
   elif [ "$INTERFACE" == "kdialog" ]; then
     CHOSEN_ITEM=$( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --radiolist "$TEXT" "$@")
   else
@@ -923,6 +952,8 @@ function radiolist() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	the current value of the bar (repeatable, should be piped)
 # OUTPUTS:
@@ -934,14 +965,14 @@ function progressbar() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_INFO
   fi
-  updateGUITitle
+  _calculate-gui-title
 
   if [ "$INTERFACE" == "whiptail" ]; then
     whiptail --gauge "$ACTIVITY" "$RECMD_LINES" "$RECMD_COLS" 0
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "" "$RECMD_LINES" "$RECMD_COLS" 0
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
+    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
   elif [ "$INTERFACE" == "kdialog" ]; then
     read -r -d '' -a dbusRef < <( kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --progressbar "$ACTIVITY" 100)
     qdbus "${dbusRef[@]}" Set "" value 0
@@ -1036,6 +1067,8 @@ function progressbar_finish() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	The starting folder
 #   "save" or "open" (assume "open" if omitted)
@@ -1052,7 +1085,7 @@ function filepicker() {
       GUI_ICON=$XDG_ICO_FILE_OPEN
     fi
   fi
-  updateGUITitle
+  _calculate-gui-title
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2012
     read -r -d '' -a files < <(ls -lBhpa "$1" | awk -F ' ' ' { print $9 " " $5 } ')
@@ -1068,7 +1101,7 @@ function filepicker() {
   elif [ "$INTERFACE" == "dialog" ]; then
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect "$1"/ 14 48)
   elif [ "$INTERFACE" == "zenity" ]; then
-    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --file-selection --filename "$1"/ )
+    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --file-selection --filename "$1"/ )
   elif [ "$INTERFACE" == "kdialog" ]; then
     if [ "$2" == "save" ]; then
       FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getsavefilename "$1"/ )
@@ -1114,6 +1147,8 @@ function filepicker() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	The starting folder
 # OUTPUTS:
@@ -1125,7 +1160,7 @@ function folderpicker() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_FOLDER_OPEN
   fi
-  updateGUITitle
+  _calculate-gui-title
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2010
     read -r -d '' -a files < <(ls -lBhpa "$1" | grep "^d" | awk -F ' ' ' { print $9 " " $5 } ')
@@ -1141,7 +1176,7 @@ function folderpicker() {
   elif [ "$INTERFACE" == "dialog" ]; then
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --dselect "$1"/ 14 48)
   elif [ "$INTERFACE" == "zenity" ]; then
-    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --file-selection --directory --filename "$1"/ )
+    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --file-selection --directory --filename "$1"/ )
   elif [ "$INTERFACE" == "kdialog" ]; then
     FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getexistingdirectory "$1"/ )
   else
@@ -1175,6 +1210,8 @@ function folderpicker() {
 #   APP_NAME
 #   ACTIVITY
 #   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
 # ARGUMENTS:
 # 	The starting folder
 # OUTPUTS:
@@ -1186,7 +1223,7 @@ function datepicker() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_CALENDAR
   fi
-  updateGUITitle
+  _calculate-gui-title
 
   NOW=$( printf '%(%d/%m/%Y)T' )
   DAY=$( printf '%(%d)T' )
@@ -1199,7 +1236,7 @@ function datepicker() {
   elif [ "$INTERFACE" == "dialog" ]; then
     STANDARD_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "${CALENDAR_SYMBOL}Choose Date" 0 40)
   elif [ "$INTERFACE" == "zenity" ]; then
-    INPUT_DATE=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --calendar "Select Date")
+    INPUT_DATE=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --calendar "Select Date")
     MONTH=$(echo "$INPUT_DATE" | cut -d'/' -f1)
     DAY=$(echo "$INPUT_DATE" | cut -d'/' -f2)
     YEAR=$(echo "$INPUT_DATE" | cut -d'/' -f3)
