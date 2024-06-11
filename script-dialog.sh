@@ -499,14 +499,14 @@ function checklist() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    mapfile -t CHOSEN < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
     IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
 
-    CHOSEN=()
+    local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
     do
-      CHOSEN+=( "\"$value\"" )
+      CHOSEN_ITEMS+=( "\"$value\"" )
     done
 
   elif [ "$INTERFACE" == "zenity" ]; then
@@ -525,22 +525,22 @@ function checklist() {
     done
     IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" )
 
-    CHOSEN=()
+    local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
     do
-      CHOSEN+=( "\"$value\"" )
+      CHOSEN_ITEMS+=( "\"$value\"" )
     done
 
   elif [ "$INTERFACE" == "kdialog" ]; then
-    mapfile -t CHOSEN < <( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --checklist "$TEXT" "$@")
+    mapfile -t CHOSEN_ITEMS < <( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --checklist "$TEXT" "$@")
   else
     printf "%s\n $TEXT:\n" "${QUESTION_SYMBOL}$ACTIVITY" 3>&1 1>&2 2>&3
-    CHOSEN=()
+    local CHOSEN_ITEMS=()
     while test ${#} -gt 0; do
       if yesno "$2 (default: $3)?"; then
-        CHOSEN+=( "\"$1\"" )
+        CHOSEN_ITEMS+=( "\"$1\"" )
       elif [ "$3" == "ON" ]; then
-        CHOSEN+=( "\"$1\"" )
+        CHOSEN_ITEMS+=( "\"$1\"" )
       fi
       shift
       shift
@@ -548,7 +548,7 @@ function checklist() {
     done
   fi
 
-  echo "${CHOSEN[@]}"
+  echo "${CHOSEN_ITEMS[@]}"
 }
 
 function radiolist() {
@@ -563,9 +563,9 @@ function radiolist() {
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    mapfile -t CHOSEN < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    IFS=$'\n' mapfile -t CHOSEN < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_HEIGHT $MAX_WIDTH "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     OPTIONS=()
     while test ${#} -gt 0;  do
@@ -580,9 +580,9 @@ function radiolist() {
       shift
       shift
     done
-    IFS=$'|' mapfile -t CHOSEN < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
+    CHOSEN_ITEM=$( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
   elif [ "$INTERFACE" == "kdialog" ]; then
-    mapfile -t CHOSEN < <( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --radiolist "$TEXT" "$@")
+    CHOSEN_ITEM=$( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --radiolist "$TEXT" "$@")
   else
     echo -e "${QUESTION_SYMBOL}$ACTIVITY: " 3>&1 1>&2 2>&3
     OPTIONS=()
@@ -590,7 +590,7 @@ function radiolist() {
     while test ${#} -gt 0;  do
       local DEFAULT_NOTATION=""
       if [ "$3" == "ON" ]; then
-        local DEFAULT+=( "\"$1\"" )
+        local DEFAULT+="\"$1\""
         local DEFAULT_NOTATION="*"
       fi
       OPTIONS+=("\t- ${underline}$1${normal}$DEFAULT_NOTATION ($2)\n")
@@ -598,13 +598,14 @@ function radiolist() {
       shift
       shift
     done
-    read -rp "$(echo -e "${OPTIONS[*]}${QUESTION_SYMBOL}${bold}$TEXT: ${normal}")" CHOSEN
-    if [ "$CHOSEN" == "" ]; then
-      CHOSEN=$DEFAULT
+    read -rp "$(echo -e "${OPTIONS[*]}${QUESTION_SYMBOL}${bold}$TEXT: ${normal}")" CHOSEN_ITEM
+
+    if [[ "$CHOSEN_ITEM" == "" ]]; then
+      CHOSEN_ITEM="$DEFAULT"
     fi
   fi
 
-  echo "$CHOSEN"
+  echo "$CHOSEN_ITEM"
 }
 
 function progressbar() {
