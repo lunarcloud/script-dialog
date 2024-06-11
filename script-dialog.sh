@@ -175,6 +175,19 @@ APP_NAME="Script"
 ACTIVITY=""
 GUI_TITLE="$APP_NAME"
 
+#######################################
+# Attempts to run a command as admin
+# GLOBALS:
+# 	NO_SUDO
+#   SUDO
+#   ACTIVITY
+# ARGUMENTS:
+# 	Command to run with elevated priviledge
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function superuser() {
   if [ $NO_SUDO == true ]; then
     (>&2 echo "${red}No sudo available!${normal}")
@@ -193,6 +206,20 @@ function superuser() {
   fi
 }
 
+
+#######################################
+# Set the GUI_TITLE based on the ACTIVITY and APP_NAME
+# GLOBALS:
+# 	GUI_TITLE
+#   ACTIVITY
+#   APP_NAME
+# ARGUMENTS:
+# 	n/a
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	n/a
+#######################################
 function updateGUITitle() {
   if [ -n "$ACTIVITY" ]; then
     GUI_TITLE="$ACTIVITY - $APP_NAME"
@@ -210,6 +237,20 @@ RECMD_COLS=40
 RECMD_SCROLL=false
 TEST_STRING=""
 
+
+#######################################
+# Update the max columns & lines
+# GLOBALS:
+# 	GUI
+#   MAX_COLS
+#   MAX_LINES
+# ARGUMENTS:
+# 	n/a
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	n/a
+#######################################
 function updateDialogMaxSize() {
   if ! command -v >/dev/null tput; then
     return;
@@ -226,9 +267,28 @@ function updateDialogMaxSize() {
 }
 
 
+
+#######################################
+# Update the recommended columns, lines, scroll
+# GLOBALS:
+# 	TEST_STRING
+#   RECMD_SCROLL
+#   RECMD_COLS
+#   RECMD_LINES
+#   MAX_COLS
+#   MAX_LINES
+#   MIN_COLS
+#   MIN_LINES
+# ARGUMENTS:
+# 	n/a
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	n/a
+#######################################
 function calculateTextDialogSize() {
   updateDialogMaxSize
-  CHARS=${#TEST_STRING}
+  local CHARS=${#TEST_STRING}
   RECMD_SCROLL=false
   RECMD_COLS=$((( MAX_COLS - MIN_COLS ) * 3 / 4))
   RECMD_LINES=$(((CHARS / RECMD_COLS) + 5))
@@ -258,7 +318,20 @@ function calculateTextDialogSize() {
   TEST_STRING="" #blank out for memory's sake
 }
 
+#######################################
+# if neither GUI nor terminal interfaces can be used, relaunch the script in a terminal emulator
+# GLOBALS:
+# 	GUI
+#   terminal
+# ARGUMENTS:
+# 	n/a
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function relaunchIfNotVisible() {
+  local parentScript
   parentScript=$(basename "$0")
 
   if [ "$GUI" == "false" ] && [ "$terminal" == "false" ]; then
@@ -269,20 +342,20 @@ function relaunchIfNotVisible() {
 
       echo "Relaunching $parentScript ..."
 
-      TERMINAL=xterm
+      local TERM_APP=xterm
       # Launch in whatever terminal is available
       if command -v >/dev/null x-terminal-emulator; then
-        TERMINAL=x-terminal-emulator
+        TERM_APP=x-terminal-emulator
       elif [ "$desktop" != "gnome" ] && command -v >/dev/null kdialog; then
-        TERMINAL=kdialog
+        TERM_APP=kdialog
       elif [ "$desktop" != "kde" ] && command -v >/dev/null gnome-terminal; then
-        TERMINAL=gnome-terminal
+        TERM_APP=gnome-terminal
       elif command -v >/dev/null xfce4-terminal; then
-        TERMINAL=xfce4-terminal
+        TERM_APP=xfce4-terminal
       elif command -v >/dev/null qterminal; then
-        TERMINAL=qterminal
+        TERM_APP=qterminal
       fi
-      $TERMINAL -e "./$parentScript"
+      $TERM_APP -e "./$parentScript"
       rm /tmp/relaunching
       exit $?;
     fi
@@ -301,11 +374,36 @@ XDG_ICO_PASSWORD="dialog-password"
 XDG_ICO_CALENDAR="x-office-calendar"
 XDG_ICO_DOCUMENT="x-office-document"
 
+
+#######################################
+# Display an 'info' message box
+# GLOBALS:
+#   INFO_SYMBOL
+# ARGUMENTS:
+# 	The text to display
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function message-info() {
   local SYMBOL=$INFO_SYMBOL
   messagebox "$@"
 }
 
+#######################################
+# Display a 'warning' message box
+# GLOBALS:
+# 	GUI_ICON
+#   XDG_ICO_WARN
+#   WARN_SYMBOL
+# ARGUMENTS:
+# 	The text to display
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function message-warn() {
   GUI_ICON=$XDG_ICO_WARN
   local KDIALOG_ARG=--sorry
@@ -315,6 +413,17 @@ function message-warn() {
   echo -n "${normal}"
 }
 
+#######################################
+# Display an 'error' message box
+# GLOBALS:
+# 	GUI_ICON
+# ARGUMENTS:
+# 	The text to display
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function message-error() {
   GUI_ICON=$XDG_ICO_ERROR
   local KDIALOG_ARG=--error
@@ -324,6 +433,28 @@ function message-error() {
   echo -n "${normal}"
 }
 
+#######################################
+# Display an 'error' message box
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   SYMBOL
+#   TEST_STRING
+#   INTERFACE
+#   RECMD_SCROLL
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+#   KDIALOG_ARG
+# ARGUMENTS:
+# 	The text to display
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function messagebox() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_INFO
@@ -348,6 +479,27 @@ function messagebox() {
   fi
 }
 
+
+#######################################
+# Display a yes-no decision message box
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   TEST_STRING
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+#   QUESTION_SYMBOL
+# ARGUMENTS:
+# 	The text to display
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if yes, 1 if no
+#######################################
 function yesno() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_QUESTION
@@ -381,6 +533,29 @@ function yesno() {
   return $answer
 }
 
+
+#######################################
+# Display a text input box
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   SYMBOL
+#   QUESTION_SYMBOL
+#   TEST_STRING
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	The text to display
+#   The initial input value
+# OUTPUTS:
+# 	the entered text
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function inputbox() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_QUESTION
@@ -409,6 +584,34 @@ function inputbox() {
   echo "$INPUT"
 }
 
+
+#######################################
+# Display a (single or series of) input box(es) for entering a username and a password
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_PASSWORD
+#   PASSWORD_SYMBOL
+#   TEST_STRING
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+#   $1
+#   $2
+# ARGUMENTS:
+#   The name of the username variable
+#   The name of the password variable
+#   The initial username input value
+# 	The text to display for username entry
+# 	The text to display for password entry
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function userandpassword() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_PASSWORD
@@ -424,7 +627,7 @@ function userandpassword() {
   if [ "$USER_TEXT" == "" ]; then USER_TEXT="Username"; fi
   local PASS_TEXT="$5"
   if [ "$PASS_TEXT" == "" ]; then PASS_TEXT="Password"; fi
-  CREDS=()
+  local CREDS=()
 
   if [ "$INTERFACE" == "whiptail" ]; then
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
@@ -448,12 +651,33 @@ function userandpassword() {
   eval "$__passvar"="'${CREDS[1]}'"
 }
 
+#######################################
+# Display an input box for entering a password
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_PASSWORD
+#   PASSWORD_SYMBOL
+#   TEST_STRING
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	The text to display for password entry
+# OUTPUTS:
+# 	the entered text
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function password() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_PASSWORD
   fi
   updateGUITitle
-  TEST_STRING="{PASSWORD_SYMBOL}$1"
+  TEST_STRING="${PASSWORD_SYMBOL}$1"
   calculateTextDialogSize
 
   if [ "$INTERFACE" == "whiptail" ]; then
@@ -465,11 +689,31 @@ function password() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$1")
   else
-    read -srp "{PASSWORD_SYMBOL}${bold}$ACTIVITY: ${normal}" PASSWORD
+    read -srp "${PASSWORD_SYMBOL}${bold}$ACTIVITY: ${normal}" PASSWORD
   fi
   echo "$PASSWORD"
 }
 
+#######################################
+# Display an input box for entering a password
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_DOCUMENT
+#   TEST_STRING
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	The file whose text to display
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function displayFile() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_DOCUMENT
@@ -483,7 +727,7 @@ function displayFile() {
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text-info --filename="$1"
+    zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --text-info --filename="$1" --height=512 --width=256
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --textbox "$1" 512 256
   else
@@ -491,6 +735,32 @@ function displayFile() {
   fi
 }
 
+#######################################
+# Display a list of multiply-selectable items
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_QUESTION
+#   QUESTION_SYMBOL
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   RECMD_SCROLL
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	The file whose text to display
+#   Number of options
+#   First item's value
+#   First item's description
+#   First item's default checked status (ON or OFF)
+#   (repeat $3, $4, $5 for all items)
+# OUTPUTS:
+# 	Array of selected items
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function checklist() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_QUESTION
@@ -555,6 +825,33 @@ function checklist() {
   echo "${CHOSEN_ITEMS[@]}"
 }
 
+
+#######################################
+# Display a list of singularly-selectable items
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_QUESTION
+#   QUESTION_SYMBOL
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   RECMD_SCROLL
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	The file whose text to display
+#   Number of options
+#   First item's value
+#   First item's description
+#   First item's default selected status (ON or OFF)
+#   (repeat $3, $4, $5 for all items)
+# OUTPUTS:
+# 	Value text of the selected item (or the default item)
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function radiolist() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_QUESTION
@@ -612,6 +909,27 @@ function radiolist() {
   echo "$CHOSEN_ITEM"
 }
 
+
+#######################################
+# A pipe that displays a progressbar
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_INFO
+#   HOURGLASS_SYMBOL
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	the current value of the bar (repeatable, should be piped)
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function progressbar() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_INFO
@@ -634,17 +952,31 @@ function progressbar() {
 
 	# wait until finish called to leave function, so internal actions finish
     while [ -e $DBUS_BAR_PATH ]; do
-		sleep 1
-		read -r "$@" <&0;
-	done
+      sleep 1
+      read -r "$@" <&0;
+    done
 
-	qdbus "${dbusRef[@]}" close
+    qdbus "${dbusRef[@]}" close
   else
     echo -ne "\r${HOURGLASS_SYMBOL}$ACTIVITY 0%"
     cat
   fi
 }
 
+
+#######################################
+# Updates the value of the progressbar (call from within the progressbar piped block)
+# GLOBALS:
+#   HOURGLASS_SYMBOL
+#   INTERFACE
+#   ACTIVITY
+# ARGUMENTS:
+# 	the value to set the bar
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function progressbar_update() {
   if [ "$INTERFACE" == "kdialog" ]; then
     DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
@@ -662,6 +994,17 @@ function progressbar_update() {
   fi
 }
 
+#######################################
+# Completes the the progressbar (call from within the progressbar piped block)
+# GLOBALS:
+#   INTERFACE
+# ARGUMENTS:
+# 	n/a
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function progressbar_finish() {
   if [ "$INTERFACE" == "kdialog" ]; then
 	DBUS_BAR_FOLDER=/tmp/script-dialog.$$
@@ -677,6 +1020,30 @@ function progressbar_finish() {
   fi
 }
 
+
+#######################################
+# Display a file selector dialog
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_SAVE
+#   XDG_ICO_FILE_OPEN
+#   DOCUMENT_SYMBOL
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   RECMD_SCROLL
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	The starting folder
+#   "save" or "open" (assume "open" if omitted)
+# OUTPUTS:
+# 	Path to selected file
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function filepicker() {
   if [ -z ${GUI_ICON+x} ]; then
     if [ "$2" == "save" ]; then
@@ -733,6 +1100,27 @@ function filepicker() {
   echo "$FILE"
 }
 
+#######################################
+# Display a folder selector dialog
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_FOLDER_OPEN
+#   FOLDER_SYMBOL
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   RECMD_SCROLL
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	The starting folder
+# OUTPUTS:
+# 	Path to selected folder
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function folderpicker() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_FOLDER_OPEN
@@ -772,6 +1160,28 @@ function folderpicker() {
   echo "$FILE"
 }
 
+
+#######################################
+# Display a calendar date selector dialog
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   XDG_ICO_CALENDAR
+#   CALENDAR_SYMBOL
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   RECMD_SCROLL
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+# ARGUMENTS:
+# 	The starting folder
+# OUTPUTS:
+# 	Selected date text (DD/MM/YYYY)
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
 function datepicker() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_CALENDAR
