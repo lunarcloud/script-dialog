@@ -60,7 +60,7 @@ fi
 
 # see if it supports colors...
 ncolors=$(tput colors)
-if [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+if [ "$NOCOLORS" == "" ] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
   bold="$(tput bold)"
   underline="$(tput smul)"
   #standout="$(tput smso)"
@@ -79,8 +79,8 @@ else
   yellow=""
 fi
 
-# see if we have unicode support
-if [[ $LANG == *UTF-8* ]]; then
+# see if we have unicode symbols support
+if [ "$NOSYMBOLS" == "" ] && [[ $LANG == *UTF-8* ]]; then
   INFO_SYMBOL="🛈  "
   WARN_SYMBOL="⚠️  "
   ERR_SYMBOL="⛔  "

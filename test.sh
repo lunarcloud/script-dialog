@@ -1,10 +1,11 @@
 #!/bin/bash
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+#GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing
+#NOSYMBOLS=true
+#NOCOLORS=true
 # shellcheck source=./script-dialog.sh
 source "${SCRIPT_DIR}"/script-dialog.sh
-
-#GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing
 
 relaunchIfNotVisible
 
