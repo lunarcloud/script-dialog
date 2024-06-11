@@ -184,7 +184,7 @@ fi
 
 # see if we have unicode symbols support
 if [ "$NOSYMBOLS" == "" ] && [[ $LANG == *UTF-8* ]]; then
-  INFO_SYMBOL="🛈  "
+  INFO_SYMBOL="ⓘ  "
   WARN_SYMBOL="⚠️  "
   ERR_SYMBOL="⛔  "
   QUESTION_SYMBOL="❓  "
