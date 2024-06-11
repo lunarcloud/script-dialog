@@ -9,7 +9,6 @@ source "${SCRIPT_DIR}"/script-dialog.sh
 relaunchIfNotVisible
 
 APP_NAME="Test Script"
-#INTERFACE="unknown" #force an interface, but only do this for testing
 
 ACTIVITY="Salutations"
 message-info "Hello $desktop desktop user.\nUsing the ${INTERFACE-basic} interface for dialogs";
@@ -46,9 +45,6 @@ userandpassword S_USER S_PASS "$SUGGESTED_USERNAME"
 
 message-info $"So, that was:\n user: $S_USER\n password: $S_PASS"
 
-ACTIVITY="Test Script"
-displayFile "$0"
-
 ACTIVITY="Enter Birthday"
 ANSWER=$(datepicker)
 
@@ -76,6 +72,9 @@ ANSWER=$(filepicker "$HOME" "open")
 
 message-info "File selected was ${ANSWER[*]}"
 
+ACTIVITY="Test Script"
+displayFile "$0"
+
 ANSWER=$(folderpicker "$HOME")
 
 message-info "Folder selected was ${ANSWER[*]}"
@@ -91,5 +90,3 @@ else
         message-error "Password denied"
     fi
 fi
-
-exit 0;

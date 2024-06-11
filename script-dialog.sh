@@ -42,22 +42,41 @@ if [ -z ${GUI+x} ]; then
   fi
 fi
 
-if [ "$GUI" == "true" ] ; then
-  if command -v >/dev/null kdialog; then
-    hasKDialog=true
-  fi
+if command -v >/dev/null kdialog; then
+  hasKDialog=true
+fi
 
-  if command -v >/dev/null zenity; then
-    hasZenity=true
-  fi
+if command -v >/dev/null zenity; then
+  hasZenity=true
+fi
+
+if command -v >/dev/null dialog; then
+  hasDialog=true
+fi
+
+if command -v >/dev/null whiptail; then
+  hasWhiptail=true
+fi
+
+# see if it supports colors...
+ncolors=$(tput colors)
+if test -n "$ncolors" && test "$ncolors" -ge 8; then
+  bold="$(tput bold)"
+  underline="$(tput smul)"
+  #standout="$(tput smso)"
+  normal="$(tput sgr0)"
+  red="$(tput setaf 1)"
+  #green="$(tput setaf 2)"
+  yellow="$(tput setaf 3)"
+  #blue="$(tput setaf 4)"
+  #magenta="$(tput setaf 5)"
+  #cyan="$(tput setaf 6)"
 else
-  if command -v >/dev/null dialog; then
-    hasDialog=true
-  fi
-
-  if command -v >/dev/null whiptail; then
-    hasWhiptail=true
-  fi
+  bold=""
+  underline=""
+  normal=""
+  red=""
+  yellow=""
 fi
 
 
@@ -262,13 +281,17 @@ function message-info() {
 function message-warn() {
   GUI_ICON=$XDG_ICO_WARN
   KDIALOG_ARG=--sorry
+  echo -n "${yellow}"
   messagebox "$@"
+  echo -n "${normal}"
 }
 
 function message-error() {
   GUI_ICON=$XDG_ICO_ERROR
   KDIALOG_ARG=--error
+  echo -n "${red}"
   messagebox "$@"
+  echo -n "${normal}"
 }
 
 function messagebox() {
@@ -316,7 +339,7 @@ function yesno() {
     kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yesno "$1"
     answer=$?
   else
-    echo "$1 (y/n)" 3>&1 1>&2 2>&3
+    echo -n "${bold}$1 (y/n): ${normal}" 3>&1 1>&2 2>&3
     read -r answer
     if [ "$answer" == "y" ]; then
       answer=0
@@ -345,7 +368,7 @@ function inputbox() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
   else
-    read -ei "$2" -rp "$1: " INPUT
+    read -ei "$2" -rp "${bold}$1: ${normal}" INPUT
   fi
 
   echo "$INPUT"
@@ -381,8 +404,8 @@ function userandpassword() {
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
     CREDS[1]=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$PASS_TEXT")
   else
-    read -ei "$SUGGESTED_USERNAME" -rp "$USER_TEXT: " "CREDS[0]"
-    read -srp "$PASS_TEXT: " "CREDS[1]"
+    read -ei "$SUGGESTED_USERNAME" -rp "${bold}$USER_TEXT: ${normal}" "CREDS[0]"
+    read -srp "${bold}$PASS_TEXT: ${normal}" "CREDS[1]"
   fi
   
   eval "$__uservar"="'${CREDS[0]}'"
@@ -406,7 +429,7 @@ function password() {
   elif [ "$INTERFACE" == "kdialog" ]; then
     PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$1")
   else
-    read -srp "$ACTIVITY: " PASSWORD
+    read -srp "${bold}$ACTIVITY: ${normal}" PASSWORD
   fi
   echo "$PASSWORD"
 }
@@ -530,12 +553,12 @@ function radiolist() {
     echo "$ACTIVITY: " 3>&1 1>&2 2>&3
     OPTIONS=()
     while test ${#} -gt 0;  do
-      OPTIONS+=("\t$1 ($2)\n")
+      OPTIONS+=("\t- ${underline}$1${normal} ($2)\n")
       shift
       shift
       shift
     done
-    read -rp "$(echo -e "${OPTIONS[*]}$TEXT: ")" CHOSEN
+    read -rp "$(echo -e "${OPTIONS[*]}${bold}$TEXT: ${normal}")" CHOSEN
   fi
 
   echo "$CHOSEN"
@@ -707,9 +730,10 @@ function datepicker() {
     GUI_ICON=$XDG_ICO_CALENDAR
   fi
   updateGUITitle
-  DAY="0"
-  MONTH="0"
-  YEAR="0"
+
+  DAY=$( printf '%(%d)T' )
+  MONTH=$( printf '%(%m)T' )
+  YEAR=$( printf '%(%Yd)T' )
 
   if [ "$INTERFACE" == "whiptail" ]; then
     STANDARD_DATE=$(inputbox "Input Date (DD/MM/YYYY)" " ")
@@ -754,7 +778,7 @@ function datepicker() {
     YEAR=$(echo "$INPUT_DATE" | cut -d' ' -f4)
     STANDARD_DATE="$DAY/$MONTH/$YEAR"
   else
-    read -rp "Date (DD/MM/YYYY): " STANDARD_DATE
+    read -ei "$( printf '%(%d/%m/%Y)T' )" -rp "${bold}Date (DD/MM/YYYY): ${normal}" STANDARD_DATE
   fi
 
   echo "$STANDARD_DATE"
