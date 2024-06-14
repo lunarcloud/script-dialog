@@ -12,7 +12,7 @@ Create bash scripts that utilize the best dialog system that is available. Inten
 
 To Use
 -------
-Source `script-dialog.sh`. Then use the dialog functions (documented [below](#Functions)). The `test.sh` script will contain examples of each feature.
+Source `script-dialog.sh`. Then use the library's [variables](#global-variables) and [functions](#Functions). The `test.sh` script will contain examples of each feature.
 
 The following example assumes it's in the same folder as your script:
 
