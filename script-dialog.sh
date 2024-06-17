@@ -133,7 +133,7 @@ else
 fi
 
 # Handle when read command doesn't support default text option
-if echo "test" | read -i "test" 2>/dev/null; then
+if echo "test" | read -ri "test" 2>/dev/null; then
   NO_READ_DEFAULT=""
 fi
 
@@ -530,7 +530,7 @@ function yesno() {
     whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "${QUESTION_SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
     answer=$?
   elif [ "$INTERFACE" == "dialog" ]; then
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "$1" "$RECMD_LINES" "$RECMD_COLS"
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "${QUESTION_SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
     answer=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$1"
@@ -1231,7 +1231,7 @@ function datepicker() {
   _calculate-gui-title
 
   NOW="31/12/2024"
-  if [ ! -z ${NO_READ_DEFAULT+x} ]; then
+  if [ -n ${NO_READ_DEFAULT+x} ]; then
     NOW=$( printf '%(%d/%m/%Y)T' )
   fi
   DAY=0
