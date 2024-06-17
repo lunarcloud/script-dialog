@@ -1231,7 +1231,7 @@ function datepicker() {
   _calculate-gui-title
 
   NOW="31/12/2024"
-  if [ -n ${NO_READ_DEFAULT+x} ]; then
+  if [ -n "$NO_READ_DEFAULT" ]; then
     NOW=$( printf '%(%d/%m/%Y)T' )
   fi
   DAY=0
