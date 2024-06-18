@@ -1066,7 +1066,8 @@ function progressbar_update() {
       TEXT=": $2"
     fi
 
-    echo -ne "\e[2K\r${HOURGLASS_SYMBOL}$ACTIVITY $BAR ${1}% $TEXT"
+    printf '\r\e[2K'
+    echo -e "\r${HOURGLASS_SYMBOL}$ACTIVITY $BAR ${1}% $TEXT\c"
   fi
 }
 
