@@ -32,7 +32,14 @@ message-info "Nice to meet you, $NAME"
 ACTIVITY="Pretending to load..."
 {
   for ((i = 0 ; i <= 100 ; i+=5)); do
-    progressbar_update "$i"
+    # optional text during progress
+    if [[ "$((RANDOM % 2))" == "1" ]]; then
+      SUB_ACTIVITY="it's thinking"
+    else
+      SUB_ACTIVITY=""
+    fi
+
+    progressbar_update "$i" "$SUB_ACTIVITY"
     sleep 0.2
   done
   progressbar_finish

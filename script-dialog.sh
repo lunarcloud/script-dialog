@@ -972,10 +972,12 @@ function progressbar() {
   fi
   _calculate-gui-title
 
+  export PROGRESS_ACTIVITY=$ACTIVITY
+
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --gauge "$ACTIVITY" "$RECMD_LINES" "$RECMD_COLS" 0
+    whiptail --backtitle "$APP_NAME" --title "$ACTIVITY" --gauge " " "$RECMD_LINES" "$RECMD_COLS" 0
   elif [ "$INTERFACE" == "dialog" ]; then
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --gauge "" "$RECMD_LINES" "$RECMD_COLS" 0
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --gauge "" "$RECMD_LINES" "$RECMD_COLS" 0
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
   elif [ "$INTERFACE" == "kdialog" ]; then
@@ -994,7 +996,8 @@ function progressbar() {
 
     qdbus "${dbusRef[@]}" close
   else
-    echo -ne "\r${HOURGLASS_SYMBOL}$ACTIVITY 0%"
+    BAR="[░░░░░░░░░░░░░░░░]"
+    echo -ne "\r${HOURGLASS_SYMBOL}$ACTIVITY $BAR 0%"
     cat
   fi
 }
@@ -1016,17 +1019,54 @@ function progressbar() {
 function progressbar_update() {
   if [ "$INTERFACE" == "kdialog" ]; then
     DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
-	if [ -e $DBUS_BAR_PATH ]; then
-		read -r -d '' -a dbusRef < <( cat $DBUS_BAR_PATH )
-		qdbus "${dbusRef[@]}" Set "" value "$1"
-		sleep 0.2 # requires slight sleep
-	else
-		echo -e "Could not update progressbar $$"
+    if [ -e $DBUS_BAR_PATH ]; then
+      read -r -d '' -a dbusRef < <( cat $DBUS_BAR_PATH )
+      if qdbus "${dbusRef[@]}" 2>/dev/null; then
+        qdbus "${dbusRef[@]}" Set "" value "$1"
+        qdbus "${dbusRef[@]}" setLabelText "$2"
+        sleep 0.2 # requires slight sleep
+      else
+        progressbar_finish
+      fi
+    else
+      echo -e "Could not update progressbar $$"
     fi
-  elif [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ] || [ "$INTERFACE" == "zenity" ]; then
+  elif [ "$INTERFACE" == "zenity" ]; then
     echo -e "$1"
+    echo -e "#$2"
+  elif [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ]; then
+    echo -e "XXX\n$1\n$2\nXXX"
   else
-    echo -ne "\r${HOURGLASS_SYMBOL}$ACTIVITY $1%"
+    case "$1" in
+      5)  BAR="[█░░░░░░░░░░░░░░░░░░░]" ;;
+      10) BAR="[██░░░░░░░░░░░░░░░░░░]" ;;
+      15) BAR="[███░░░░░░░░░░░░░░░░░]" ;;
+      20) BAR="[████░░░░░░░░░░░░░░░░]" ;;
+      25) BAR="[█████░░░░░░░░░░░░░░░]" ;;
+      30) BAR="[██████░░░░░░░░░░░░░░]" ;;
+      35) BAR="[███████░░░░░░░░░░░░░]" ;;
+      40) BAR="[████████░░░░░░░░░░░░]" ;;
+      45) BAR="[█████████░░░░░░░░░░░]" ;;
+      50) BAR="[██████████░░░░░░░░░░]" ;;
+      55) BAR="[███████████░░░░░░░░░]" ;;
+      60) BAR="[████████████░░░░░░░░]" ;;
+      65) BAR="[█████████████░░░░░░░]" ;;
+      70) BAR="[██████████████░░░░░░]" ;;
+      75) BAR="[███████████████░░░░░]" ;;
+      80) BAR="[████████████████░░░░]" ;;
+      85) BAR="[█████████████████░░░]" ;;
+      90) BAR="[██████████████████░░]" ;;
+      95) BAR="[███████████████████░]" ;;
+      100)BAR="[████████████████████]" ;;
+      *)  BAR="[░░░░░░░░░░░░░░░░░░░░]";;
+    esac
+
+    TEXT=""
+    if [[ "$2" != "" ]]; then
+      TEXT=": $2"
+    fi
+
+    echo -ne "\e[2K\r${HOURGLASS_SYMBOL}$ACTIVITY $BAR ${1}% $TEXT"
   fi
 }
 
@@ -1054,6 +1094,7 @@ function progressbar_finish() {
   elif [ "$INTERFACE" != "whiptail" ] && [ "$INTERFACE" != "dialog" ] && [ "$INTERFACE" != "zenity" ]; then
     echo ""
   fi
+  unset PROGRESS_ACTIVITY
 }
 
 
