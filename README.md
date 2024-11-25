@@ -4,6 +4,7 @@ script-dialog
 [![GitHub License](https://img.shields.io/github/license/lunarcloud/script-dialog)](https://github.com/lunarcloud/script-dialog/blob/main/LICENSE)
 [![GitHub top language](https://img.shields.io/github/languages/top/lunarcloud/script-dialog)](https://github.com/lunarcloud/script-dialog/pulse)
 
+![Code Quality](https://github.com/lunarcloud/script-dialog/actions/workflows/analyze.yml/badge.svg)
 
 Create bash scripts that utilize the best dialog system that is available. Intended for Linux, but has been tested on macOS and Windows, and should work on other unix-like OSs.
 
