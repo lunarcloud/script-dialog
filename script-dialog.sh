@@ -1,5 +1,6 @@
 #!/bin/bash
 # Multi-UI Scripting
+# https://github.com/lunarcloud/script-dialog
 
 # Disable this rule, as it interferes with purely-numeric parameters
 # shellcheck disable=SC2046
