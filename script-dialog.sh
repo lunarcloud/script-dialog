@@ -1,6 +1,7 @@
 #!/bin/bash
 # Multi-UI Scripting
 # https://github.com/lunarcloud/script-dialog
+# LGPL-2.1 license
 
 # Disable this rule, as it interferes with purely-numeric parameters
 # shellcheck disable=SC2046
