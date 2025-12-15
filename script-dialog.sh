@@ -10,6 +10,9 @@
 # Do auto-detections at the top
 ################################
 
+# Detect desktop environment for optimal dialog selection
+# Priority: OS type -> XDG variables -> running processes
+
 if [[ $OSTYPE == darwin* ]]; then
     desktop="macos"
 elif [[ $OSTYPE == msys ]] || [[ $(uname -r | tr '[:upper:]' '[:lower:]') == *wsl* ]]; then
@@ -30,24 +33,29 @@ else
   desktop="unknown"
 fi
 
-
-desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')  # convert to lower case
+# Ensure lowercase for consistent comparisons (redundant for some paths above)
+desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')
 export DETECTED_DESKTOP=$desktop
 
 # If we have a standard in and out, then terminal
 [ -t 0 ] && [ -t 1 ] && terminal=true || terminal=false
+
+# Initialize dialog tool availability flags
 
 hasKDialog=false
 hasZenity=false
 hasDialog=false
 hasWhiptail=false
 
+# Determine if GUI is available (unless already set)
 if [ -z ${GUI+x} ]; then
   GUI=false
   if [ "$terminal" == "false" ] ; then
     GUI=$([ "$DISPLAY" ] || [ "$WAYLAND_DISPLAY" ] || [ "$MIR_SOCKET" ] && echo true || echo false)
   fi
 fi
+
+# Check which dialog tools are available
 
 if command -v >/dev/null kdialog; then
   hasKDialog=true
@@ -65,7 +73,7 @@ if command -v >/dev/null whiptail; then
   hasWhiptail=true
 fi
 
-
+# Auto-select the best available dialog interface based on desktop environment
 if [ -z ${INTERFACE+x} ]; then
   if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxqt" ]  || [ "$desktop" == "maui" ] ; then
     if  [ "$hasKDialog" == "true" ] && [ "$GUI" == "true" ] ; then
@@ -103,7 +111,7 @@ if [ -z ${INTERFACE+x} ]; then
   fi
 fi
 
-# Hanadle Zenity major version difference
+# Handle Zenity major version difference
 ZENITY_ICON_ARG=--icon
 if command -v >/dev/null zenity && printf "%s\n4.0.0\n" "$(zenity --version)" | sort -C; then
   # this version is older than 4.0.0
@@ -114,7 +122,7 @@ if  [ "$INTERFACE" == "kdialog" ] || [ "$INTERFACE" == "zenity" ] ; then
   GUI=true
 fi
 
-# which sudo to use
+# Select the best available sudo/privilege elevation method
 NO_SUDO=false
 SUDO_USE_INTERFACE=false
 if [ "$GUI" == "true" ] &&  command -v >/dev/null pkexec; then
@@ -135,6 +143,7 @@ else
 fi
 
 # Handle when read command doesn't support default text option
+NO_READ_DEFAULT="-r"
 if echo "test" | read -ri "test" 2>/dev/null; then
   NO_READ_DEFAULT=""
 fi
@@ -214,7 +223,7 @@ else
 fi
 
 #######################################
-# Attempts to run a priviledged command (sudo or eqiuvalent)
+# Attempts to run a privileged command (sudo or equivalent)
 # GLOBALS:
 # 	NO_SUDO
 #   SUDO
@@ -1164,7 +1173,7 @@ function filepicker() {
 
     read -erp "Enter name of file to $2 in $1/: " SELECTED
 
-    # TODO if SELECTED is empty or folder
+    # TODO: Add validation - handle empty SELECTED or when SELECTED is a folder
 
     FILE=$1/$SELECTED
   fi
@@ -1236,7 +1245,7 @@ function folderpicker() {
 
     read -erp "Enter name of file to $2 in $1/: " SELECTED
 
-    # TODO if SELECTED is empty or ..
+    # TODO: Add validation - handle empty SELECTED or parent directory (..)
 
     FILE=$1/$SELECTED
   fi
