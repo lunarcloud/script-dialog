@@ -1,0 +1,143 @@
+# Workflow to generate screenshots of dialog features on multiple OSes
+# This is a manually-triggered workflow that captures screenshots of all dialog types
+# across different interfaces on Ubuntu, macOS, and Windows (WSL).
+
+name: Generate Screenshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      interface:
+        description: 'Interface to test (leave empty for all available)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - zenity
+          - kdialog
+          - whiptail
+          - dialog
+          - echo
+      dialog_type:
+        description: 'Dialog type to test (leave empty for common types)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - info
+          - warn
+          - error
+          - yesno
+          - input
+          - password
+          - pause
+          - checklist
+          - radiolist
+          - datepicker
+
+jobs:
+  screenshot-ubuntu:
+    runs-on: ubuntu-latest
+    name: Screenshots on Ubuntu
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick xvfb whiptail dialog zenity
+          
+      - name: Start virtual display
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+          sleep 2
+          
+      - name: Generate screenshots
+        run: |
+          if [ -n "${{ github.event.inputs.interface }}" ] && [ -n "${{ github.event.inputs.dialog_type }}" ]; then
+            ./screenshot-dialogs.sh -i "${{ github.event.inputs.interface }}" -d "${{ github.event.inputs.dialog_type }}" -w 1
+          elif [ -n "${{ github.event.inputs.interface }}" ]; then
+            ./screenshot-dialogs.sh -i "${{ github.event.inputs.interface }}" -w 1
+          elif [ -n "${{ github.event.inputs.dialog_type }}" ]; then
+            ./screenshot-dialogs.sh -d "${{ github.event.inputs.dialog_type }}" -w 1
+          else
+            ./screenshot-dialogs.sh -w 1
+          fi
+          
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-ubuntu
+          path: screenshots/
+          if-no-files-found: error
+          retention-days: 30
+
+  screenshot-macos:
+    runs-on: macos-latest
+    name: Screenshots on macOS
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          brew install imagemagick dialog
+          # Note: zenity is not easily available on macOS
+          
+      - name: Generate screenshots
+        run: |
+          if [ -n "${{ github.event.inputs.interface }}" ] && [ -n "${{ github.event.inputs.dialog_type }}" ]; then
+            ./screenshot-dialogs.sh -i "${{ github.event.inputs.interface }}" -d "${{ github.event.inputs.dialog_type }}" -w 1
+          elif [ -n "${{ github.event.inputs.interface }}" ]; then
+            ./screenshot-dialogs.sh -i "${{ github.event.inputs.interface }}" -w 1
+          elif [ -n "${{ github.event.inputs.dialog_type }}" ]; then
+            ./screenshot-dialogs.sh -d "${{ github.event.inputs.dialog_type }}" -w 1
+          else
+            ./screenshot-dialogs.sh -w 1
+          fi
+          
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-macos
+          path: screenshots/
+          if-no-files-found: warn
+          retention-days: 30
+
+  screenshot-windows:
+    runs-on: windows-latest
+    name: Screenshots on Windows (WSL)
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup WSL
+        uses: Vampire/setup-wsl@v3
+        with:
+          distribution: Ubuntu-22.04
+          
+      - name: Install dependencies in WSL
+        shell: wsl-bash {0}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick whiptail dialog
+          
+      - name: Generate screenshots
+        shell: wsl-bash {0}
+        run: |
+          if [ -n "${{ github.event.inputs.interface }}" ] && [ -n "${{ github.event.inputs.dialog_type }}" ]; then
+            ./screenshot-dialogs.sh -i "${{ github.event.inputs.interface }}" -d "${{ github.event.inputs.dialog_type }}" -w 1
+          elif [ -n "${{ github.event.inputs.interface }}" ]; then
+            ./screenshot-dialogs.sh -i "${{ github.event.inputs.interface }}" -w 1
+          elif [ -n "${{ github.event.inputs.dialog_type }}" ]; then
+            ./screenshot-dialogs.sh -d "${{ github.event.inputs.dialog_type }}" -w 1
+          else
+            ./screenshot-dialogs.sh -w 1
+          fi
+          
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-windows-wsl
+          path: screenshots/
+          if-no-files-found: warn
+          retention-days: 30
