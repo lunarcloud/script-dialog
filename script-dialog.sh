@@ -929,6 +929,18 @@ function checklist() {
   shift
   shift
   _calculate-tui-size
+  
+  # Adjust height to account for the number of options
+  # Each option takes 1 line, plus we need space for prompt and UI elements
+  local needed_lines=$((NUM_OPTIONS + 6))  # 6 lines for prompt, borders, and buttons
+  if [ "$needed_lines" -gt "$RECMD_LINES" ]; then
+    RECMD_LINES=$needed_lines
+    # Enforce maximum constraint
+    if [ "$RECMD_LINES" -gt "$MAX_LINES" ]; then
+      RECMD_LINES=$MAX_LINES
+      RECMD_SCROLL=true
+    fi
+  fi
 
   if [ "$INTERFACE" == "whiptail" ]; then
     mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
@@ -1022,6 +1034,18 @@ function radiolist() {
   shift
   shift
   _calculate-tui-size
+  
+  # Adjust height to account for the number of options
+  # Each option takes 1 line, plus we need space for prompt and UI elements
+  local needed_lines=$((NUM_OPTIONS + 6))  # 6 lines for prompt, borders, and buttons
+  if [ "$needed_lines" -gt "$RECMD_LINES" ]; then
+    RECMD_LINES=$needed_lines
+    # Enforce maximum constraint
+    if [ "$RECMD_LINES" -gt "$MAX_LINES" ]; then
+      RECMD_LINES=$MAX_LINES
+      RECMD_SCROLL=true
+    fi
+  fi
 
   if [ "$INTERFACE" == "whiptail" ]; then
     CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
