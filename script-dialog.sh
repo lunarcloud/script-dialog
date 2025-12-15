@@ -596,31 +596,31 @@ function pause() {
     if whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-button "Continue" --no-button "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"; then
       return 0
     else
-      exit 0
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
   elif [ "$INTERFACE" == "dialog" ]; then
     if dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-label "Continue" --no-label "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"; then
       return 0
     else
-      exit 0
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
   elif [ "$INTERFACE" == "zenity" ]; then
     if zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$MESSAGE" --ok-label="Continue" --cancel-label="Quit"; then
       return 0
     else
-      exit 0
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
   elif [ "$INTERFACE" == "kdialog" ]; then
     if kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yes-label "Continue" --no-label "Quit" --yesno "$MESSAGE"; then
       return 0
     else
-      exit 0
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
   else
     echo -ne "${QUESTION_SYMBOL}${bold}$MESSAGE (press Enter to continue, q to quit): ${normal}" 3>&1 1>&2 2>&3
     read -r answer
     if [[ "${answer,,}" == "q" ]]; then
-      exit 0
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
     return 0
   fi
@@ -720,23 +720,18 @@ function inputbox() {
   TEST_STRING="${QUESTION_SYMBOL} $1"
   _calculate-tui-size
 
-  local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
     INPUT=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_LINES" "$RECMD_COLS" "$2" 3>&1 1>&2 2>&3)
-    exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_LINES" "$RECMD_COLS" "$2" 3>&1 1>&2 2>&3)
-    exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     INPUT="$(zenity --entry --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --text="$1" --entry-text "$2")"
-    exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
-    exit_status=$?
   else
     read ${NO_READ_DEFAULT+-i "$2"} -rep "${SYMBOL}${bold}$1: ${normal}" INPUT
-    exit_status=$?
   fi
+  local exit_status=$?
 
   # Exit script if dialog was cancelled
   if [ $exit_status -ne 0 ]; then
@@ -793,32 +788,37 @@ function userandpassword() {
   if [ "$PASS_TEXT" == "" ]; then PASS_TEXT="Password"; fi
   local CREDS=()
 
-  local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
     CREDS[1]=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$PASS_TEXT" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
-    exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     mapfile -t CREDS < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" "$RECMD_LINES" "$RECMD_COLS" 0 "Username: " 1 1 "$SUGGESTED_USERNAME" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1 3>&1 1>&2 2>&3 )
-    exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --password --username "$SUGGESTED_USERNAME")
-    exit_status=$?
+    local exit_status=$?
     CREDS[0]=$(echo "$ENTRY" | cut -d'|' -f1)
     CREDS[1]=$(echo "$ENTRY" | cut -d'|' -f2)
+    # Exit script if dialog was cancelled
+    if [ $exit_status -ne 0 ]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   elif [ "$INTERFACE" == "kdialog" ]; then
     CREDS[0]=$(inputbox "$USER_TEXT" "$SUGGESTED_USERNAME")
     CREDS[1]=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$PASS_TEXT")
-    exit_status=$?
   else
     read ${NO_READ_DEFAULT+-i "$SUGGESTED_USERNAME"} -rep "${QUESTION_SYMBOL}${bold}$USER_TEXT: ${normal}" "CREDS[0]"
-    exit_status=$?
+    local exit_status=$?
     if [ $exit_status -eq 0 ]; then
       read -srp "${bold}${PASSWORD_SYMBOL}$PASS_TEXT: ${normal}" "CREDS[1]"
       exit_status=$?
     fi
     echo
+    # Exit script if dialog was cancelled
+    if [ $exit_status -ne 0 ]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   fi
+  local exit_status=$?
 
   # Exit script if dialog was cancelled
   if [ $exit_status -ne 0 ]; then
@@ -860,23 +860,18 @@ function password() {
   TEST_STRING="${PASSWORD_SYMBOL}$1"
   _calculate-tui-size
 
-  local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
     PASSWORD=$(whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
-    exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
-    exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     PASSWORD=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --password)
-    exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$1")
-    exit_status=$?
   else
     read -srp "${PASSWORD_SYMBOL}${bold}$ACTIVITY: ${normal}" PASSWORD
-    exit_status=$?
   fi
+  local exit_status=$?
 
   # Exit script if dialog was cancelled
   if [ $exit_status -ne 0 ]; then
@@ -920,23 +915,18 @@ function display-file() {
   local height=${3-${ZENITY_HEIGHT-640}}
   _calculate-tui-size
 
-  local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
     whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
-    exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
-    exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="$height" --width="$width" --text-info --filename="$1"
-    exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --textbox "$1" "$width" "$height"
-    exit_status=$?
   else
     less "$1" 3>&1 1>&2 2>&3
-    exit_status=$?
   fi
+  local exit_status=$?
 
   # Exit script if dialog was cancelled
   if [ $exit_status -ne 0 ]; then
@@ -1006,13 +996,10 @@ function checklist() {
     fi
   fi
 
-  local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
     mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
-    exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
-    exit_status=$?
 
     local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
@@ -1035,7 +1022,6 @@ function checklist() {
       shift
     done
     IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" )
-    exit_status=$?
 
     local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
@@ -1045,7 +1031,6 @@ function checklist() {
 
   elif [ "$INTERFACE" == "kdialog" ]; then
     mapfile -t CHOSEN_ITEMS < <( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --checklist "$TEXT" "$@")
-    exit_status=$?
   else
     printf "%s\n $TEXT:\n" "${QUESTION_SYMBOL}$ACTIVITY" 3>&1 1>&2 2>&3
     local CHOSEN_ITEMS=()
@@ -1060,6 +1045,7 @@ function checklist() {
       shift
     done
   fi
+  local exit_status=$?
 
   # Exit script if dialog was cancelled
   if [ $exit_status -ne 0 ]; then
@@ -1395,39 +1381,34 @@ function filepicker() {
     fi
   fi
   _calculate-gui-title
-  local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2012
     read -r -d '' -a files < <(ls -lBhpa "$1" | awk -F ' ' ' { print $9 " " $5 } ')
     SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_LINES)) $((6+RECMD_COLS)) $RECMD_LINES "${files[@]}" 3>&1 1>&2 2>&3)
-    exit_status=$?
     FILE="$1/$SELECTED"
 
   elif [ "$INTERFACE" == "dialog" ]; then
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect "$1"/ 14 48)
-    exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --file-selection --filename "$1"/ )
-    exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     if [ "$2" == "save" ]; then
       FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getsavefilename "$1"/ )
     else #elif [ "$2" == "open" ]; then
       FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getopenfilename "$1"/ )
     fi
-    exit_status=$?
   else
     read -erp "${DOCUMENT_SYMBOL}You need to $2 a file in $1/. Hit enter to browse this folder"
 
     ls -lBhpa "$1" 3>&1 1>&2 2>&3 #| less
 
     read -erp "Enter name of file to $2 in $1/: " SELECTED
-    exit_status=$?
 
     # TODO: Add validation - handle empty SELECTED or when SELECTED is a folder
 
     FILE=$1/$SELECTED
   fi
+  local exit_status=$?
 
   # Exit script if dialog was cancelled
   if [ $exit_status -ne 0 ]; then
@@ -1475,23 +1456,18 @@ function folderpicker() {
     GUI_ICON=$XDG_ICO_FOLDER_OPEN
   fi
   _calculate-gui-title
-  local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2010
     read -r -d '' -a files < <(ls -lBhpa "$1" | grep "^d" | awk -F ' ' ' { print $9 " " $5 } ')
     SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_LINES)) $((6+RECMD_COLS)) $RECMD_LINES "${files[@]}" 3>&1 1>&2 2>&3)
-    exit_status=$?
     FILE="$1/$SELECTED"
 
   elif [ "$INTERFACE" == "dialog" ]; then
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --dselect "$1"/ 14 48)
-    exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --file-selection --directory --filename "$1"/ )
-    exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getexistingdirectory "$1"/ )
-    exit_status=$?
   else
     read -erp "${FOLDER_SYMBOL}You need to select a folder in $1/. Hit enter to browse this folder"
 
@@ -1499,12 +1475,12 @@ function folderpicker() {
     ls -lBhpa "$1" | grep "^d" 3>&1 1>&2 2>&3 #| less
 
     read -erp "Enter name of file to $2 in $1/: " SELECTED
-    exit_status=$?
 
     # TODO: Add validation - handle empty SELECTED or parent directory (..)
 
     FILE=$1/$SELECTED
   fi
+  local exit_status=$?
 
   # Exit script if dialog was cancelled
   if [ $exit_status -ne 0 ]; then
@@ -1552,23 +1528,19 @@ function datepicker() {
   MONTH=0
   YEAR=0
 
-  local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
     local SYMBOL=$CALENDAR_SYMBOL
     STANDARD_DATE=$(inputbox "Input Date (DD/MM/YYYY)" "$NOW")
   elif [ "$INTERFACE" == "dialog" ]; then
     STANDARD_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "${CALENDAR_SYMBOL}Choose Date" 0 40)
-    exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
     INPUT_DATE=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --calendar "Select Date")
-    exit_status=$?
     MONTH=$(echo "$INPUT_DATE" | cut -d'/' -f1)
     DAY=$(echo "$INPUT_DATE" | cut -d'/' -f2)
     YEAR=$(echo "$INPUT_DATE" | cut -d'/' -f3)
     STANDARD_DATE="$DAY/$MONTH/$YEAR"
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT_DATE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --calendar "Select Date")
-    exit_status=$?
     TEXT_MONTH=$(echo "$INPUT_DATE" | cut -d' ' -f2)
     if [ "$TEXT_MONTH" == "Jan" ]; then
       MONTH=1
@@ -1601,8 +1573,8 @@ function datepicker() {
     STANDARD_DATE="$DAY/$MONTH/$YEAR"
   else
     read ${NO_READ_DEFAULT+-i "$NOW"} -rep "${CALENDAR_SYMBOL}${bold}Date (DD/MM/YYYY): ${normal}" STANDARD_DATE
-    exit_status=$?
   fi
+  local exit_status=$?
 
   # Exit script if dialog was cancelled
   if [ $exit_status -ne 0 ]; then
