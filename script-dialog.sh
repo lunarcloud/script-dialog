@@ -533,19 +533,19 @@ function pause() {
     GUI_ICON=$XDG_ICO_INFO
   fi
   _calculate-gui-title
-  
+
   local PAUSE_MSG_GUI="Click Okay to continue"
   local PAUSE_MSG_TUI="Press Okay to continue"
   local PAUSE_MSG_CLI="Press any key to continue..."
-  
-  if [ "$INTERFACE" == "whiptail" ]; then
+
+  if [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ]; then
     TEST_STRING="$PAUSE_MSG_TUI"
     _calculate-tui-size
-    whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$PAUSE_MSG_TUI" "$RECMD_LINES" "$RECMD_COLS"
-  elif [ "$INTERFACE" == "dialog" ]; then
-    TEST_STRING="$PAUSE_MSG_TUI"
-    _calculate-tui-size
-    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$PAUSE_MSG_TUI" "$RECMD_LINES" "$RECMD_COLS"
+    if [ "$INTERFACE" == "whiptail" ]; then
+      whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$PAUSE_MSG_TUI" "$RECMD_LINES" "$RECMD_COLS"
+    else
+      dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$PAUSE_MSG_TUI" "$RECMD_LINES" "$RECMD_COLS"
+    fi
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --info --text "$PAUSE_MSG_GUI"
   elif [ "$INTERFACE" == "kdialog" ]; then
