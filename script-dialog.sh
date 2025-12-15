@@ -593,36 +593,23 @@ function pause() {
   _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    if whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-button "Continue" --no-button "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"; then
-      return 0
-    else
-      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
-    fi
+    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-button "Continue" --no-button "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "dialog" ]; then
-    if dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-label "Continue" --no-label "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"; then
-      return 0
-    else
-      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
-    fi
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-label "Continue" --no-label "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
-    if zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$MESSAGE" --ok-label="Continue" --cancel-label="Quit"; then
-      return 0
-    else
-      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
-    fi
+    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$MESSAGE" --ok-label="Continue" --cancel-label="Quit"
   elif [ "$INTERFACE" == "kdialog" ]; then
-    if kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yes-label "Continue" --no-label "Quit" --yesno "$MESSAGE"; then
-      return 0
-    else
-      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
-    fi
+    kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yes-label "Continue" --no-label "Quit" --yesno "$MESSAGE"
   else
     echo -ne "${QUESTION_SYMBOL}${bold}$MESSAGE (press Enter to continue, q to quit): ${normal}" 3>&1 1>&2 2>&3
     read -r answer
-    if [[ "${answer,,}" == "q" ]]; then
-      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
-    fi
-    return 0
+    [[ "${answer,,}" != "q" ]]
+  fi
+  local exit_status=$?
+
+  # Exit script if user chose to quit
+  if [ $exit_status -ne 0 ]; then
+    exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
   fi
 }
 
