@@ -368,7 +368,8 @@ function _calculate-tui-size() {
     # Calculate wrapped line count at this width
     # Subtract padding to get actual text width
     local text_width=$((RECMD_COLS - 6))
-    if [ "$text_width" -lt 1 ]; then
+    # Ensure text_width is at least 1 to avoid division by zero
+    if [ "$text_width" -le 0 ]; then
       text_width=1
     fi
     # Calculate ceiling division: (total_chars + text_width - 1) / text_width
