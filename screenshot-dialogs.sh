@@ -15,8 +15,20 @@ DIALOG_TYPE=""
 SCREENSHOT_DELAY=0.5
 SCREENSHOT_TOOL=""
 
+# Detect if running on Wayland
+IS_WAYLAND=false
+if [ -n "$WAYLAND_DISPLAY" ]; then
+    IS_WAYLAND=true
+fi
+
 # Available screenshot tools in order of preference
-SCREENSHOT_TOOLS=("import" "scrot" "gnome-screenshot" "spectacle" "maim")
+# Wayland-compatible tools: grim, wayshot, gnome-screenshot (on GNOME+Wayland), spectacle (on KDE+Wayland)
+# X11 tools: import, scrot, maim
+if [ "$IS_WAYLAND" = true ]; then
+    SCREENSHOT_TOOLS=("grim" "wayshot" "gnome-screenshot" "spectacle" "import" "scrot" "maim")
+else
+    SCREENSHOT_TOOLS=("import" "scrot" "gnome-screenshot" "spectacle" "maim" "grim" "wayshot")
+fi
 
 # Function to show usage
 show_usage() {
@@ -33,8 +45,9 @@ OPTIONS:
                                 datepicker, password, display-file, pause
                                 If not specified, will test common dialog types
     -o, --output DIR           Output directory for screenshots (default: ./screenshots)
-    -t, --tool TOOL            Screenshot tool to use: import, scrot, gnome-screenshot,
-                                spectacle, maim (auto-detected if not specified)
+    -t, --tool TOOL            Screenshot tool to use: grim, wayshot, import, scrot,
+                                gnome-screenshot, spectacle, maim (auto-detected if not specified)
+                                Note: grim and wayshot are Wayland-native tools
     -w, --wait SECONDS         Delay before taking screenshot (default: 0.5)
     -h, --help                 Show this help message
 
@@ -71,6 +84,27 @@ take_screenshot() {
     local window_id="$2"
     
     case "$SCREENSHOT_TOOL" in
+        grim)
+            # grim is Wayland-native, captures entire screen or specific output
+            if [ -n "$window_id" ]; then
+                # For specific windows, use slurp to select region
+                if command -v slurp >/dev/null 2>&1; then
+                    grim -g "$(slurp)" "$output_file" 2>/dev/null
+                else
+                    grim "$output_file" 2>/dev/null
+                fi
+            else
+                grim "$output_file" 2>/dev/null
+            fi
+            ;;
+        wayshot)
+            # wayshot is another Wayland screenshot tool
+            if [ -n "$window_id" ]; then
+                wayshot -f "$output_file" 2>/dev/null
+            else
+                wayshot -f "$output_file" 2>/dev/null
+            fi
+            ;;
         import)
             if [ -n "$window_id" ]; then
                 import -window "$window_id" "$output_file" 2>/dev/null
@@ -290,7 +324,11 @@ done
 if [ -z "$SCREENSHOT_TOOL" ]; then
     if ! SCREENSHOT_TOOL=$(detect_screenshot_tool); then
         echo "Error: No screenshot tool found. Please install one of: ${SCREENSHOT_TOOLS[*]}" >&2
-        echo "On Ubuntu/Debian: sudo apt install imagemagick" >&2
+        if [ "$IS_WAYLAND" = true ]; then
+            echo "For Wayland: sudo apt install grim (or wayshot)" >&2
+        else
+            echo "For X11: sudo apt install imagemagick" >&2
+        fi
         echo "On macOS: brew install imagemagick" >&2
         exit 1
     fi

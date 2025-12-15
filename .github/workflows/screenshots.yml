@@ -45,7 +45,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y imagemagick xvfb whiptail dialog zenity
+          sudo apt-get install -y imagemagick xvfb whiptail dialog zenity grim
+          # Note: Using Xvfb (X11) for CI, but grim is available for Wayland testing
           
       - name: Start virtual display
         run: |

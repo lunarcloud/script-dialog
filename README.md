@@ -118,11 +118,21 @@ The `screenshot-dialogs.sh` script helps create screenshots of dialog features u
 
 ### Requirements
 The script requires one of the following screenshot tools to be installed:
-- `import` (from ImageMagick) - recommended
+
+**For Wayland:**
+- `grim` - recommended for Wayland
+- `wayshot` - alternative Wayland screenshot tool
+- `gnome-screenshot` - works on GNOME Wayland
+- `spectacle` - works on KDE Wayland
+
+**For X11:**
+- `import` (from ImageMagick) - recommended for X11
 - `scrot`
+- `maim`
 - `gnome-screenshot`
 - `spectacle`
-- `maim`
 
-On Ubuntu/Debian: `sudo apt install imagemagick`
-On macOS: `brew install imagemagick`
+**Installation:**
+- On Ubuntu/Debian (Wayland): `sudo apt install grim`
+- On Ubuntu/Debian (X11): `sudo apt install imagemagick`
+- On macOS: `brew install imagemagick`
