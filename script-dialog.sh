@@ -354,14 +354,16 @@ function _calculate-tui-size() {
   if [ "$line_count" -eq 1 ]; then
     local total_chars=${#TEST_STRING}
     
-    # Target width: 60% of available space, but at least MIN_COLS
-    local target_width=$((MAX_COLS * 3 / 5))
+    # Target width: Start with content + padding, but cap at a reasonable maximum
+    # Use 50% of available space as the maximum for single-line text
+    local target_width=$((MAX_COLS / 2))
     if [ "$target_width" -lt "$MIN_COLS" ]; then
       target_width=$MIN_COLS
     fi
     
-    # Use the larger of: calculated width or target width
-    if [ "$RECMD_COLS" -lt "$target_width" ]; then
+    # Only expand to target width if text is long enough to benefit from it
+    # For short text, stay closer to content size
+    if [ "$RECMD_COLS" -lt "$target_width" ] && [ "$total_chars" -gt 40 ]; then
       RECMD_COLS=$target_width
     fi
     
