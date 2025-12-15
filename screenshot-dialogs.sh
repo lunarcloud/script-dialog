@@ -1,0 +1,317 @@
+#!/usr/bin/env bash
+# Screenshot utility for script-dialog
+# https://github.com/lunarcloud/script-dialog
+# LGPL-2.1 license
+#
+# This script helps demonstrate dialog features by running them with different
+# interfaces and taking screenshots for documentation and PR evidence.
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Default values
+OUTPUT_DIR="$SCRIPT_DIR/screenshots"
+INTERFACE_TO_TEST=""
+DIALOG_TYPE=""
+SCREENSHOT_DELAY=0.5
+SCREENSHOT_TOOL=""
+
+# Available screenshot tools in order of preference
+SCREENSHOT_TOOLS=("import" "scrot" "gnome-screenshot" "spectacle" "maim")
+
+# Function to show usage
+show_usage() {
+    cat << EOF
+Usage: $0 [OPTIONS]
+
+Take screenshots of script-dialog features using different interfaces.
+
+OPTIONS:
+    -i, --interface INTERFACE   Interface to test: zenity, kdialog, whiptail, dialog, echo
+                                If not specified, will test all available interfaces
+    -d, --dialog TYPE          Dialog type to test: info, warn, error, yesno, input,
+                                progress, checklist, radiolist, filepicker, folderpicker,
+                                datepicker, password, display-file, pause
+                                If not specified, will test common dialog types
+    -o, --output DIR           Output directory for screenshots (default: ./screenshots)
+    -t, --tool TOOL            Screenshot tool to use: import, scrot, gnome-screenshot,
+                                spectacle, maim (auto-detected if not specified)
+    -w, --wait SECONDS         Delay before taking screenshot (default: 0.5)
+    -h, --help                 Show this help message
+
+EXAMPLES:
+    # Screenshot all available interfaces with message-info
+    $0 -d info
+
+    # Screenshot zenity interface with all common dialogs
+    $0 -i zenity
+
+    # Screenshot whiptail with yesno dialog
+    $0 -i whiptail -d yesno
+
+    # Test all available interfaces with all common dialogs
+    $0
+
+EOF
+}
+
+# Function to detect available screenshot tool
+detect_screenshot_tool() {
+    for tool in "${SCREENSHOT_TOOLS[@]}"; do
+        if command -v "$tool" >/dev/null 2>&1; then
+            echo "$tool"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Function to take a screenshot
+take_screenshot() {
+    local output_file="$1"
+    local window_id="$2"
+    
+    case "$SCREENSHOT_TOOL" in
+        import)
+            if [ -n "$window_id" ]; then
+                import -window "$window_id" "$output_file" 2>/dev/null
+            else
+                import -window root "$output_file" 2>/dev/null
+            fi
+            ;;
+        scrot)
+            if [ -n "$window_id" ]; then
+                scrot -u "$output_file" 2>/dev/null
+            else
+                scrot "$output_file" 2>/dev/null
+            fi
+            ;;
+        gnome-screenshot)
+            if [ -n "$window_id" ]; then
+                gnome-screenshot -w -f "$output_file" 2>/dev/null
+            else
+                gnome-screenshot -f "$output_file" 2>/dev/null
+            fi
+            ;;
+        spectacle)
+            if [ -n "$window_id" ]; then
+                spectacle -a -b -n -o "$output_file" 2>/dev/null
+            else
+                spectacle -f -b -n -o "$output_file" 2>/dev/null
+            fi
+            ;;
+        maim)
+            if [ -n "$window_id" ]; then
+                maim -i "$window_id" "$output_file" 2>/dev/null
+            else
+                maim "$output_file" 2>/dev/null
+            fi
+            ;;
+        *)
+            echo "Error: Unknown screenshot tool: $SCREENSHOT_TOOL" >&2
+            return 1
+            ;;
+    esac
+}
+
+# Function to run a dialog and take screenshot
+run_dialog_with_screenshot() {
+    local interface="$1"
+    local dialog_type="$2"
+    local output_file="$OUTPUT_DIR/${interface}-${dialog_type}.png"
+    
+    echo "Testing $interface with $dialog_type..."
+    
+    # Export the interface to force its use
+    export INTERFACE="$interface"
+    export GUI=false
+    
+    # Set GUI flag for GUI interfaces
+    if [ "$interface" == "zenity" ] || [ "$interface" == "kdialog" ]; then
+        export GUI=true
+    fi
+    
+    # Source the library
+    # shellcheck source=./script-dialog.sh
+    # shellcheck disable=SC1091
+    source "${SCRIPT_DIR}"/script-dialog.sh
+    
+    export APP_NAME="Script Dialog Demo"
+    export ACTIVITY="Screenshot Test"
+    
+    # Run the dialog in background and capture its PID
+    case "$dialog_type" in
+        info)
+            (message-info "This is an informational message.\nSecond line of text.") &
+            ;;
+        warn)
+            (message-warn "This is a warning message.\nPlease pay attention!") &
+            ;;
+        error)
+            (message-error "This is an error message.\nSomething went wrong!") &
+            ;;
+        yesno)
+            (yesno "Do you want to continue?\nThis is a yes/no question." || true) &
+            ;;
+        input)
+            (inputbox "Please enter your name:" "John Doe" || true) &
+            ;;
+        password)
+            (password "Enter your password:" || true) &
+            ;;
+        pause)
+            (pause "Ready to continue?" || true) &
+            ;;
+        checklist)
+            (checklist "Select options:" 3 \
+                "opt1" "Option 1" ON \
+                "opt2" "Option 2" OFF \
+                "opt3" "Option 3" ON || true) &
+            ;;
+        radiolist)
+            (radiolist "Choose one:" 3 \
+                "opt1" "Option 1" OFF \
+                "opt2" "Option 2" ON \
+                "opt3" "Option 3" OFF || true) &
+            ;;
+        datepicker)
+            (datepicker || true) &
+            ;;
+        *)
+            echo "Unknown dialog type: $dialog_type" >&2
+            return 1
+            ;;
+    esac
+    
+    local dialog_pid=$!
+    
+    # Wait for dialog to appear
+    sleep "$SCREENSHOT_DELAY"
+    
+    # Take screenshot
+    take_screenshot "$output_file" ""
+    
+    # Clean up - try to kill the dialog process
+    if kill -0 "$dialog_pid" 2>/dev/null; then
+        # For TUI dialogs, send Enter key
+        if [ "$interface" == "whiptail" ] || [ "$interface" == "dialog" ]; then
+            # Send Enter to close the dialog
+            kill -TERM "$dialog_pid" 2>/dev/null || true
+        else
+            kill "$dialog_pid" 2>/dev/null || true
+        fi
+    fi
+    
+    wait "$dialog_pid" 2>/dev/null || true
+    
+    if [ -f "$output_file" ]; then
+        echo "Screenshot saved: $output_file"
+        return 0
+    else
+        echo "Failed to create screenshot: $output_file" >&2
+        return 1
+    fi
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -i|--interface)
+            INTERFACE_TO_TEST="$2"
+            shift 2
+            ;;
+        -d|--dialog)
+            DIALOG_TYPE="$2"
+            shift 2
+            ;;
+        -o|--output)
+            OUTPUT_DIR="$2"
+            shift 2
+            ;;
+        -t|--tool)
+            SCREENSHOT_TOOL="$2"
+            shift 2
+            ;;
+        -w|--wait)
+            SCREENSHOT_DELAY="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            show_usage
+            exit 1
+            ;;
+    esac
+done
+
+# Detect screenshot tool if not specified
+if [ -z "$SCREENSHOT_TOOL" ]; then
+    if ! SCREENSHOT_TOOL=$(detect_screenshot_tool); then
+        echo "Error: No screenshot tool found. Please install one of: ${SCREENSHOT_TOOLS[*]}" >&2
+        echo "On Ubuntu/Debian: sudo apt install imagemagick" >&2
+        echo "On macOS: brew install imagemagick" >&2
+        exit 1
+    fi
+    echo "Using screenshot tool: $SCREENSHOT_TOOL"
+fi
+
+# Create output directory
+mkdir -p "$OUTPUT_DIR"
+
+# Determine interfaces to test
+if [ -n "$INTERFACE_TO_TEST" ]; then
+    interfaces=("$INTERFACE_TO_TEST")
+else
+    interfaces=()
+    # Check which interfaces are available
+    command -v zenity >/dev/null 2>&1 && interfaces+=("zenity")
+    command -v kdialog >/dev/null 2>&1 && interfaces+=("kdialog")
+    command -v whiptail >/dev/null 2>&1 && interfaces+=("whiptail")
+    command -v dialog >/dev/null 2>&1 && interfaces+=("dialog")
+    interfaces+=("echo")  # Always available
+fi
+
+# Determine dialog types to test
+if [ -n "$DIALOG_TYPE" ]; then
+    dialog_types=("$DIALOG_TYPE")
+else
+    # Test common dialog types
+    dialog_types=("info" "warn" "error" "yesno" "input")
+fi
+
+# Check if we have any interfaces to test
+if [ ${#interfaces[@]} -eq 0 ]; then
+    echo "Error: No dialog interfaces available to test" >&2
+    exit 1
+fi
+
+echo "Interfaces to test: ${interfaces[*]}"
+echo "Dialog types to test: ${dialog_types[*]}"
+echo "Output directory: $OUTPUT_DIR"
+echo ""
+
+# Run tests
+success_count=0
+fail_count=0
+
+for interface in "${interfaces[@]}"; do
+    for dialog_type in "${dialog_types[@]}"; do
+        if run_dialog_with_screenshot "$interface" "$dialog_type"; then
+            ((success_count++))
+        else
+            ((fail_count++))
+        fi
+        sleep 0.5  # Brief pause between tests
+    done
+done
+
+echo ""
+echo "Screenshot generation complete!"
+echo "Successful: $success_count"
+echo "Failed: $fail_count"
+echo "Screenshots saved in: $OUTPUT_DIR"
+
+exit 0
