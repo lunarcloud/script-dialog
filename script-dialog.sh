@@ -933,6 +933,17 @@ function checklist() {
   # Adjust height to account for the number of options
   # Each option takes 1 line, plus we need space for prompt and UI elements
   local needed_lines=$((NUM_OPTIONS + 6))  # 6 lines for prompt, borders, and buttons
+  
+  # Dialog interface displays the text in the body, whiptail shows it in the title
+  # Add extra lines for dialog to show the message text
+  if [ "$INTERFACE" == "dialog" ]; then
+    local text_lines=0
+    while IFS= read -r line; do
+      text_lines=$((text_lines + 1))
+    done <<< "$TEXT"
+    needed_lines=$((needed_lines + text_lines))
+  fi
+  
   if [ "$needed_lines" -gt "$RECMD_LINES" ]; then
     RECMD_LINES=$needed_lines
     # Enforce maximum constraint
@@ -1038,6 +1049,17 @@ function radiolist() {
   # Adjust height to account for the number of options
   # Each option takes 1 line, plus we need space for prompt and UI elements
   local needed_lines=$((NUM_OPTIONS + 6))  # 6 lines for prompt, borders, and buttons
+  
+  # Dialog interface displays the text in the body, whiptail shows it in the title
+  # Add extra lines for dialog to show the message text
+  if [ "$INTERFACE" == "dialog" ]; then
+    local text_lines=0
+    while IFS= read -r line; do
+      text_lines=$((text_lines + 1))
+    done <<< "$TEXT"
+    needed_lines=$((needed_lines + text_lines))
+  fi
+  
   if [ "$needed_lines" -gt "$RECMD_LINES" ]; then
     RECMD_LINES=$needed_lines
     # Enforce maximum constraint
