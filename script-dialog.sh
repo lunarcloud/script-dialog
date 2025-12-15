@@ -1136,9 +1136,17 @@ function radiolist() {
   if [ "$INTERFACE" == "whiptail" ]; then
     CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
+    # For TUI interfaces, empty response indicates cancel
+    if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   elif [ "$INTERFACE" == "dialog" ]; then
     CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
+    # For TUI interfaces, empty response indicates cancel
+    if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   elif [ "$INTERFACE" == "zenity" ]; then
     OPTIONS=()
     while test ${#} -gt 0;  do
@@ -1155,9 +1163,17 @@ function radiolist() {
     done
     CHOSEN_ITEM=$( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
     exit_status=$?
+    # For GUI interfaces, empty response indicates cancel
+    if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   elif [ "$INTERFACE" == "kdialog" ]; then
     CHOSEN_ITEM=$( kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --radiolist "$TEXT" "$@")
     exit_status=$?
+    # For GUI interfaces, empty response indicates cancel
+    if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   else
     echo -e "${QUESTION_SYMBOL}$ACTIVITY: " 3>&1 1>&2 2>&3
     OPTIONS=()
@@ -1179,12 +1195,11 @@ function radiolist() {
     if [[ "$CHOSEN_ITEM" == "" ]]; then
       CHOSEN_ITEM="$DEFAULT"
     fi
-  fi
-
-  # Exit script if dialog was cancelled (check both exit status and empty result)
-  # For radio lists, empty response indicates cancel
-  if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
-    exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    
+    # For CLI interface, only check exit status
+    if [ $exit_status -ne 0 ]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   fi
 
   echo "$CHOSEN_ITEM"
