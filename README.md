@@ -65,7 +65,7 @@ Functions
 ----------------
 | Name | Description | Arguments | Output or Return |
 | ---- | ----------- | --------- | ---------------- |
-| **superuser** | Attempts to run a priviledged command (sudo or eqiuvalent) | Command to run with elevated priviledge | return code 0 if success, non-zero otherwise |
+| **superuser** | Attempts to run a privileged command (sudo or equivalent) | Command to run with elevated privilege | return code 0 if success, non-zero otherwise |
 | **relaunch-if-not-visible** | if neither GUI nor terminal interfaces can be used, relaunch the script in a terminal emulator | |  |
 | **message-info** | Display an 'info' message box | The text to display | |
 | **message-warn** | Display a 'warning' message box | The text to display | |

@@ -5,9 +5,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #NOSYMBOLS=true
 #NOCOLORS=true
 # shellcheck source=./script-dialog.sh
+# shellcheck disable=SC1091  # Source file path is constructed at runtime
 source "${SCRIPT_DIR}"/script-dialog.sh
 
 relaunch-if-not-visible
+# shellcheck disable=SC2034  # APP_NAME is used by script-dialog.sh functions
 APP_NAME="Test Script"
 
 ACTIVITY="Salutations"
@@ -89,6 +91,7 @@ message-info "Folder selected was ${ANSWER[*]}"
 if [ "$NO_SUDO" == true ]; then
     message-info "No SUDO is available on this system."
 else
+    # shellcheck disable=SC2034  # ACTIVITY is used by script-dialog.sh functions
     ACTIVITY="SUDO Test"
     sudo -k # clear credentials
     if superuser echo; then

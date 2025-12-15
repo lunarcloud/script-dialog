@@ -103,7 +103,7 @@ if [ -z ${INTERFACE+x} ]; then
   fi
 fi
 
-# Hanadle Zenity major version difference
+# Handle Zenity major version difference
 ZENITY_ICON_ARG=--icon
 if command -v >/dev/null zenity && printf "%s\n4.0.0\n" "$(zenity --version)" | sort -C; then
   # this version is older than 4.0.0
@@ -135,6 +135,7 @@ else
 fi
 
 # Handle when read command doesn't support default text option
+NO_READ_DEFAULT="-r"
 if echo "test" | read -ri "test" 2>/dev/null; then
   NO_READ_DEFAULT=""
 fi
@@ -214,7 +215,7 @@ else
 fi
 
 #######################################
-# Attempts to run a priviledged command (sudo or eqiuvalent)
+# Attempts to run a privileged command (sudo or equivalent)
 # GLOBALS:
 # 	NO_SUDO
 #   SUDO
