@@ -325,31 +325,79 @@ function _calculate-tui-max() {
 #######################################
 function _calculate-tui-size() {
   _calculate-tui-max
-  local CHARS=${#TEST_STRING}
   RECMD_SCROLL=false
-  RECMD_COLS=$((( MAX_COLS - MIN_COLS ) * 3 / 4))
-  RECMD_LINES=$(((CHARS / RECMD_COLS) + 5))
-  if [[ "$RECMD_LINES" -lt 7 ]]; then
+  
+  # Handle empty string case
+  if [ -z "$TEST_STRING" ]; then
     RECMD_COLS=$MIN_COLS
-    RECMD_LINES=$(((CHARS / RECMD_COLS) + 5))
+    RECMD_LINES=$MIN_LINES
+    return
   fi
-
+  
+  # Count actual lines and find longest line
+  local line_count=0
+  local max_line_length=0
+  
+  while IFS= read -r line; do
+    line_count=$((line_count + 1))
+    local line_len=${#line}
+    if [ "$line_len" -gt "$max_line_length" ]; then
+      max_line_length=$line_len
+    fi
+  done <<< "$TEST_STRING"
+  
+  # Calculate recommended columns based on longest line
+  # Add padding for borders, margins, and UI elements (typically 4-6 chars)
+  RECMD_COLS=$((max_line_length + 6))
+  
+  # For single-line text, consider wrapping and use a reasonable width
+  if [ "$line_count" -eq 1 ]; then
+    local total_chars=${#TEST_STRING}
+    
+    # Target width: Start with content + padding, but cap at a reasonable maximum
+    # Use 50% of available space as the maximum for single-line text
+    local target_width=$((MAX_COLS / 2))
+    if [ "$target_width" -lt "$MIN_COLS" ]; then
+      target_width=$MIN_COLS
+    fi
+    
+    # Only expand to target width if text is long enough to benefit from it
+    # For short text, stay closer to content size
+    if [ "$RECMD_COLS" -lt "$target_width" ] && [ "$total_chars" -gt 40 ]; then
+      RECMD_COLS=$target_width
+    fi
+    
+    # Calculate wrapped line count at this width
+    # Subtract padding to get actual text width
+    local text_width=$((RECMD_COLS - 6))
+    # Ensure text_width is at least 1 to avoid division by zero
+    if [ "$text_width" -le 0 ]; then
+      text_width=1
+    fi
+    # Calculate ceiling division: (total_chars + text_width - 1) / text_width
+    line_count=$(((total_chars + text_width - 1) / text_width))
+  fi
+  
+  # Calculate recommended lines with padding for UI elements
+  # Add 4 lines for title, borders, and buttons
+  RECMD_LINES=$((line_count + 4))
+  
+  # Enforce maximum constraints
   if [ "$RECMD_LINES" -gt "$MAX_LINES" ] ; then
     RECMD_LINES=$MAX_LINES
     RECMD_SCROLL=true
   fi
   if [ "$RECMD_COLS" -gt "$MAX_COLS" ]; then
     RECMD_COLS=$MAX_COLS
-    #RECMD_SCROLL=true
+    RECMD_SCROLL=true
   fi
 
+  # Enforce minimum constraints
   if [ "$RECMD_LINES" -lt "$MIN_LINES" ] ; then
     RECMD_LINES=$MIN_LINES
-    RECMD_SCROLL=false
   fi
   if [ "$RECMD_COLS" -lt "$MIN_COLS" ]; then
     RECMD_COLS=$MIN_COLS
-    RECMD_SCROLL=false
   fi
 
   TEST_STRING="" #blank out for memory's sake
@@ -881,11 +929,34 @@ function checklist() {
   shift
   shift
   _calculate-tui-size
+  
+  # Adjust height to account for the number of options
+  # Each option takes 1 line, plus we need space for prompt and UI elements
+  local needed_lines=$((NUM_OPTIONS + 6))  # 6 lines for prompt, borders, and buttons
+  
+  # Dialog interface displays the text in the body, whiptail shows it in the title
+  # Add extra lines for dialog to show the message text
+  if [ "$INTERFACE" == "dialog" ]; then
+    local text_lines=0
+    while IFS= read -r line; do
+      text_lines=$((text_lines + 1))
+    done <<< "$TEXT"
+    needed_lines=$((needed_lines + text_lines))
+  fi
+  
+  if [ "$needed_lines" -gt "$RECMD_LINES" ]; then
+    RECMD_LINES=$needed_lines
+    # Enforce maximum constraint
+    if [ "$RECMD_LINES" -gt "$MAX_LINES" ]; then
+      RECMD_LINES=$MAX_LINES
+      RECMD_SCROLL=true
+    fi
+  fi
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
 
     local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
@@ -974,11 +1045,34 @@ function radiolist() {
   shift
   shift
   _calculate-tui-size
+  
+  # Adjust height to account for the number of options
+  # Each option takes 1 line, plus we need space for prompt and UI elements
+  local needed_lines=$((NUM_OPTIONS + 6))  # 6 lines for prompt, borders, and buttons
+  
+  # Dialog interface displays the text in the body, whiptail shows it in the title
+  # Add extra lines for dialog to show the message text
+  if [ "$INTERFACE" == "dialog" ]; then
+    local text_lines=0
+    while IFS= read -r line; do
+      text_lines=$((text_lines + 1))
+    done <<< "$TEXT"
+    needed_lines=$((needed_lines + text_lines))
+  fi
+  
+  if [ "$needed_lines" -gt "$RECMD_LINES" ]; then
+    RECMD_LINES=$needed_lines
+    # Enforce maximum constraint
+    if [ "$RECMD_LINES" -gt "$MAX_LINES" ]; then
+      RECMD_LINES=$MAX_LINES
+      RECMD_SCROLL=true
+    fi
+  fi
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "dialog" ]; then
-    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $MAX_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
   elif [ "$INTERFACE" == "zenity" ]; then
     OPTIONS=()
     while test ${#} -gt 0;  do
