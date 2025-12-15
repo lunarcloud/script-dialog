@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Multi-UI Scripting
 # https://github.com/lunarcloud/script-dialog
 # LGPL-2.1 license
