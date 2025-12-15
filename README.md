@@ -56,7 +56,7 @@ Global Variables
 | **INTERFACE** | Override or Detected | the GUI or TUI to use |
 | **GUI** | Detected | Whether the interface is a GUI not TUI |
 | **DETECTED_DESKTOP** | Detected | Desktop in use |
-| **SCRIPT_DIALOG_CANCEL_EXIT_CODE** | Optional override | Exit code when a dialog is cancelled (default: 1) |
+| **SCRIPT_DIALOG_CANCEL_EXIT_CODE** | Optional override | Exit code when a dialog is cancelled (default: 124) |
 | **NOCOLORS** | Optional override | disables otherwise-detected use of colored/bolded text basic CLI |
 | **NOSYMBOLS** | Optional override |disables otherwise-detected use of unicode symbols in TUIs |
 | **ZENITY_HEIGHT** | Optional override | height of zenity dialogs |

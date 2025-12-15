@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Test script for script-dialog library
+# NOTE: Cancelling any dialog will exit this script with the configured
+# SCRIPT_DIALOG_CANCEL_EXIT_CODE (default: 124). This is by design to
+# demonstrate the cancelability feature.
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing

@@ -150,7 +150,7 @@ fi
 
 # Set default cancel exit code if not already set
 if [ -z "${SCRIPT_DIALOG_CANCEL_EXIT_CODE+x}" ]; then
-  SCRIPT_DIALOG_CANCEL_EXIT_CODE=1
+  SCRIPT_DIALOG_CANCEL_EXIT_CODE=124
 fi
 
 
