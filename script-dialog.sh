@@ -149,7 +149,7 @@ if echo "test" | read -ri "test" 2>/dev/null; then
 fi
 
 # Set default cancel exit code if not already set
-if [ -z ${SCRIPT_DIALOG_CANCEL_EXIT_CODE+x} ]; then
+if [ -z "${SCRIPT_DIALOG_CANCEL_EXIT_CODE+x}" ]; then
   SCRIPT_DIALOG_CANCEL_EXIT_CODE=1
 fi
 
