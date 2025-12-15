@@ -99,11 +99,7 @@ take_screenshot() {
             ;;
         wayshot)
             # wayshot is another Wayland screenshot tool
-            if [ -n "$window_id" ]; then
-                wayshot -f "$output_file" 2>/dev/null
-            else
-                wayshot -f "$output_file" 2>/dev/null
-            fi
+            wayshot -f "$output_file" 2>/dev/null
             ;;
         import)
             if [ -n "$window_id" ]; then
