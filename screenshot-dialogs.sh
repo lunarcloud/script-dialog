@@ -17,15 +17,32 @@ SCREENSHOT_TOOL=""
 
 # Detect if running on Wayland
 IS_WAYLAND=false
+WAYLAND_COMPOSITOR=""
 if [ -n "$WAYLAND_DISPLAY" ]; then
     IS_WAYLAND=true
+    # Try to detect the compositor
+    if [ -n "$XDG_SESSION_DESKTOP" ]; then
+        WAYLAND_COMPOSITOR=$(echo "$XDG_SESSION_DESKTOP" | tr '[:upper:]' '[:lower:]')
+    elif [ -n "$XDG_CURRENT_DESKTOP" ]; then
+        WAYLAND_COMPOSITOR=$(echo "$XDG_CURRENT_DESKTOP" | tr '[:upper:]' '[:lower:]')
+    fi
 fi
 
 # Available screenshot tools in order of preference
-# Wayland-compatible tools: grim, wayshot, gnome-screenshot (on GNOME+Wayland), spectacle (on KDE+Wayland)
+# Wayland-compatible tools: grim, wayshot (wlroots compositors), gnome-screenshot (GNOME), spectacle (KDE)
 # X11 tools: import, scrot, maim
 if [ "$IS_WAYLAND" = true ]; then
-    SCREENSHOT_TOOLS=("grim" "wayshot" "gnome-screenshot" "spectacle" "import" "scrot" "maim")
+    # Prioritize tools based on compositor
+    if [[ "$WAYLAND_COMPOSITOR" == *"gnome"* ]]; then
+        # GNOME doesn't support wlr-screencopy, prioritize gnome-screenshot
+        SCREENSHOT_TOOLS=("gnome-screenshot" "grim" "wayshot" "spectacle" "import" "scrot" "maim")
+    elif [[ "$WAYLAND_COMPOSITOR" == *"kde"* ]] || [[ "$WAYLAND_COMPOSITOR" == *"plasma"* ]]; then
+        # KDE Plasma on Wayland, prioritize spectacle
+        SCREENSHOT_TOOLS=("spectacle" "grim" "wayshot" "gnome-screenshot" "import" "scrot" "maim")
+    else
+        # Other compositors (sway, wayfire, etc.) - try wlr-screencopy tools first
+        SCREENSHOT_TOOLS=("grim" "wayshot" "gnome-screenshot" "spectacle" "import" "scrot" "maim")
+    fi
 else
     SCREENSHOT_TOOLS=("import" "scrot" "gnome-screenshot" "spectacle" "maim" "grim" "wayshot")
 fi
@@ -47,7 +64,8 @@ OPTIONS:
     -o, --output DIR           Output directory for screenshots (default: ./screenshots)
     -t, --tool TOOL            Screenshot tool to use: grim, wayshot, import, scrot,
                                 gnome-screenshot, spectacle, maim (auto-detected if not specified)
-                                Note: grim and wayshot are Wayland-native tools
+                                Note: grim/wayshot require wlr-screencopy protocol (wlroots compositors)
+                                      gnome-screenshot for GNOME, spectacle for KDE
     -w, --wait SECONDS         Delay before taking screenshot (default: 0.5)
     -h, --help                 Show this help message
 
@@ -71,6 +89,19 @@ EOF
 detect_screenshot_tool() {
     for tool in "${SCREENSHOT_TOOLS[@]}"; do
         if command -v "$tool" >/dev/null 2>&1; then
+            # Special validation for grim on Wayland
+            if [ "$tool" = "grim" ] && [ "$IS_WAYLAND" = true ]; then
+                # Test if grim can actually capture (check for wlr-screencopy support)
+                if ! grim -h 2>&1 | grep -q "usage\|Usage" 2>/dev/null; then
+                    continue
+                fi
+                # Try a quick test to see if it errors about protocol support
+                # This is a lightweight check without actually creating a file
+                if grim /dev/null 2>&1 | grep -qi "wlr-screencopy\|protocol"; then
+                    # grim doesn't work on this compositor, skip it
+                    continue
+                fi
+            fi
             echo "$tool"
             return 0
         fi
@@ -321,7 +352,14 @@ if [ -z "$SCREENSHOT_TOOL" ]; then
     if ! SCREENSHOT_TOOL=$(detect_screenshot_tool); then
         echo "Error: No screenshot tool found. Please install one of: ${SCREENSHOT_TOOLS[*]}" >&2
         if [ "$IS_WAYLAND" = true ]; then
-            echo "For Wayland: sudo apt install grim (or wayshot)" >&2
+            if [[ "$WAYLAND_COMPOSITOR" == *"gnome"* ]]; then
+                echo "For GNOME Wayland: sudo apt install gnome-screenshot" >&2
+            elif [[ "$WAYLAND_COMPOSITOR" == *"kde"* ]] || [[ "$WAYLAND_COMPOSITOR" == *"plasma"* ]]; then
+                echo "For KDE Wayland: sudo apt install spectacle" >&2
+            else
+                echo "For Wayland (wlroots compositors): sudo apt install grim" >&2
+                echo "For GNOME/KDE Wayland: sudo apt install gnome-screenshot or spectacle" >&2
+            fi
         else
             echo "For X11: sudo apt install imagemagick" >&2
         fi
