@@ -566,7 +566,7 @@ function pause() {
   else
     echo -ne "${QUESTION_SYMBOL}${bold}$MESSAGE (press Enter to continue, q to quit): ${normal}" 3>&1 1>&2 2>&3
     read -r answer
-    if [ "$answer" == "q" ] || [ "$answer" == "Q" ]; then
+    if [[ "${answer,,}" == "q" ]]; then
       exit 0
     fi
     return 0
