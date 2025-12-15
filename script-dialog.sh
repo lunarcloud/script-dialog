@@ -508,7 +508,7 @@ function messagebox() {
 
 
 #######################################
-# Display a pause message (like Windows pause command)
+# Display a "Continue or Quit" dialog
 # GLOBALS:
 # 	GUI_ICON
 #   GUI_TITLE
@@ -521,38 +521,55 @@ function messagebox() {
 #   ZENITY_ICON_ARG
 #   ZENITY_HEIGHT (optional)
 #   ZENITY_WIDTH (optional)
+#   QUESTION_SYMBOL
 # ARGUMENTS:
-# 	n/a
+# 	Optional message to display (defaults to "Continue?")
 # OUTPUTS:
 # 	n/a
 # RETURN:
-# 	0 if success, non-zero otherwise.
+# 	Exits script if user chooses to quit, otherwise returns 0
 #######################################
 function pause() {
   if [ -z ${GUI_ICON+x} ]; then
-    GUI_ICON=$XDG_ICO_INFO
+    GUI_ICON=$XDG_ICO_QUESTION
   fi
   _calculate-gui-title
 
-  local PAUSE_MSG_GUI="Click Okay to continue"
-  local PAUSE_MSG_TUI="Press Okay to continue"
-  local PAUSE_MSG_CLI="Press any key to continue..."
+  local MESSAGE="${1:-Continue?}"
+  TEST_STRING="${QUESTION_SYMBOL}$MESSAGE"
+  _calculate-tui-size
 
-  if [ "$INTERFACE" == "whiptail" ] || [ "$INTERFACE" == "dialog" ]; then
-    TEST_STRING="$PAUSE_MSG_TUI"
-    _calculate-tui-size
-    if [ "$INTERFACE" == "whiptail" ]; then
-      whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$PAUSE_MSG_TUI" "$RECMD_LINES" "$RECMD_COLS"
+  if [ "$INTERFACE" == "whiptail" ]; then
+    if whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-button "Continue" --no-button "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"; then
+      return 0
     else
-      dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$PAUSE_MSG_TUI" "$RECMD_LINES" "$RECMD_COLS"
+      exit 0
+    fi
+  elif [ "$INTERFACE" == "dialog" ]; then
+    if dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-label "Continue" --no-label "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"; then
+      return 0
+    else
+      exit 0
     fi
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --info --text "$PAUSE_MSG_GUI"
+    if zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$MESSAGE" --ok-label="Continue" --cancel-label="Quit"; then
+      return 0
+    else
+      exit 0
+    fi
   elif [ "$INTERFACE" == "kdialog" ]; then
-    kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --msgbox "$PAUSE_MSG_GUI"
+    if kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yes-label "Continue" --no-label "Quit" --yesno "$MESSAGE"; then
+      return 0
+    else
+      exit 0
+    fi
   else
-    read -n 1 -s -r -p "$PAUSE_MSG_CLI"
-    echo
+    echo -ne "${QUESTION_SYMBOL}${bold}$MESSAGE (press Enter to continue, q to quit): ${normal}" 3>&1 1>&2 2>&3
+    read -r answer
+    if [ "$answer" == "q" ] || [ "$answer" == "Q" ]; then
+      exit 0
+    fi
+    return 0
   fi
 }
 

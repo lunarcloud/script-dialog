@@ -71,7 +71,7 @@ Functions
 | **message-warn** | Display a 'warning' message box | The text to display | |
 | **message-error** | Display an 'error' message box | The text to display | |
 | **messagebox** | Display a message box | The text to display | |
-| **pause** | Display a pause message (like Windows pause command) | | |
+| **pause** | Display a "Continue or Quit" dialog with optional message | Optional message (defaults to "Continue?") | Exits script if user chooses Quit, returns 0 if Continue |
 | **yesno** | Display a yes-no decision message box | The text to display | return code 0 if yes, 1 if no |
 | **inputbox** | Display a text input box | <ol><li>The text to display</li><li>The initial input value</li></ol> | the entered text |
 | **userandpassword** | Display a (single or series of) input box(es) for entering a username and a password |  <ol><li>The name of the username variable</li><li>The name of the password variable</li><li>The initial username input value</li><li>The text to display for username entry</li><li>The text to display for password entry</li></ol> | |
