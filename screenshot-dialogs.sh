@@ -121,89 +121,128 @@ run_dialog_with_screenshot() {
     
     echo "Testing $interface with $dialog_type..."
     
-    # Export the interface to force its use
-    export INTERFACE="$interface"
-    export GUI=false
+    # Create a temporary script that will run the dialog
+    local temp_script="/tmp/screenshot-dialog-$$.sh"
     
-    # Set GUI flag for GUI interfaces
+    cat > "$temp_script" << 'SCRIPT_EOF'
+#!/usr/bin/env bash
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Export the interface to force its use
+export INTERFACE="INTERFACE_PLACEHOLDER"
+export GUI=GUI_PLACEHOLDER
+
+# Source the library
+source "SCRIPT_DIR_PLACEHOLDER/script-dialog.sh"
+
+export APP_NAME="Script Dialog Demo"
+export ACTIVITY="Screenshot Test"
+
+# Run the dialog
+case "DIALOG_TYPE_PLACEHOLDER" in
+    info)
+        message-info "This is an informational message.\nSecond line of text."
+        ;;
+    warn)
+        message-warn "This is a warning message.\nPlease pay attention!"
+        ;;
+    error)
+        message-error "This is an error message.\nSomething went wrong!"
+        ;;
+    yesno)
+        yesno "Do you want to continue?\nThis is a yes/no question." || true
+        ;;
+    input)
+        inputbox "Please enter your name:" "John Doe" || true
+        ;;
+    password)
+        password "Enter your password:" || true
+        ;;
+    pause)
+        pause "Ready to continue?" || true
+        ;;
+    checklist)
+        checklist "Select options:" 3 \
+            "opt1" "Option 1" ON \
+            "opt2" "Option 2" OFF \
+            "opt3" "Option 3" ON || true
+        ;;
+    radiolist)
+        radiolist "Choose one:" 3 \
+            "opt1" "Option 1" OFF \
+            "opt2" "Option 2" ON \
+            "opt3" "Option 3" OFF || true
+        ;;
+    datepicker)
+        datepicker || true
+        ;;
+    *)
+        echo "Unknown dialog type" >&2
+        exit 1
+        ;;
+esac
+SCRIPT_EOF
+
+    # Set GUI flag based on interface
+    local gui_value="false"
     if [ "$interface" == "zenity" ] || [ "$interface" == "kdialog" ]; then
-        export GUI=true
+        gui_value="true"
     fi
     
-    # Source the library
-    # shellcheck source=./script-dialog.sh
-    # shellcheck disable=SC1091
-    source "${SCRIPT_DIR}"/script-dialog.sh
+    # Replace placeholders in the temp script
+    sed -i "s|INTERFACE_PLACEHOLDER|$interface|g" "$temp_script"
+    sed -i "s|GUI_PLACEHOLDER|$gui_value|g" "$temp_script"
+    sed -i "s|SCRIPT_DIR_PLACEHOLDER|$SCRIPT_DIR|g" "$temp_script"
+    sed -i "s|DIALOG_TYPE_PLACEHOLDER|$dialog_type|g" "$temp_script"
     
-    export APP_NAME="Script Dialog Demo"
-    export ACTIVITY="Screenshot Test"
+    chmod +x "$temp_script"
     
-    # Run the dialog in background and capture its PID
-    case "$dialog_type" in
-        info)
-            (message-info "This is an informational message.\nSecond line of text.") &
-            ;;
-        warn)
-            (message-warn "This is a warning message.\nPlease pay attention!") &
-            ;;
-        error)
-            (message-error "This is an error message.\nSomething went wrong!") &
-            ;;
-        yesno)
-            (yesno "Do you want to continue?\nThis is a yes/no question." || true) &
-            ;;
-        input)
-            (inputbox "Please enter your name:" "John Doe" || true) &
-            ;;
-        password)
-            (password "Enter your password:" || true) &
-            ;;
-        pause)
-            (pause "Ready to continue?" || true) &
-            ;;
-        checklist)
-            (checklist "Select options:" 3 \
-                "opt1" "Option 1" ON \
-                "opt2" "Option 2" OFF \
-                "opt3" "Option 3" ON || true) &
-            ;;
-        radiolist)
-            (radiolist "Choose one:" 3 \
-                "opt1" "Option 1" OFF \
-                "opt2" "Option 2" ON \
-                "opt3" "Option 3" OFF || true) &
-            ;;
-        datepicker)
-            (datepicker || true) &
-            ;;
-        *)
-            echo "Unknown dialog type: $dialog_type" >&2
-            return 1
-            ;;
-    esac
-    
-    local dialog_pid=$!
+    # Run the dialog in background
+    if [ "$interface" == "whiptail" ] || [ "$interface" == "dialog" ] || [ "$interface" == "echo" ]; then
+        # For TUI/CLI interfaces, run in a new terminal if possible
+        if command -v xterm >/dev/null 2>&1; then
+            xterm -geometry 80x24 -hold -e "$temp_script" &
+            local dialog_pid=$!
+        elif command -v gnome-terminal >/dev/null 2>&1; then
+            gnome-terminal -- bash -c "$temp_script; sleep 10" &
+            local dialog_pid=$!
+        else
+            # Fallback: run directly but screenshot won't capture TUI properly
+            "$temp_script" &
+            local dialog_pid=$!
+        fi
+    else
+        # For GUI interfaces, run directly
+        timeout 10 "$temp_script" &
+        local dialog_pid=$!
+    fi
     
     # Wait for dialog to appear
     sleep "$SCREENSHOT_DELAY"
     
+    # For GUI dialogs, wait a bit longer to ensure window is rendered
+    if [ "$interface" == "zenity" ] || [ "$interface" == "kdialog" ]; then
+        sleep 1
+    fi
+    
     # Take screenshot
     take_screenshot "$output_file" ""
+    local screenshot_result=$?
     
-    # Clean up - try to kill the dialog process
+    # Clean up - try to kill the dialog process and its children
     if kill -0 "$dialog_pid" 2>/dev/null; then
-        # For TUI dialogs, send Enter key
-        if [ "$interface" == "whiptail" ] || [ "$interface" == "dialog" ]; then
-            # Send Enter to close the dialog
-            kill -TERM "$dialog_pid" 2>/dev/null || true
-        else
-            kill "$dialog_pid" 2>/dev/null || true
-        fi
+        # Kill the process group to ensure child processes are also terminated
+        kill "$dialog_pid" 2>/dev/null || true
+        sleep 0.2
+        kill -9 "$dialog_pid" 2>/dev/null || true
     fi
     
     wait "$dialog_pid" 2>/dev/null || true
     
-    if [ -f "$output_file" ]; then
+    # Clean up temp script
+    rm -f "$temp_script"
+    
+    if [ $screenshot_result -eq 0 ] && [ -f "$output_file" ]; then
         echo "Screenshot saved: $output_file"
         return 0
     else

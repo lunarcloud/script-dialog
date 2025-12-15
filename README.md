@@ -85,3 +85,42 @@ Functions
 | **filepicker** | Display a file selector dialog | <ol><li>The starting folder</li><li>"save" or "open" (assume "open" if omitted)</li></ol> | Path to selected file | |
 | **folderpicker** | Display a folder selector dialog | The starting folder | Path to selected folder |
 | **datepicker** | Display a calendar date selector dialog | The starting folder | Selected date text (DD/MM/YYYY) |
+
+Screenshot Utility
+------------------
+The `screenshot-dialogs.sh` script helps create screenshots of dialog features using different interfaces. This is useful for:
+- Documenting features in pull requests
+- Creating visual demonstrations of dialog variations
+- Testing dialog appearance across different interfaces
+
+### Usage
+```bash
+# Screenshot all available interfaces with common dialogs
+./screenshot-dialogs.sh
+
+# Screenshot a specific interface with all common dialogs
+./screenshot-dialogs.sh --interface zenity
+
+# Screenshot a specific dialog type with all available interfaces
+./screenshot-dialogs.sh --dialog info
+
+# Screenshot a specific interface and dialog type
+./screenshot-dialogs.sh --interface whiptail --dialog yesno
+
+# Specify custom output directory
+./screenshot-dialogs.sh --output ./my-screenshots
+
+# Show all options
+./screenshot-dialogs.sh --help
+```
+
+### Requirements
+The script requires one of the following screenshot tools to be installed:
+- `import` (from ImageMagick) - recommended
+- `scrot`
+- `gnome-screenshot`
+- `spectacle`
+- `maim`
+
+On Ubuntu/Debian: `sudo apt install imagemagick`
+On macOS: `brew install imagemagick`
