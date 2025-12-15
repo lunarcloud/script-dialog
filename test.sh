@@ -100,3 +100,10 @@ else
         message-error "Password denied"
     fi
 fi
+
+# shellcheck disable=SC2034  # ACTIVITY is used by script-dialog.sh functions
+ACTIVITY="Pause Test"
+message-info "Next, we'll test the pause feature"
+pause "Ready to continue with the script?"
+
+message-info "You chose to continue!"

@@ -508,6 +508,73 @@ function messagebox() {
 
 
 #######################################
+# Display a "Continue or Quit" dialog
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   TEST_STRING
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
+#   QUESTION_SYMBOL
+# ARGUMENTS:
+# 	Optional message to display (defaults to "Continue?")
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	Exits script if user chooses to quit, otherwise returns 0
+#######################################
+function pause() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_QUESTION
+  fi
+  _calculate-gui-title
+
+  local MESSAGE="${1:-Continue?}"
+  TEST_STRING="${QUESTION_SYMBOL}$MESSAGE"
+  _calculate-tui-size
+
+  if [ "$INTERFACE" == "whiptail" ]; then
+    if whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-button "Continue" --no-button "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"; then
+      return 0
+    else
+      exit 0
+    fi
+  elif [ "$INTERFACE" == "dialog" ]; then
+    if dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-label "Continue" --no-label "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"; then
+      return 0
+    else
+      exit 0
+    fi
+  elif [ "$INTERFACE" == "zenity" ]; then
+    if zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$MESSAGE" --ok-label="Continue" --cancel-label="Quit"; then
+      return 0
+    else
+      exit 0
+    fi
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    if kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yes-label "Continue" --no-label "Quit" --yesno "$MESSAGE"; then
+      return 0
+    else
+      exit 0
+    fi
+  else
+    echo -ne "${QUESTION_SYMBOL}${bold}$MESSAGE (press Enter to continue, q to quit): ${normal}" 3>&1 1>&2 2>&3
+    read -r answer
+    if [[ "${answer,,}" == "q" ]]; then
+      exit 0
+    fi
+    return 0
+  fi
+}
+
+
+#######################################
 # Display a yes-no decision message box
 # GLOBALS:
 # 	GUI_ICON
