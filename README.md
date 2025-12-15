@@ -85,3 +85,58 @@ Functions
 | **filepicker** | Display a file selector dialog | <ol><li>The starting folder</li><li>"save" or "open" (assume "open" if omitted)</li></ol> | Path to selected file | |
 | **folderpicker** | Display a folder selector dialog | The starting folder | Path to selected folder |
 | **datepicker** | Display a calendar date selector dialog | The starting folder | Selected date text (DD/MM/YYYY) |
+
+Screenshot Utility
+------------------
+The `screenshot-dialogs.sh` script helps create screenshots of dialog features using different interfaces. This is useful for:
+- Documenting features in pull requests
+- Creating visual demonstrations of dialog variations
+- Testing dialog appearance across different interfaces
+
+**Note**: This utility requires a graphical environment (X11 or Wayland) to capture screenshots. It will not work in headless environments.
+
+### Usage
+```bash
+# Screenshot all available interfaces with common dialogs
+./screenshot-dialogs.sh
+
+# Screenshot a specific interface with all common dialogs
+./screenshot-dialogs.sh --interface zenity
+
+# Screenshot a specific dialog type with all available interfaces
+./screenshot-dialogs.sh --dialog info
+
+# Screenshot a specific interface and dialog type
+./screenshot-dialogs.sh --interface whiptail --dialog yesno
+
+# Specify custom output directory
+./screenshot-dialogs.sh --output ./my-screenshots
+
+# Show all options
+./screenshot-dialogs.sh --help
+```
+
+### Requirements
+The script requires one of the following screenshot tools to be installed:
+
+**For Wayland:**
+- `grim` - works with wlroots-based compositors (Sway, Wayfire, etc.)
+- `wayshot` - alternative for wlroots-based compositors
+- `gnome-screenshot` - **recommended for GNOME Wayland** (Mutter compositor)
+- `spectacle` - **recommended for KDE Plasma Wayland**
+
+**Note:** `grim` and `wayshot` require the wlr-screencopy-unstable-v1 protocol, which is not supported by GNOME's Mutter or KDE's KWin compositors. The script automatically detects your compositor and prioritizes the appropriate tool.
+
+**For X11:**
+- `import` (from ImageMagick) - recommended for X11
+- `scrot`
+- `maim`
+- `gnome-screenshot`
+- `spectacle`
+
+**Installation:**
+- On Ubuntu/Debian (GNOME Wayland): `sudo apt install gnome-screenshot`
+- On Ubuntu/Debian (KDE Wayland): `sudo apt install spectacle`
+- On Ubuntu/Debian (wlroots Wayland): `sudo apt install grim`
+- On Ubuntu/Debian (X11): `sudo apt install imagemagick`
+- On macOS: `brew install imagemagick`
