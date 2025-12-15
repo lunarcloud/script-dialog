@@ -3,6 +3,10 @@
 # NOTE: Cancelling any dialog will exit this script with the configured
 # SCRIPT_DIALOG_CANCEL_EXIT_CODE (default: 124). This is by design to
 # demonstrate the cancelability feature.
+#
+# Functions that return values via echo (used with command substitution)
+# require the '|| exit "$?"' pattern to propagate cancellation from the
+# subshell to the parent script.
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -32,7 +36,7 @@ else
 fi
 
 ACTIVITY="Name"
-NAME=$(inputbox "What's your name?" "$USER")
+NAME=$(inputbox "What's your name?" "$USER") || exit "$?"
 
 message-info "Nice to meet you, $NAME"
 
@@ -60,7 +64,7 @@ userandpassword S_USER S_PASS "$SUGGESTED_USERNAME"
 message-info $"So, that was:\n user: $S_USER\n password: $S_PASS"
 
 ACTIVITY="Enter Birthday"
-ANSWER=$(datepicker)
+ANSWER=$(datepicker) || exit "$?"
 
 message-info "Cool, it's on $ANSWER"
 
@@ -69,7 +73,7 @@ CONFIG_OPTS=$( checklist "Select the appropriate network options for this comput
         "NET OUT" "Allow connections to other hosts" ON \
         "NET_IN" "Allow connections from other hosts" OFF \
         "LOCAL_MOUNT" "Allow mounting of local drives" OFF \
-        "REMOTE_MOUNT" "Allow mounting of remote drives" OFF )
+        "REMOTE_MOUNT" "Allow mounting of remote drives" OFF ) || exit "$?"
 
 message-info "So you chose to enable: ${CONFIG_OPTS[*]}"
 
@@ -78,18 +82,18 @@ ANSWER=$(radiolist "Favorite Primary Color? " 4  \
         "blue" "Blue" OFF \
         "yellow" "Yellow" OFF \
         "green" "Green" ON \
-        "red" "Red" OFF )
+        "red" "Red" OFF ) || exit "$?"
 
 message-info "So you like $ANSWER, neat."
 
-ANSWER=$(filepicker "$HOME" "open")
+ANSWER=$(filepicker "$HOME" "open") || exit "$?"
 
 message-info "File selected was ${ANSWER[*]}"
 
 ACTIVITY="Test Script"
 display-file "$0"
 
-ANSWER=$(folderpicker "$HOME")
+ANSWER=$(folderpicker "$HOME") || exit "$?"
 
 message-info "Folder selected was ${ANSWER[*]}"
 
