@@ -10,6 +10,9 @@
 # Do auto-detections at the top
 ################################
 
+# Detect desktop environment for optimal dialog selection
+# Priority: OS type -> XDG variables -> running processes
+
 if [[ $OSTYPE == darwin* ]]; then
     desktop="macos"
 elif [[ $OSTYPE == msys ]] || [[ $(uname -r | tr '[:upper:]' '[:lower:]') == *wsl* ]]; then
@@ -30,24 +33,29 @@ else
   desktop="unknown"
 fi
 
-
-desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')  # convert to lower case
+# Ensure lowercase for consistent comparisons (redundant for some paths above)
+desktop=$(echo "$desktop" | tr '[:upper:]' '[:lower:]')
 export DETECTED_DESKTOP=$desktop
 
 # If we have a standard in and out, then terminal
 [ -t 0 ] && [ -t 1 ] && terminal=true || terminal=false
+
+# Initialize dialog tool availability flags
 
 hasKDialog=false
 hasZenity=false
 hasDialog=false
 hasWhiptail=false
 
+# Determine if GUI is available (unless already set)
 if [ -z ${GUI+x} ]; then
   GUI=false
   if [ "$terminal" == "false" ] ; then
     GUI=$([ "$DISPLAY" ] || [ "$WAYLAND_DISPLAY" ] || [ "$MIR_SOCKET" ] && echo true || echo false)
   fi
 fi
+
+# Check which dialog tools are available
 
 if command -v >/dev/null kdialog; then
   hasKDialog=true
@@ -65,7 +73,7 @@ if command -v >/dev/null whiptail; then
   hasWhiptail=true
 fi
 
-
+# Auto-select the best available dialog interface based on desktop environment
 if [ -z ${INTERFACE+x} ]; then
   if [ "$desktop" == "kde" ] || [ "$desktop" == "razor" ]  || [ "$desktop" == "lxqt" ]  || [ "$desktop" == "maui" ] ; then
     if  [ "$hasKDialog" == "true" ] && [ "$GUI" == "true" ] ; then
@@ -114,7 +122,7 @@ if  [ "$INTERFACE" == "kdialog" ] || [ "$INTERFACE" == "zenity" ] ; then
   GUI=true
 fi
 
-# which sudo to use
+# Select the best available sudo/privilege elevation method
 NO_SUDO=false
 SUDO_USE_INTERFACE=false
 if [ "$GUI" == "true" ] &&  command -v >/dev/null pkexec; then
