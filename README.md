@@ -93,6 +93,8 @@ The `screenshot-dialogs.sh` script helps create screenshots of dialog features u
 - Creating visual demonstrations of dialog variations
 - Testing dialog appearance across different interfaces
 
+**Note**: This utility requires a graphical environment (X11 or Wayland) to capture screenshots. It will not work in headless environments.
+
 ### Usage
 ```bash
 # Screenshot all available interfaces with common dialogs

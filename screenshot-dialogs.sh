@@ -121,25 +121,27 @@ run_dialog_with_screenshot() {
     
     echo "Testing $interface with $dialog_type..."
     
-    # Create a temporary script that will run the dialog
+    # Set GUI flag based on interface
+    local gui_value="false"
+    if [ "$interface" == "zenity" ] || [ "$interface" == "kdialog" ]; then
+        gui_value="true"
+    fi
+    
+    # Create a temporary script that will run the dialog using environment variables
     local temp_script="/tmp/screenshot-dialog-$$.sh"
     
     cat > "$temp_script" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# This script is generated dynamically and uses environment variables to avoid sed issues
 
-# Export the interface to force its use
-export INTERFACE="INTERFACE_PLACEHOLDER"
-export GUI=GUI_PLACEHOLDER
-
-# Source the library
-source "SCRIPT_DIR_PLACEHOLDER/script-dialog.sh"
+# Source the library with the specified interface
+source "$SCREENSHOT_SCRIPT_DIR/script-dialog.sh"
 
 export APP_NAME="Script Dialog Demo"
 export ACTIVITY="Screenshot Test"
 
-# Run the dialog
-case "DIALOG_TYPE_PLACEHOLDER" in
+# Run the dialog based on type
+case "$SCREENSHOT_DIALOG_TYPE" in
     info)
         message-info "This is an informational message.\nSecond line of text."
         ;;
@@ -177,25 +179,19 @@ case "DIALOG_TYPE_PLACEHOLDER" in
         datepicker || true
         ;;
     *)
-        echo "Unknown dialog type" >&2
+        echo "Unknown dialog type: $SCREENSHOT_DIALOG_TYPE" >&2
         exit 1
         ;;
 esac
 SCRIPT_EOF
 
-    # Set GUI flag based on interface
-    local gui_value="false"
-    if [ "$interface" == "zenity" ] || [ "$interface" == "kdialog" ]; then
-        gui_value="true"
-    fi
-    
-    # Replace placeholders in the temp script
-    sed -i "s|INTERFACE_PLACEHOLDER|$interface|g" "$temp_script"
-    sed -i "s|GUI_PLACEHOLDER|$gui_value|g" "$temp_script"
-    sed -i "s|SCRIPT_DIR_PLACEHOLDER|$SCRIPT_DIR|g" "$temp_script"
-    sed -i "s|DIALOG_TYPE_PLACEHOLDER|$dialog_type|g" "$temp_script"
-    
     chmod +x "$temp_script"
+    
+    # Export environment variables for the temp script
+    export INTERFACE="$interface"
+    export GUI="$gui_value"
+    export SCREENSHOT_SCRIPT_DIR="$SCRIPT_DIR"
+    export SCREENSHOT_DIALOG_TYPE="$dialog_type"
     
     # Run the dialog in background
     if [ "$interface" == "whiptail" ] || [ "$interface" == "dialog" ] || [ "$interface" == "echo" ]; then
@@ -212,7 +208,7 @@ SCRIPT_EOF
             local dialog_pid=$!
         fi
     else
-        # For GUI interfaces, run directly
+        # For GUI interfaces, run directly with timeout
         timeout 10 "$temp_script" &
         local dialog_pid=$!
     fi
@@ -229,18 +225,22 @@ SCRIPT_EOF
     take_screenshot "$output_file" ""
     local screenshot_result=$?
     
-    # Clean up - try to kill the dialog process and its children
+    # Clean up - kill the process group to ensure child processes are also terminated
     if kill -0 "$dialog_pid" 2>/dev/null; then
-        # Kill the process group to ensure child processes are also terminated
-        kill "$dialog_pid" 2>/dev/null || true
+        # Kill the entire process group (negative PID)
+        kill -- -"$dialog_pid" 2>/dev/null || kill "$dialog_pid" 2>/dev/null || true
         sleep 0.2
-        kill -9 "$dialog_pid" 2>/dev/null || true
+        # Force kill if still running
+        kill -9 -- -"$dialog_pid" 2>/dev/null || kill -9 "$dialog_pid" 2>/dev/null || true
     fi
     
     wait "$dialog_pid" 2>/dev/null || true
     
     # Clean up temp script
     rm -f "$temp_script"
+    
+    # Unset environment variables
+    unset SCREENSHOT_SCRIPT_DIR SCREENSHOT_DIALOG_TYPE
     
     if [ $screenshot_result -eq 0 ] && [ -f "$output_file" ]; then
         echo "Screenshot saved: $output_file"
