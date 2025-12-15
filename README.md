@@ -79,8 +79,8 @@ Functions
 | **checklist** | Display a list of multiply-selectable items | <ol><li>The file whose text to display</li><li>Number of options</li><li>First item's value</li><li>First item's description</li><li>First item's default checked status (ON or OFF)</li><li>(repeat for all items)</li></ol> | Value text of the selected item (or the default item) |
 | **radiolist** | Display a list of singularly-selectable items | <ol><li>The file whose text to display</li><li>Number of options</li><li>First item's value</li><li>First item's description</li><li>First item's default selected status (ON or OFF)</li><li>(repeat for all items)</li></ol> | Value text of the selected item (or the default item) |
 | **progressbar** | A pipe that displays a progressbar | the current value of the bar (repeatable, should be piped) | |
-| **progressbar_update** | Updates the value of the progressbar (call from within the progressbar piped block) | <ol><li>the new percentage value/li><li>the new status text</li></ol> | |
-| **progressbar_finish** | Completes the the progressbar (call from within the progressbar piped block) | | |
+| **progressbar_update** | Updates the value of the progressbar (call from within the progressbar piped block) | <ol><li>the new percentage value</li><li>the new status text</li></ol> | |
+| **progressbar_finish** | Completes the progressbar (call from within the progressbar piped block) | | |
 | **filepicker** | Display a file selector dialog | <ol><li>The starting folder</li><li>"save" or "open" (assume "open" if omitted)</li></ol> | Path to selected file | |
 | **folderpicker** | Display a folder selector dialog | The starting folder | Path to selected folder |
 | **datepicker** | Display a calendar date selector dialog | The starting folder | Selected date text (DD/MM/YYYY) |

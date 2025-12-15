@@ -1173,7 +1173,7 @@ function filepicker() {
 
     read -erp "Enter name of file to $2 in $1/: " SELECTED
 
-    # TODO if SELECTED is empty or folder
+    # TODO: Add validation - handle empty SELECTED or when SELECTED is a folder
 
     FILE=$1/$SELECTED
   fi
@@ -1245,7 +1245,7 @@ function folderpicker() {
 
     read -erp "Enter name of file to $2 in $1/: " SELECTED
 
-    # TODO if SELECTED is empty or ..
+    # TODO: Add validation - handle empty SELECTED or parent directory (..)
 
     FILE=$1/$SELECTED
   fi
