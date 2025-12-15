@@ -653,9 +653,17 @@ function yesno() {
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$1"
     answer=$?
+    # Exit if cancelled (zenity returns 5 for timeout, -1/255 for cancel/close)
+    if [ $answer -gt 1 ]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yesno "$1"
     answer=$?
+    # Exit if cancelled (kdialog returns values > 1 for cancel/error)
+    if [ $answer -gt 1 ]; then
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
   else
     echo -ne "${QUESTION_SYMBOL}${bold}$1 (y/n): ${normal}" 3>&1 1>&2 2>&3
     read -r answer
