@@ -508,6 +508,56 @@ function messagebox() {
 
 
 #######################################
+# Display a pause message (like Windows pause command)
+# GLOBALS:
+# 	GUI_ICON
+#   GUI_TITLE
+#   TEST_STRING
+#   INTERFACE
+#   RECMD_LINES
+#   RECMD_COLS
+#   APP_NAME
+#   ACTIVITY
+#   ZENITY_ICON_ARG
+#   ZENITY_HEIGHT (optional)
+#   ZENITY_WIDTH (optional)
+# ARGUMENTS:
+# 	n/a
+# OUTPUTS:
+# 	n/a
+# RETURN:
+# 	0 if success, non-zero otherwise.
+#######################################
+function pause() {
+  if [ -z ${GUI_ICON+x} ]; then
+    GUI_ICON=$XDG_ICO_INFO
+  fi
+  _calculate-gui-title
+  
+  local PAUSE_MSG_GUI="Click Okay to continue"
+  local PAUSE_MSG_TUI="Press Okay to continue"
+  local PAUSE_MSG_CLI="Press any key to continue..."
+  
+  if [ "$INTERFACE" == "whiptail" ]; then
+    TEST_STRING="$PAUSE_MSG_TUI"
+    _calculate-tui-size
+    whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$PAUSE_MSG_TUI" "$RECMD_LINES" "$RECMD_COLS"
+  elif [ "$INTERFACE" == "dialog" ]; then
+    TEST_STRING="$PAUSE_MSG_TUI"
+    _calculate-tui-size
+    dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "$PAUSE_MSG_TUI" "$RECMD_LINES" "$RECMD_COLS"
+  elif [ "$INTERFACE" == "zenity" ]; then
+    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --info --text "$PAUSE_MSG_GUI"
+  elif [ "$INTERFACE" == "kdialog" ]; then
+    kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --msgbox "$PAUSE_MSG_GUI"
+  else
+    read -n 1 -s -r -p "$PAUSE_MSG_CLI"
+    echo
+  fi
+}
+
+
+#######################################
 # Display a yes-no decision message box
 # GLOBALS:
 # 	GUI_ICON
