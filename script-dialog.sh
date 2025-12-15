@@ -331,7 +331,6 @@ function _calculate-tui-size() {
   if [ -z "$TEST_STRING" ]; then
     RECMD_COLS=$MIN_COLS
     RECMD_LINES=$MIN_LINES
-    TEST_STRING=""
     return
   fi
   
@@ -372,6 +371,7 @@ function _calculate-tui-size() {
     if [ "$text_width" -lt 1 ]; then
       text_width=1
     fi
+    # Calculate ceiling division: (total_chars + text_width - 1) / text_width
     line_count=$(((total_chars + text_width - 1) / text_width))
   fi
   
