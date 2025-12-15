@@ -325,31 +325,76 @@ function _calculate-tui-max() {
 #######################################
 function _calculate-tui-size() {
   _calculate-tui-max
-  local CHARS=${#TEST_STRING}
   RECMD_SCROLL=false
-  RECMD_COLS=$((( MAX_COLS - MIN_COLS ) * 3 / 4))
-  RECMD_LINES=$(((CHARS / RECMD_COLS) + 5))
-  if [[ "$RECMD_LINES" -lt 7 ]]; then
+  
+  # Handle empty string case
+  if [ -z "$TEST_STRING" ]; then
     RECMD_COLS=$MIN_COLS
-    RECMD_LINES=$(((CHARS / RECMD_COLS) + 5))
+    RECMD_LINES=$MIN_LINES
+    TEST_STRING=""
+    return
   fi
-
+  
+  # Count actual lines and find longest line
+  local line_count=0
+  local max_line_length=0
+  
+  while IFS= read -r line; do
+    line_count=$((line_count + 1))
+    local line_len=${#line}
+    if [ "$line_len" -gt "$max_line_length" ]; then
+      max_line_length=$line_len
+    fi
+  done <<< "$TEST_STRING"
+  
+  # Calculate recommended columns based on longest line
+  # Add padding for borders, margins, and UI elements (typically 4-6 chars)
+  RECMD_COLS=$((max_line_length + 6))
+  
+  # For single-line text, consider wrapping and use a reasonable width
+  if [ "$line_count" -eq 1 ]; then
+    local total_chars=${#TEST_STRING}
+    
+    # Target width: 60% of available space, but at least MIN_COLS
+    local target_width=$((MAX_COLS * 3 / 5))
+    if [ "$target_width" -lt "$MIN_COLS" ]; then
+      target_width=$MIN_COLS
+    fi
+    
+    # Use the larger of: calculated width or target width
+    if [ "$RECMD_COLS" -lt "$target_width" ]; then
+      RECMD_COLS=$target_width
+    fi
+    
+    # Calculate wrapped line count at this width
+    # Subtract padding to get actual text width
+    local text_width=$((RECMD_COLS - 6))
+    if [ "$text_width" -lt 1 ]; then
+      text_width=1
+    fi
+    line_count=$(((total_chars + text_width - 1) / text_width))
+  fi
+  
+  # Calculate recommended lines with padding for UI elements
+  # Add 4 lines for title, borders, and buttons
+  RECMD_LINES=$((line_count + 4))
+  
+  # Enforce maximum constraints
   if [ "$RECMD_LINES" -gt "$MAX_LINES" ] ; then
     RECMD_LINES=$MAX_LINES
     RECMD_SCROLL=true
   fi
   if [ "$RECMD_COLS" -gt "$MAX_COLS" ]; then
     RECMD_COLS=$MAX_COLS
-    #RECMD_SCROLL=true
+    RECMD_SCROLL=true
   fi
 
+  # Enforce minimum constraints
   if [ "$RECMD_LINES" -lt "$MIN_LINES" ] ; then
     RECMD_LINES=$MIN_LINES
-    RECMD_SCROLL=false
   fi
   if [ "$RECMD_COLS" -lt "$MIN_COLS" ]; then
     RECMD_COLS=$MIN_COLS
-    RECMD_SCROLL=false
   fi
 
   TEST_STRING="" #blank out for memory's sake
