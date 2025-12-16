@@ -200,7 +200,7 @@ function radiolist() {
       exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
   elif [ "$INTERFACE" == "dialog" ]; then
-    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --quoted --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
     # For TUI interfaces, empty response indicates cancel
     if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
