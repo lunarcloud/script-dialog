@@ -48,7 +48,7 @@ function progressbar() {
     # Exit script if dialog was cancelled
     if [ $exit_status -ne 0 ]; then
       qdbus "${dbusRef[@]}" close
-      message-error "Could not update progressbar. \nQDBus installation may be incomplete (missing qdbus-qt[5/6] ?)."
+      message-error "Could not update progressbar.\nQDBus installation may be incomplete.\n Mabye missing 'qdbus-qt5'?"
       exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
 
