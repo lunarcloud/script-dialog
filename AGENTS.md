@@ -84,13 +84,13 @@ The library uses `SCRIPT_DIALOG_CANCEL_EXIT_CODE` (default: 124) to handle dialo
 
    ```bash
    # CORRECT - captures command exit status
-   if [ "$INTERFACE" == "zenity" ]; then
+   if [[ "$INTERFACE" == "zenity" ]]; then
        result=$(zenity --entry --text="$1" --entry-text="$2" 2>/dev/null)
        exit_status=$?  # Must be right after the command
    fi
    
    # WRONG - captures if statement exit status (always 0)
-   if [ "$INTERFACE" == "zenity" ]; then
+   if [[ "$INTERFACE" == "zenity" ]]; then
        result=$(zenity --entry --text="$1" --entry-text="$2" 2>/dev/null)
    fi
    exit_status=$?  # This is 0, not the zenity exit code!
