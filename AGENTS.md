@@ -37,7 +37,8 @@ The repository is organized as follows:
 * Document all functions with clear descriptions of parameters and behavior.
 * Use consistent indentation (2 spaces).
 * Always quote variable expansions unless you specifically need word splitting.
-* Prefer `[[ ]]` over `[ ]` for conditional tests (bash-specific).
+* Use `[[ ]]` for pattern matching (wildcards, regex) and bash-specific features (case conversion).
+* Use `[ ]` for basic POSIX-compatible tests (string equality, -z, -n, numeric comparisons).
 * Use `command -v` instead of `which` for checking command existence.
 
 ### Running Quality Checks Locally
@@ -84,13 +85,13 @@ The library uses `SCRIPT_DIALOG_CANCEL_EXIT_CODE` (default: 124) to handle dialo
 
    ```bash
    # CORRECT - captures command exit status
-   if [[ "$INTERFACE" == "zenity" ]]; then
+   if [ "$INTERFACE" == "zenity" ]; then
        result=$(zenity --entry --text="$1" --entry-text="$2" 2>/dev/null)
        exit_status=$?  # Must be right after the command
    fi
    
    # WRONG - captures if statement exit status (always 0)
-   if [[ "$INTERFACE" == "zenity" ]]; then
+   if [ "$INTERFACE" == "zenity" ]; then
        result=$(zenity --entry --text="$1" --entry-text="$2" 2>/dev/null)
    fi
    exit_status=$?  # This is 0, not the zenity exit code!
@@ -102,7 +103,7 @@ Use `${VAR+x}` to check if a variable is set (even if empty):
 
 ```bash
 # Check if SCRIPT_DIALOG_CANCEL_EXIT_CODE is set
-if [[ -z "${SCRIPT_DIALOG_CANCEL_EXIT_CODE+x}" ]]; then
+if [ -z "${SCRIPT_DIALOG_CANCEL_EXIT_CODE+x}" ]; then
     SCRIPT_DIALOG_CANCEL_EXIT_CODE=124
 fi
 ```
@@ -110,9 +111,9 @@ fi
 ### Platform Detection
 
 The library detects platforms and desktop environments:
-- macOS: `[[ $OSTYPE == darwin* ]]`
-- Windows/WSL: `[[ $OSTYPE == msys ]] || [[ $(uname -r | tr '[:upper:]' '[:lower:]') == *wsl* ]]`
-- Linux desktops: Detected via `$XDG_CURRENT_DESKTOP`, `$XDG_SESSION_DESKTOP`, or running processes (gnome-shell, mutter, kwin)
+- macOS: `[[ $OSTYPE == darwin* ]]` (pattern matching)
+- Windows/WSL: `[[ $OSTYPE == msys ]] || [[ $(uname -r | tr '[:upper:]' '[:lower:]') == *wsl* ]]` (pattern matching)
+- Linux desktops: Detected via `$XDG_CURRENT_DESKTOP`, `$XDG_SESSION_DESKTOP`, or running processes via `pgrep -l "process-name"` (gnome-shell, mutter, kwin)
 
 ## Cross-Platform Considerations
 
