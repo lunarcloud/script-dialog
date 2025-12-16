@@ -140,7 +140,7 @@ function folderpicker() {
     # shellcheck disable=SC2010
     ls -lBhpa "$1" | grep "^d" 3>&1 1>&2 2>&3 #| less
 
-    read -erp "Enter name of file to $2 in $1/: " SELECTED
+    read -erp "Enter name of folder in $1/: " SELECTED
     exit_status=$?
 
     # TODO: Add validation - handle empty SELECTED or parent directory (..)

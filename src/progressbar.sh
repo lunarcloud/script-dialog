@@ -131,7 +131,7 @@ function progressbar_update() {
 }
 
 #######################################
-# Completes the the progressbar (call from within the progressbar piped block)
+# Completes the progressbar (call from within the progressbar piped block)
 # GLOBALS:
 #   INTERFACE
 # ARGUMENTS:

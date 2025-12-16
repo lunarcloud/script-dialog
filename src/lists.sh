@@ -240,8 +240,8 @@ function radiolist() {
     while test ${#} -gt 0;  do
       local DEFAULT_NOTATION=""
       if [ "$3" == "ON" ]; then
-        local DEFAULT+="\"$1\""
-        local DEFAULT_NOTATION="*"
+        DEFAULT+="\"$1\""
+        DEFAULT_NOTATION="*"
       fi
       OPTIONS+=("\t- ${underline}$1${normal}$DEFAULT_NOTATION ($2)\n")
       shift

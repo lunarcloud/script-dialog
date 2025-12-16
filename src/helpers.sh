@@ -10,7 +10,7 @@
 #   SUDO
 #   ACTIVITY
 # ARGUMENTS:
-# 	Command to run with elevated priviledge
+# 	Command to run with elevated privilege
 # OUTPUTS:
 # 	n/a
 # RETURN:
