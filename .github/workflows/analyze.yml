@@ -17,5 +17,5 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: 'Analyzing Code Quality'
-        run: shellcheck ./*.sh -x
+        run: shellcheck ./*.sh extras/*.sh -x
 

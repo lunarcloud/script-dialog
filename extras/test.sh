@@ -13,9 +13,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #GUI=false; terminal=false # force relaunching as if launching from GUI without a GUI interface installed, but only do this for testing
 #NOSYMBOLS=true
 #NOCOLORS=true
-# shellcheck source=./script-dialog.sh
+# shellcheck source=../script-dialog.sh
 # shellcheck disable=SC1091  # Source file path is constructed at runtime
-source "${SCRIPT_DIR}"/script-dialog.sh
+source "${SCRIPT_DIR}"/../script-dialog.sh
 
 relaunch-if-not-visible
 # shellcheck disable=SC2034  # APP_NAME is used by script-dialog.sh functions
