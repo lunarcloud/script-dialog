@@ -7,26 +7,26 @@
 SCRIPT_DIALOG_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Source all modular components
-# shellcheck source=./src/init.sh
-source "${SCRIPT_DIALOG_DIR}/src/init.sh"
+# shellcheck source=./init.sh
+source "${SCRIPT_DIALOG_DIR}/init.sh"
 
-# shellcheck source=./src/helpers.sh
-source "${SCRIPT_DIALOG_DIR}/src/helpers.sh"
+# shellcheck source=./helpers.sh
+source "${SCRIPT_DIALOG_DIR}/helpers.sh"
 
-# shellcheck source=./src/messages.sh
-source "${SCRIPT_DIALOG_DIR}/src/messages.sh"
+# shellcheck source=./messages.sh
+source "${SCRIPT_DIALOG_DIR}/messages.sh"
 
-# shellcheck source=./src/inputs.sh
-source "${SCRIPT_DIALOG_DIR}/src/inputs.sh"
+# shellcheck source=./inputs.sh
+source "${SCRIPT_DIALOG_DIR}/inputs.sh"
 
-# shellcheck source=./src/lists.sh
-source "${SCRIPT_DIALOG_DIR}/src/lists.sh"
+# shellcheck source=./lists.sh
+source "${SCRIPT_DIALOG_DIR}/lists.sh"
 
-# shellcheck source=./src/progressbar.sh
-source "${SCRIPT_DIALOG_DIR}/src/progressbar.sh"
+# shellcheck source=./progressbar.sh
+source "${SCRIPT_DIALOG_DIR}/progressbar.sh"
 
-# shellcheck source=./src/pickers.sh
-source "${SCRIPT_DIALOG_DIR}/src/pickers.sh"
+# shellcheck source=./pickers.sh
+source "${SCRIPT_DIALOG_DIR}/pickers.sh"
 
-# shellcheck source=./src/datepicker.sh
-source "${SCRIPT_DIALOG_DIR}/src/datepicker.sh"
+# shellcheck source=./datepicker.sh
+source "${SCRIPT_DIALOG_DIR}/datepicker.sh"

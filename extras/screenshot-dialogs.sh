@@ -196,7 +196,7 @@ run_dialog_with_screenshot() {
 # This script is generated dynamically and uses environment variables to avoid sed issues
 
 # Source the library with the specified interface
-source "$SCREENSHOT_SCRIPT_DIR/script-dialog.sh"
+source "$SCREENSHOT_SCRIPT_DIR/../script-dialog.sh"
 
 export APP_NAME="Script Dialog Demo"
 export ACTIVITY="Screenshot Test"

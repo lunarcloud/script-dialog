@@ -37,20 +37,22 @@ The library is organized into modular files for easier maintenance and developme
 
 ```
 script-dialog.sh         # Main entry point - sources all modules
-src/
-├── init.sh             # Environment detection and variable initialization
-├── helpers.sh          # Internal helper functions and utilities
-├── messages.sh         # Message boxes (info, warn, error, pause, yesno, display-file)
-├── inputs.sh           # Input dialogs (inputbox, password, userandpassword)
-├── lists.sh            # Selection lists (checklist, radiolist)
-├── progressbar.sh      # Progress bar functions
-├── pickers.sh          # File and folder pickers
-└── datepicker.sh       # Date picker dialog
+├── init.sh              # Environment detection and variable initialization
+├── helpers.sh           # Internal helper functions and utilities
+├── messages.sh          # Message boxes (info, warn, error, pause, yesno, display-file)
+├── inputs.sh            # Input dialogs (inputbox, password, userandpassword)
+├── lists.sh             # Selection lists (checklist, radiolist)
+├── progressbar.sh       # Progress bar functions
+├── pickers.sh           # File and folder pickers
+├── datepicker.sh        # Date picker dialog
+└── extras/
+    ├── test.sh          # Test script demonstrating all features
+    └── screenshot-dialogs.sh  # Utility for capturing dialog screenshots
 ```
 
 **For users:** Nothing changes! Simply source `script-dialog.sh` as before and all functions will be available.
 
-**For contributors:** You can now edit individual function files in the `src/` directory without dealing with a large monolithic file. Each module focuses on a specific type of dialog functionality.
+**For contributors:** You can now edit individual function files in the root directory without dealing with a large monolithic file. Each module focuses on a specific type of dialog functionality.
 
 
 FAQ
