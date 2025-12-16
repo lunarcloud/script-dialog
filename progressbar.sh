@@ -40,8 +40,17 @@ function progressbar() {
   elif [ "$INTERFACE" == "zenity" ]; then
     zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
   elif [ "$INTERFACE" == "kdialog" ]; then
-    read -r -d '' -a dbusRef < <( kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --progressbar "$ACTIVITY" 100)
+    local OUTPUT=$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --progressbar "$ACTIVITY" 100)
+    read -r -d '' -a dbusRef < <( echo "$OUTPUT" )
     qdbus "${dbusRef[@]}" Set "" value 0
+    exit_status=$?
+
+    # Exit script if dialog was cancelled
+    if [ $exit_status -ne 0 ]; then
+      qdbus "${dbusRef[@]}" close
+      message-error "Could not update progressbar. \nQDBus installation may be incomplete (missing qdbus-qt[5/6] ?)."
+      exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
+    fi
 
     mkdir -p /tmp/script-dialog.$$/
     DBUS_BAR_PATH=/tmp/script-dialog.$$/progressbar_dbus
