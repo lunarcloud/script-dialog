@@ -70,8 +70,9 @@ function checklist() {
     mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
-    IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    local DIALOG_OUTPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
+    IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( echo "${DIALOG_OUTPUT[@]}" )
 
     local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
@@ -93,8 +94,9 @@ function checklist() {
       shift
       shift
     done
-    IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" )
+    local ZENITY_OUTPUT=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
     exit_status=$?
+    IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( echo $ZENITY_OUTPUT )
 
     local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
