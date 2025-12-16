@@ -220,7 +220,7 @@ function radiolist() {
       shift
       shift
     done
-    CHOSEN_ITEM=$( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
+    CHOSEN_ITEM=$( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" 2>/dev/null)
     exit_status=$?
     # For GUI interfaces, empty response indicates cancel
     if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
