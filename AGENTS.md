@@ -102,7 +102,7 @@ Use `${VAR+x}` to check if a variable is set (even if empty):
 
 ```bash
 # Check if SCRIPT_DIALOG_CANCEL_EXIT_CODE is set
-if [ -z "${SCRIPT_DIALOG_CANCEL_EXIT_CODE+x}" ]; then
+if [[ -z "${SCRIPT_DIALOG_CANCEL_EXIT_CODE+x}" ]]; then
     SCRIPT_DIALOG_CANCEL_EXIT_CODE=124
 fi
 ```
@@ -110,9 +110,9 @@ fi
 ### Platform Detection
 
 The library detects platforms and desktop environments:
-- macOS: `$OSTYPE == darwin*`
-- Windows/WSL: `$OSTYPE == msys` or `uname -r` contains "wsl"
-- Linux desktops: Detected via `$XDG_CURRENT_DESKTOP`, `$XDG_SESSION_DESKTOP`, or running processes
+- macOS: `[[ $OSTYPE == darwin* ]]`
+- Windows/WSL: `[[ $OSTYPE == msys ]] || [[ $(uname -r | tr '[:upper:]' '[:lower:]') == *wsl* ]]`
+- Linux desktops: Detected via `$XDG_CURRENT_DESKTOP`, `$XDG_SESSION_DESKTOP`, or running processes (gnome-shell, mutter, kwin)
 
 ## Cross-Platform Considerations
 
