@@ -3,6 +3,10 @@
 # https://github.com/lunarcloud/script-dialog
 # LGPL-2.1 license
 
+# Variables set in init.sh and used here
+# shellcheck disable=SC2034  # line variable in read loops
+# shellcheck disable=SC2154
+
 #######################################
 # Display a list of multiply-selectable items
 # GLOBALS:
@@ -67,10 +71,13 @@ function checklist() {
 
   local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
-    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
-    local DIALOG_OUTPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    local DIALOG_OUTPUT
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    DIALOG_OUTPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
     IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( echo "${DIALOG_OUTPUT[@]}" )
 
@@ -94,9 +101,10 @@ function checklist() {
       shift
       shift
     done
-    local ZENITY_OUTPUT=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
+    local ZENITY_OUTPUT
+    ZENITY_OUTPUT=$(zenity --title "$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --checklist --column "" --column "Value" --column "Description" "${OPTIONS[@]}")
     exit_status=$?
-    IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( echo $ZENITY_OUTPUT )
+    IFS=$'|' read -r -d '' -a CHOSEN_LIST < <( echo "$ZENITY_OUTPUT" )
 
     local CHOSEN_ITEMS=()
     for value in "${CHOSEN_LIST[@]}"
@@ -195,14 +203,16 @@ function radiolist() {
 
   local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
-    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
     # For TUI interfaces, empty response indicates cancel
     if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
       exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
   elif [ "$INTERFACE" == "dialog" ]; then
-    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" $RECMD_LINES $RECMD_COLS "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
     # For TUI interfaces, empty response indicates cancel
     if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
@@ -222,7 +232,7 @@ function radiolist() {
       shift
       shift
     done
-    CHOSEN_ITEM=$( zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" 2>/dev/null)
+    CHOSEN_ITEM=$( zenity --title "$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" --height="${ZENITY_HEIGHT-512}" ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --list --text "$TEXT" --radiolist --column "" --column "Value" --column "Description" "${OPTIONS[@]}" 2>/dev/null)
     exit_status=$?
     # For GUI interfaces, empty response indicates cancel
     if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then

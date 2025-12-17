@@ -3,6 +3,9 @@
 # https://github.com/lunarcloud/script-dialog
 # LGPL-2.1 license
 
+# Variables set in init.sh and used here
+# shellcheck disable=SC2154
+
 #######################################
 # Display a text input box
 # GLOBALS:
@@ -48,7 +51,7 @@ function inputbox() {
     INPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --inputbox "${SYMBOL} $1" "$RECMD_LINES" "$RECMD_COLS" "$2" 3>&1 1>&2 2>&3)
     exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    INPUT="$(zenity --entry --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --text="$1" --entry-text "$2")"
+    INPUT="$(zenity --entry --title="$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --text="$1" --entry-text "$2")"
     exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     INPUT="$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --inputbox "$1" "$2")"
@@ -119,7 +122,7 @@ function userandpassword() {
   elif [ "$INTERFACE" == "dialog" ]; then
     mapfile -t CREDS < <( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --insecure --mixedform "Login:" "$RECMD_LINES" "$RECMD_COLS" 0 "Username: " 1 1 "$SUGGESTED_USERNAME" 1 11 22 0 0 "Password :" 2 1 "" 2 11 22 0 1 3>&1 1>&2 2>&3 )
   elif [ "$INTERFACE" == "zenity" ]; then
-    ENTRY=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --password --username "$SUGGESTED_USERNAME")
+    ENTRY=$(zenity --title="$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --password --username "$SUGGESTED_USERNAME")
     local exit_status=$?
     CREDS[0]=$(echo "$ENTRY" | cut -d'|' -f1)
     CREDS[1]=$(echo "$ENTRY" | cut -d'|' -f2)
@@ -182,6 +185,7 @@ function password() {
     GUI_ICON=$XDG_ICO_PASSWORD
   fi
   _calculate-gui-title
+  # shellcheck disable=SC2034  # TEST_STRING is used by _calculate-tui-rows-cols
   TEST_STRING="${PASSWORD_SYMBOL}$1"
   _calculate-tui-size
 
@@ -193,7 +197,7 @@ function password() {
     PASSWORD=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY"  --passwordbox "$1" "$RECMD_LINES" "$RECMD_COLS" 3>&1 1>&2 2>&3)
     exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    PASSWORD=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --password)
+    PASSWORD=$(zenity --title="$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --password)
     exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     PASSWORD=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --password "$1")

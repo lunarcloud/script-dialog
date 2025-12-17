@@ -38,9 +38,10 @@ function progressbar() {
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --gauge "" "$RECMD_LINES" "$RECMD_COLS" 0
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
+    zenity --title "$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --progress --text="$ACTIVITY" --auto-close --auto-kill --percentage 0
   elif [ "$INTERFACE" == "kdialog" ]; then
-    local OUTPUT=$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --progressbar "$ACTIVITY" 100)
+    local OUTPUT
+    OUTPUT=$(kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --progressbar "$ACTIVITY" 100)
     read -r -d '' -a dbusRef < <( echo "$OUTPUT" )
     qdbus "${dbusRef[@]}" Set "" value 0
     exit_status=$?

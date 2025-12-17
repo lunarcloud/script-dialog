@@ -3,6 +3,9 @@
 # https://github.com/lunarcloud/script-dialog
 # LGPL-2.1 license
 
+# Variables set in init.sh and used here
+# shellcheck disable=SC2154
+
 #######################################
 # Attempts to run a privileged command (sudo or equivalent)
 # GLOBALS:
@@ -17,12 +20,12 @@
 # 	0 if success, non-zero otherwise.
 #######################################
 function superuser() {
-  if [ $NO_SUDO == true ]; then
+  if [ "$NO_SUDO" == true ]; then
     (>&2 echo "${red}No sudo available!${normal}")
     return 201
   fi
 
-  if [ $SUDO_USE_INTERFACE == true ]; then
+  if [ "$SUDO_USE_INTERFACE" == true ]; then
     ACTIVITY="Enter password to run \"$*\""
     password "$@" | sudo -p "" -S -- "$@"
   elif [[ "$SUDO" == *"pkexec"* ]]; then
@@ -50,8 +53,10 @@ function superuser() {
 #######################################
 function _calculate-gui-title() {
   if [ -n "$ACTIVITY" ]; then
+    # shellcheck disable=SC2034  # GUI_TITLE is used by other functions
     GUI_TITLE="$ACTIVITY - $APP_NAME"
   else
+    # shellcheck disable=SC2034
     GUI_TITLE="$APP_NAME"
   fi
 }
@@ -110,7 +115,9 @@ function _calculate-tui-size() {
   
   # Handle empty string case
   if [ -z "$TEST_STRING" ]; then
+    # shellcheck disable=SC2153  # MIN_COLS and MIN_LINES are defined in init.sh
     RECMD_COLS=$MIN_COLS
+    # shellcheck disable=SC2153
     RECMD_LINES=$MIN_LINES
     return
   fi
@@ -166,10 +173,12 @@ function _calculate-tui-size() {
   # Enforce maximum constraints
   if [ "$RECMD_LINES" -gt "$MAX_LINES" ] ; then
     RECMD_LINES=$MAX_LINES
+    # shellcheck disable=SC2034  # RECMD_SCROLL is used by dialog functions
     RECMD_SCROLL=true
   fi
   if [ "$RECMD_COLS" -gt "$MAX_COLS" ]; then
     RECMD_COLS=$MAX_COLS
+    # shellcheck disable=SC2034
     RECMD_SCROLL=true
   fi
 
