@@ -71,11 +71,13 @@ function checklist() {
 
   local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
-    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" "$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")" --checklist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    mapfile -t CHOSEN_ITEMS < <( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --checklist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     local DIALOG_OUTPUT
-    DIALOG_OUTPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" "$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")" --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    DIALOG_OUTPUT=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --separate-output --checklist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
     IFS=$'\n' read -r -d '' -a CHOSEN_LIST < <( echo "${DIALOG_OUTPUT[@]}" )
 
@@ -201,14 +203,16 @@ function radiolist() {
 
   local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
-    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" "$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")" --radiolist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    CHOSEN_ITEM=$( whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
     # For TUI interfaces, empty response indicates cancel
     if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then
       exit "$SCRIPT_DIALOG_CANCEL_EXIT_CODE"
     fi
   elif [ "$INTERFACE" == "dialog" ]; then
-    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" "$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")" --radiolist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    CHOSEN_ITEM=$( dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --radiolist "${QUESTION_SYMBOL}$TEXT" "$RECMD_LINES" "$RECMD_COLS" "$NUM_OPTIONS" "$@"  3>&1 1>&2 2>&3)
     exit_status=$?
     # For TUI interfaces, empty response indicates cancel
     if [ $exit_status -ne 0 ] || [[ -z "$CHOSEN_ITEM" ]]; then

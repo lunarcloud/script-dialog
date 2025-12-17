@@ -100,7 +100,8 @@ function messagebox() {
   _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear "$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")" --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
@@ -268,7 +269,8 @@ function display-file() {
 
   local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" "$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")"  --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
+    # shellcheck disable=SC2046  # Intentional word splitting for conditional argument
+    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
     exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
