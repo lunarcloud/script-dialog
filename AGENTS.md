@@ -37,9 +37,12 @@ The repository is organized as follows:
 * Document all functions with clear descriptions of parameters and behavior.
 * Use consistent indentation (2 spaces).
 * Always quote variable expansions unless you specifically need word splitting.
+* Always quote command substitutions: `"$(command)"` not `$(command)`.
 * Use `[[ ]]` for pattern matching (wildcards, regex) and bash-specific features (case conversion).
 * Use `[ ]` for basic POSIX-compatible tests (string equality, -z, -n, numeric comparisons).
 * Use `command -v` instead of `which` for checking command existence.
+* Separate variable declarations from assignments that run commands: `local var; var=$(command)` instead of `local var=$(command)`.
+* Use shellcheck directives instead of exporting variables to avoid polluting the environment.
 
 ### Running Quality Checks Locally
 
@@ -49,19 +52,14 @@ Before committing code, developers should run:
 # Restore dependencies (ubuntu/debian syntax)
 sudo apt install shellcheck
 
-# Run the check on all scripts
-shellcheck script-dialog.sh
-shellcheck test.sh
-shellcheck screenshot-dialogs.sh
-
-# Or check all at once
-shellcheck ./*.sh -x
+# Run the check on all scripts (including cross-file sourcing)
+shellcheck ./*.sh extras/*.sh -x
 
 # Run integration tests (requires a terminal or GUI environment)
 bash test.sh
 ```
 
-And correct any remaining issues reported.
+All code must pass shellcheck with zero violations before committing.
 
 ## Bash-Specific Patterns and Best Practices
 
@@ -115,6 +113,35 @@ The library detects platforms and desktop environments:
 - Windows/WSL: `[[ $OSTYPE == msys ]] || [[ $(uname -r | tr '[:upper:]' '[:lower:]') == *wsl* ]]` (pattern matching)
 - Linux desktops: Detected via `$XDG_CURRENT_DESKTOP`, `$XDG_SESSION_DESKTOP`, or running processes via `pgrep -l "process-name"` (gnome-shell, mutter, kwin)
 
+### Shellcheck Directives and Cross-File Variables
+
+The library uses a modular structure where `init.sh` defines variables used across multiple files. To handle shellcheck warnings about these cross-file variables:
+
+1. **For variables defined in init.sh and used elsewhere**:
+   - Add `# shellcheck disable=SC2154` at the top of files that use variables from init.sh
+   - This suppresses "variable is referenced but not assigned" warnings
+
+2. **For variables exposed to library users**:
+   - Add `# shellcheck disable=SC2034` at the file level in init.sh
+   - This suppresses "variable appears unused" warnings for intentionally exposed variables
+   - Do NOT export these variables to avoid polluting the user's environment
+
+3. **For intentional command word splitting**:
+   - Quote command substitutions: `"$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")"`
+   - This prevents SC2046 warnings while maintaining correct behavior
+
+Example:
+```bash
+# At the top of a file using init.sh variables
+#!/usr/bin/env bash
+# Multi-UI Scripting - Helper Functions
+
+# Variables set in init.sh and used here
+# shellcheck disable=SC2154
+
+# Now you can use variables like $bold, $normal, $red without warnings
+```
+
 ## Cross-Platform Considerations
 
 ### Platform-Specific Behavior
@@ -164,7 +191,12 @@ Use `screenshot-dialogs.sh` to capture visual evidence of changes:
 
 ### Automated Testing (CI)
 
-The GitHub Actions workflow runs shellcheck on all `.sh` files. All code must pass shellcheck without errors.
+The GitHub Actions workflow runs shellcheck on all `.sh` files for every PR and direct commit to master. All code must pass shellcheck without errors or warnings.
+
+The workflow is configured to:
+- Run on all pull requests (via `pull_request` trigger)
+- Run on direct commits to `master` branch (via `push` trigger)
+- Avoid duplicate runs on PRs by not triggering `push` for non-master branches
 
 ## Common Patterns and Pitfalls to Avoid
 
@@ -172,6 +204,9 @@ The GitHub Actions workflow runs shellcheck on all `.sh` files. All code must pa
 * Capture exit status immediately after the command that generates it
 * Use `|| exit "$?"` after command substitutions that might be cancelled
 * Quote variable expansions: `"$variable"` not `$variable`
+* Quote command substitutions: `"$(command)"` not `$(command)`
+* Separate variable declarations from assignments: `local var; var=$(cmd)` not `local var=$(cmd)`
+* Use shellcheck directives for cross-file variables instead of exporting them
 * Test with multiple interfaces (zenity, kdialog, whiptail, dialog)
 * Document why you're disabling shellcheck rules if necessary
 * Consider both GUI and TUI behavior when implementing features
@@ -184,6 +219,8 @@ The GitHub Actions workflow runs shellcheck on all `.sh` files. All code must pa
 * Remove or modify cancel detection without thorough testing
 * Break backward compatibility with existing scripts
 * Copy complex patterns from other projects without understanding them
+* Export variables unnecessarily - use shellcheck directives instead to avoid environment pollution
+* Leave unquoted variables or command substitutions that trigger shellcheck warnings
 
 ## Recent Learnings from PR Feedback
 
@@ -201,6 +238,21 @@ From PR #28 (Add configurable exit on dialog cancellation):
    - It's distinctive and less likely to conflict with other meanings
    - It follows the `timeout` command convention (which also uses 124)
    - It's less generic than 1 or 2
+
+From PR (Shellcheck compliance and CI improvements):
+
+1. **Quoting is mandatory**: All variable expansions and command substitutions must be quoted to pass shellcheck. This prevents word splitting and globbing issues.
+
+2. **Separate declarations from assignments**: Using `local var=$(command)` masks the command's exit status. Always separate them: `local var; var=$(command)` followed by `exit_status=$?`.
+
+3. **Use shellcheck directives, not exports**: When variables are defined in `init.sh` and used in other sourced files:
+   - Add `# shellcheck disable=SC2154` at the top of files using those variables
+   - Add `# shellcheck disable=SC2034` in init.sh for variables exposed to library users
+   - Do NOT export variables just to satisfy shellcheck - this pollutes the user's environment
+
+4. **CI must catch issues early**: The GitHub Actions workflow now runs on all PRs and master commits, ensuring code quality before merge.
+
+5. **Zero tolerance for shellcheck violations**: All code must pass `shellcheck ./*.sh extras/*.sh -x` with zero warnings or errors.
 
 ## Boundaries and Guardrails
 
