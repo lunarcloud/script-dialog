@@ -3,6 +3,9 @@
 # https://github.com/lunarcloud/script-dialog
 # LGPL-2.1 license
 
+# Variables set in init.sh and used here
+# shellcheck disable=SC2154
+
 #######################################
 # Display an 'info' message box
 # GLOBALS:
@@ -97,11 +100,11 @@ function messagebox() {
   _calculate-tui-size
 
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext") --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
+    whiptail --clear "$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")" --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --msgbox "${SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --info --text "$1"
+    zenity --title "$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --info --text "$1"
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" "$KDIALOG_ARG" "$1"
   else
@@ -147,7 +150,7 @@ function pause() {
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yes-label "Continue" --no-label "Quit" --yesno "${QUESTION_SYMBOL}$MESSAGE" "$RECMD_LINES" "$RECMD_COLS"
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$MESSAGE" --ok-label="Continue" --cancel-label="Quit"
+    zenity --title "$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$MESSAGE" --ok-label="Continue" --cancel-label="Quit"
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title "$GUI_TITLE" --icon "$GUI_ICON" --yes-label "Continue" --no-label "Quit" --yesno "$MESSAGE"
   else
@@ -201,7 +204,7 @@ function yesno() {
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --yesno "${QUESTION_SYMBOL}$1" "$RECMD_LINES" "$RECMD_COLS"
     answer=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$1"
+    zenity --title "$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --question --text "$1"
     answer=$?
     # Exit if cancelled (zenity returns 5 for timeout, -1/255 for cancel/close)
     if [ $answer -gt 1 ]; then
@@ -257,6 +260,7 @@ function display-file() {
     GUI_ICON=$XDG_ICO_DOCUMENT
   fi
   _calculate-gui-title
+  # shellcheck disable=SC2034  # TEST_STRING is used by _calculate-tui-rows-cols
   TEST_STRING="$(cat "$1")"
   local width=${2-${ZENITY_WIDTH-512}}
   local height=${3-${ZENITY_HEIGHT-640}}
@@ -264,13 +268,13 @@ function display-file() {
 
   local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
-    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" $([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")  --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
+    whiptail --clear --backtitle "$APP_NAME" --title "$ACTIVITY" "$([ "$RECMD_SCROLL" == true ] && echo "--scrolltext")"  --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
     exit_status=$?
   elif [ "$INTERFACE" == "dialog" ]; then
     dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --textbox "$1" "$RECMD_LINES" "$RECMD_COLS"
     exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" --height="$height" --width="$width" --text-info --filename="$1"
+    zenity --title="$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" --height="$height" --width="$width" --text-info --filename="$1"
     exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --textbox "$1" "$width" "$height"

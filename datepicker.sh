@@ -3,6 +3,9 @@
 # https://github.com/lunarcloud/script-dialog
 # LGPL-2.1 license
 
+# Variables set in init.sh and used here
+# shellcheck disable=SC2154
+
 #######################################
 # Display a calendar date selector dialog
 # GLOBALS:
@@ -42,13 +45,14 @@ function datepicker() {
 
   local exit_status=0
   if [ "$INTERFACE" == "whiptail" ]; then
+    # shellcheck disable=SC2034  # SYMBOL used by whiptail in this context
     local SYMBOL=$CALENDAR_SYMBOL
     STANDARD_DATE=$(inputbox "Input Date (DD/MM/YYYY)" "$NOW")
   elif [ "$INTERFACE" == "dialog" ]; then
     STANDARD_DATE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --calendar "${CALENDAR_SYMBOL}Choose Date" 0 40)
     exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    INPUT_DATE=$(zenity --title="$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --calendar "Select Date")
+    INPUT_DATE=$(zenity --title="$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --calendar "Select Date")
     exit_status=$?
     MONTH=$(echo "$INPUT_DATE" | cut -d'/' -f1)
     DAY=$(echo "$INPUT_DATE" | cut -d'/' -f2)

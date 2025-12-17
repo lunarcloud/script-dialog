@@ -41,7 +41,7 @@ function filepicker() {
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2012
     read -r -d '' -a files < <(ls -lBhpa "$1" | awk -F ' ' ' { print $9 " " $5 } ')
-    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_LINES)) $((6+RECMD_COLS)) $RECMD_LINES "${files[@]}" 3>&1 1>&2 2>&3)
+    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_LINES)) $((6+RECMD_COLS)) "$RECMD_LINES" "${files[@]}" 3>&1 1>&2 2>&3)
     exit_status=$?
     FILE="$1/$SELECTED"
 
@@ -49,7 +49,7 @@ function filepicker() {
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --fselect "$1"/ 14 48)
     exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --file-selection --filename "$1"/ )
+    FILE=$(zenity --title "$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --file-selection --filename "$1"/ )
     exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     if [ "$2" == "save" ]; then
@@ -121,7 +121,7 @@ function folderpicker() {
   if [ "$INTERFACE" == "whiptail" ]; then
     # shellcheck disable=SC2010
     read -r -d '' -a files < <(ls -lBhpa "$1" | grep "^d" | awk -F ' ' ' { print $9 " " $5 } ')
-    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_LINES)) $((6+RECMD_COLS)) $RECMD_LINES "${files[@]}" 3>&1 1>&2 2>&3)
+    SELECTED=$(whiptail --clear --backtitle "$APP_NAME" --title "$GUI_TITLE"  --cancel-button Cancel --ok-button Select --menu "$ACTIVITY" $((8+RECMD_LINES)) $((6+RECMD_COLS)) "$RECMD_LINES" "${files[@]}" 3>&1 1>&2 2>&3)
     exit_status=$?
     FILE="$1/$SELECTED"
 
@@ -129,7 +129,7 @@ function folderpicker() {
     FILE=$(dialog --clear --backtitle "$APP_NAME" --title "$ACTIVITY" --stdout --dselect "$1"/ 14 48)
     exit_status=$?
   elif [ "$INTERFACE" == "zenity" ]; then
-    FILE=$(zenity --title "$GUI_TITLE" $ZENITY_ICON_ARG "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --file-selection --directory --filename "$1"/ )
+    FILE=$(zenity --title "$GUI_TITLE" "$ZENITY_ICON_ARG" "$GUI_ICON" ${ZENITY_HEIGHT+--height=$ZENITY_HEIGHT} ${ZENITY_WIDTH+--width=$ZENITY_WIDTH} --file-selection --directory --filename "$1"/ )
     exit_status=$?
   elif [ "$INTERFACE" == "kdialog" ]; then
     FILE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --getexistingdirectory "$1"/ )

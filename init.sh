@@ -3,6 +3,9 @@
 # https://github.com/lunarcloud/script-dialog
 # LGPL-2.1 license
 
+# Disable SC2034 for the entire file as variables defined here are used by scripts that source this library
+# shellcheck disable=SC2034
+
 # Disable this rule, as it interferes with purely-numeric parameters
 # shellcheck disable=SC2046
 
@@ -158,6 +161,7 @@ fi
 # Variables
 ################################
 
+# These variables are intentionally exposed for use by scripts that source this library
 APP_NAME="Script"
 ACTIVITY=""
 GUI_TITLE="$APP_NAME"
