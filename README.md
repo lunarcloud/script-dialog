@@ -31,6 +31,26 @@ The following example assumes it's in the same folder as your script:
     message-info "Hello!"
 ```
 
+### Re-running Environment Detection
+
+If your script switches contexts (e.g., from CI to interactive mode) or you've forced a specific mode and want to redetect, you can call `detect_environment()`:
+
+```bash
+    # Force fallback mode for CI
+    INTERFACE=""
+    GUI=false
+    
+    # ... some CI operations ...
+    
+    # Later, when entering interactive context, re-detect
+    unset INTERFACE  # Clear forced settings
+    unset GUI
+    detect_environment  # Re-run detection
+    
+    # Now INTERFACE and GUI are set based on current environment
+    message-info "Now using ${INTERFACE} interface"
+```
+
 ## Modular Structure
 
 The library is organized into modular files for easier maintenance and development. When you source `script-dialog.sh`, it automatically loads all required modules:
@@ -89,6 +109,7 @@ Functions
 ----------------
 | Name | Description | Arguments | Output or Return |
 | ---- | ----------- | --------- | ---------------- |
+| **detect_environment** | Re-run environment detection to update `INTERFACE`, `GUI`, `DETECTED_DESKTOP`, and related variables. Useful when switching contexts (e.g., from CI to interactive) or after forcing a mode | None | Updates global variables |
 | **superuser** | Attempts to run a privileged command (sudo or equivalent) | Command to run with elevated privilege | return code 0 if success, non-zero otherwise |
 | **relaunch-if-not-visible** | if neither GUI nor terminal interfaces can be used, relaunch the script in a terminal emulator | |  |
 | **message-info** | Display an 'info' message box | The text to display | |

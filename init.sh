@@ -13,6 +13,9 @@
 # Do auto-detections at the top
 ################################
 
+# Note: To re-run environment detection after initial sourcing,
+# call the detect_environment() function defined in helpers.sh
+
 # Detect desktop environment for optimal dialog selection
 # Priority: OS type -> XDG variables -> running processes
 
