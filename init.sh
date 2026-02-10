@@ -188,18 +188,23 @@ XDG_ICO_CALENDAR="x-office-calendar"
 XDG_ICO_DOCUMENT="x-office-document"
 
 # see if it supports colors...
-ncolors=$(tput colors)
+if command -v tput >/dev/null 2>&1; then
+  ncolors=$(tput colors 2>/dev/null)
+else
+  ncolors=""
+fi
+
 if [ "$NOCOLORS" == "" ] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
-  bold="$(tput bold)"
-  underline="$(tput smul)"
-  #standout="$(tput smso)"
-  normal="$(tput sgr0)"
-  red="$(tput setaf 1)"
-  #green="$(tput setaf 2)"
-  yellow="$(tput setaf 3)"
-  #blue="$(tput setaf 4)"
-  #magenta="$(tput setaf 5)"
-  #cyan="$(tput setaf 6)"
+  bold="$(tput bold 2>/dev/null)"
+  underline="$(tput smul 2>/dev/null)"
+  #standout="$(tput smso 2>/dev/null)"
+  normal="$(tput sgr0 2>/dev/null)"
+  red="$(tput setaf 1 2>/dev/null)"
+  #green="$(tput setaf 2 2>/dev/null)"
+  yellow="$(tput setaf 3 2>/dev/null)"
+  #blue="$(tput setaf 4 2>/dev/null)"
+  #magenta="$(tput setaf 5 2>/dev/null)"
+  #cyan="$(tput setaf 6 2>/dev/null)"
 else
   bold=""
   underline=""
