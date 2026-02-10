@@ -76,13 +76,13 @@ function _calculate-gui-title() {
 # 	n/a
 #######################################
 function _calculate-tui-max() {
-  if ! command -v >/dev/null tput; then
+  if ! command -v tput >/dev/null 2>&1; then
     return;
   fi
 
   if [ "$GUI" == "false" ] ; then
-    MAX_LINES=$(tput lines)
-    MAX_COLS=$(tput cols)
+    MAX_LINES=$(tput lines 2>/dev/null)
+    MAX_COLS=$(tput cols 2>/dev/null)
   fi
 
   # Never really fill the whole screen space

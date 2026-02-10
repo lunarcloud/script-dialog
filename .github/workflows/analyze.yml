@@ -18,3 +18,6 @@ jobs:
       - name: 'Analyzing Code Quality'
         run: shellcheck ./*.sh extras/*.sh -x
 
+      - name: 'Testing CI/CD Compatibility'
+        run: bash extras/test-ci-compatibility.sh
+
