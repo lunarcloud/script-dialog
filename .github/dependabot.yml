@@ -6,7 +6,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "tuesday"
     open-pull-requests-limit: 10
     groups:
