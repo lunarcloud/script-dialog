@@ -3,30 +3,24 @@
 # https://github.com/lunarcloud/script-dialog
 # LGPL-2.1 license
 
-# Get the directory where this script is located
+# get the directories
 SCRIPT_DIALOG_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CURRENT_FILE="$(realpath -- "${BASH_SOURCE[0]}")"
 
-# Source all modular components
-# shellcheck source=./init.sh
-source "${SCRIPT_DIALOG_DIR}/init.sh"
+# sources everything in folder, excludes current file
+for src in ./*.sh
+do
+  [[ "$(realpath -- "$src")" == "$CURRENT_FILE" ]] && continue
+  source "$src" || exit 1
+  #echo "$src"
+done
 
-# shellcheck source=./helpers.sh
-source "${SCRIPT_DIALOG_DIR}/helpers.sh"
+# execute told function
+if declare -f "$1" >/dev/null; then
+ "$1"
+else
+  echo "Function not found"
+fi
 
-# shellcheck source=./messages.sh
-source "${SCRIPT_DIALOG_DIR}/messages.sh"
+# the rest goes there
 
-# shellcheck source=./inputs.sh
-source "${SCRIPT_DIALOG_DIR}/inputs.sh"
-
-# shellcheck source=./lists.sh
-source "${SCRIPT_DIALOG_DIR}/lists.sh"
-
-# shellcheck source=./progressbar.sh
-source "${SCRIPT_DIALOG_DIR}/progressbar.sh"
-
-# shellcheck source=./pickers.sh
-source "${SCRIPT_DIALOG_DIR}/pickers.sh"
-
-# shellcheck source=./datepicker.sh
-source "${SCRIPT_DIALOG_DIR}/datepicker.sh"

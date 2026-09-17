@@ -29,6 +29,14 @@
 # RETURN:
 # 	0 if success, non-zero otherwise.
 #######################################
+
+# declare month array
+declare -A month=(
+    [Jan]=1 [Feb]=2 [Mar]=3 [Apr]=4
+    [May]=5 [Jun]=6 [Jul]=7 [Aug]=8
+    [Sep]=9 [Oct]=10 [Nov]=11 [Dec]=12
+)
+
 function datepicker() {
   if [ -z ${GUI_ICON+x} ]; then
     GUI_ICON=$XDG_ICO_CALENDAR
@@ -62,31 +70,7 @@ function datepicker() {
     INPUT_DATE=$(kdialog --title="$GUI_TITLE" --icon "$GUI_ICON" --calendar "Select Date")
     exit_status=$?
     TEXT_MONTH=$(echo "$INPUT_DATE" | cut -d' ' -f2)
-    if [ "$TEXT_MONTH" == "Jan" ]; then
-      MONTH=1
-    elif [ "$TEXT_MONTH" == "Feb" ]; then
-      MONTH=2
-    elif [ "$TEXT_MONTH" == "Mar" ]; then
-      MONTH=3
-    elif [ "$TEXT_MONTH" == "Apr" ]; then
-      MONTH=4
-    elif [ "$TEXT_MONTH" == "May" ]; then
-      MONTH=5
-    elif [ "$TEXT_MONTH" == "Jun" ]; then
-      MONTH=6
-    elif [ "$TEXT_MONTH" == "Jul" ]; then
-      MONTH=7
-    elif [ "$TEXT_MONTH" == "Aug" ]; then
-      MONTH=8
-    elif [ "$TEXT_MONTH" == "Sep" ]; then
-      MONTH=9
-    elif [ "$TEXT_MONTH" == "Oct" ]; then
-      MONTH=10
-    elif [ "$TEXT_MONTH" == "Nov" ]; then
-      MONTH=11
-    else #elif [ "$TEXT_MONTH" == "Dec" ]; then
-      MONTH=12
-    fi
+    MONTH=${month["$TEXT_MONTH"]:-0}
 
     DAY=$(echo "$INPUT_DATE" | cut -d' ' -f3)
     YEAR=$(echo "$INPUT_DATE" | cut -d' ' -f4)
